@@ -6,7 +6,10 @@ All settings for environment
 
 ### Common environment
 
-- [Oh My Zsh](https://ohmyz.sh/)
+- [Oh My Zsh: Home](https://ohmyz.sh/)
+- [NeoVim: Home](https://neovim.io/)
+- [NeoVim: Installation](https://github.com/neovim/neovim/wiki/Installing-Neovim)
+- [Vim/NeoVim: Plugin Manager](https://github.com/junegunn/vim-plug)
 
 ### Mac OS
 

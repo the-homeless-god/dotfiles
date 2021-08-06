@@ -6,6 +6,7 @@ All settings for environment
 
 ### Common environment
 
+- [Fonts: Nerd](https://github.com/ryanoasis/nerd-fonts)
 - [Oh My Zsh: Home](https://ohmyz.sh/)
 - [NeoVim: Home](https://neovim.io/)
 - [NeoVim: Installation](https://github.com/neovim/neovim/wiki/Installing-Neovim)

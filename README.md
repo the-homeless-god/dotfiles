@@ -4,6 +4,10 @@ All settings for environment
 
 ## Development
 
+### Common environment
+
+- [Oh My Zsh](https://ohmyz.sh/)
+
 ### Mac OS
 
 - [Visual Studio Code](https://code.visualstudio.com/download)

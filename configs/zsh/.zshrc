@@ -10,7 +10,7 @@ fi
 ZSH_THEME="powerlevel10k/powerlevel10k"
 
 # Path to your oh-my-zsh installation.
-export ZSH="./.oh-my-zsh"
+export ZSH="~/.oh-my-zsh"
 
 # Set list of themes to pick from when loading at random
 # Setting this variable when ZSH_THEME=random will cause zsh to load

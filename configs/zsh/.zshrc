@@ -90,6 +90,10 @@ source $ZSH/oh-my-zsh.sh
 #   export EDITOR='mvim'
 # fi
 
+# Aliases
+
+alias gitsquash="git reset $(git merge-base master $(git branch --show-current))"
+
 # Compilation flags
 # export ARCHFLAGS="-arch x86_64"
 

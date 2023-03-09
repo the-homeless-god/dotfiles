@@ -1,0 +1,9 @@
+[user]
+	name = Marat Zimnurov
+	email = zimtir@mail.ru
+
+[init]
+	defaultBranch = root
+
+[push]
+	autoSetupRemote = true

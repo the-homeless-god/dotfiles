@@ -1,0 +1,10 @@
+brew install git
+brew install exa
+brew install podman
+brew install dust
+brew install bat
+brew install duf
+brew install fd
+brew install ripgrep
+brew install procs
+brew install gping

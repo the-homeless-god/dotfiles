@@ -41,6 +41,7 @@ alias downloads='cd ~/downloads'
 
 alias git_sync_master='BRANCH=$(git branch --show-current); git checkout master && git pull && git checkout $BRANCH'
 alias git_squash="git reset $(git merge-base master $(git branch --show-current))"
+alias node_sync="nvm use $(cat .nvmrc)"
 
 eval "$(mcfly init zsh)"
 

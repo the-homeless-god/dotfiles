@@ -1,4 +1,3 @@
-
 ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=60'
 ZSH_WEB_SEARCH_ENGINES=(google "https://www.google.com/search?q=")
 

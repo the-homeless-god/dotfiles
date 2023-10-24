@@ -1,15 +1,14 @@
-ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=60'
-ZSH_WEB_SEARCH_ENGINES=(google "https://www.google.com/search?q=")
+# Import plugins
+source ~/.zshrc.d/*
 
-if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
-  source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
-fi
-
+# Environment variables
 export ZSH="~/.oh-my-zsh"
 export VIM_SERVERNAME="God"
 
+# Powerlevel10k Theme
 ZSH_THEME="powerlevel10k/powerlevel10k"
 
+# Plugins
 plugins=(
   git
   zsh-autosuggestions
@@ -19,9 +18,8 @@ plugins=(
 
 source $ZSH/oh-my-zsh.sh
 
-# always use ls with one column output
+# Custom aliases
 alias ls='exa -a --icons --color=always --group-directories-first -la'
-
 alias cat='bat --theme=Dracula'
 alias du='dust'
 alias df='duf'
@@ -34,24 +32,22 @@ alias docker='podman'
 alias docker-compose='podman-compose'
 alias dev='sh ~/tmux.sh'
 
-# for easy navigation
-alias projects='cd ~/projects'
-alias downloads='cd ~/downloads'
+# NVM Environment Variables
+export NVM_DIR=~/.nvm
+source $(brew --prefix nvm)/nvm.sh
 
+# Load Powerlevel10k
+source ~/.oh-my-zsh/custom/themes/powerlevel10k/powerlevel10k.zsh-theme
+
+# McFly file history support
+eval "$(mcfly init zsh)"
+
+# Import custom Powerlevel10k configuration if it exists
+[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
+
+# Additional settings and aliases
+alias projects='cd $HOME/projects'
+alias downloads='cd $HOME/downloads'
 alias git_sync_master='BRANCH=$(git branch --show-current); git checkout master && git pull && git checkout $BRANCH'
 alias git_squash="git reset $(git merge-base master $(git branch --show-current))"
 alias node_sync="nvm use $(cat .nvmrc)"
-
-eval "$(mcfly init zsh)"
-
-export NVM_DIR=~/.nvm
-
-source $(brew --prefix nvm)/nvm.sh
-
-source ~/.oh-my-zsh/custom/themes/powerlevel10k/powerlevel10k.zsh-theme
-
-[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
-
-# ENV: OS X
-# export PATH="/opt/homebrew/opt/texinfo/bin:$PATH"
-# PATH="/opt/homebrew/opt/make/libexec/gnubin:$PATH"

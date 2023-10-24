@@ -1,52 +1,44 @@
+# Define variables
+projects_dir="$HOME/projects"
+downloads_dir="$HOME/downloads"
 session="work"
+
+# Create a function to open windows
+open_project_window() {
+  window_index="$1"
+  window_name="$2"
+  command="$3"
+  tmux new-window -t $session:$window_index -n $window_name
+  tmux send-keys "cd $projects_dir" C-m
+  tmux send-keys "$command" C-m
+}
 
 # Set up tmux
 tmux start-server
 
-# 0: Open the projects directory
-tmux new-session -d -s $session -n development
-tmux send-keys "cd ~/projects" C-m 
+# 0: Open the projects directory and run 'vim .'
+open_project_window 0 development "vim ."
 
-# 1: Create a new window called vim
-tmux new-window -t $session:1 -n vim
-tmux send-keys "cd ~/projects" C-m 
-tmux send-keys "vim ." C-m 
+# 1: Open the projects directory and run 'dust'
+open_project_window 1 infos "dust"
 
-# 2: Create a new window called infos
-tmux new-window -t $session:2 -n infos
-tmux send-keys "cd ~/projects" C-m 
-tmux send-keys "dust" C-m 
-
+# 2: Open the projects directory, run 'duf', and split the window
+open_project_window 2 infos "duf"
 tmux split-window -h
-tmux send-keys "cd ~/projects" C-m 
-tmux send-keys "duf" C-m 
+tmux send-keys "cd $projects_dir" C-m
+tmux send-keys "ps" Enter C-m
 
-tmux split-window -v
-tmux send-keys "cd ~/projects" C-m 
-tmux send-keys "ps" Enter C-m 
+# 3: Open the projects directory and run 'ping google.com'
+open_project_window 3 browser "ping google.com"
 
-tmux selectp -t 0
-tmux splitw -v
-tmux send-keys "cd ~/projects" C-m 
-tmux send-keys "ping google.com" C-m 
-tmux selectp -t 0
+# 4: Open the downloads directory
+open_project_window 4 downloads ""
 
-# 3: Create a new window called browser
-tmux new-window -t $session:3 -n browser
-tmux send-keys "cd ~/projects" C-m 
-tmux send-keys "w3m -no-cookie 'https://duckduckgo.com'" C-m 
-
-# 4: Create a new window called downloads
-tmux new-window -t $session:4 -n downloads
-tmux send-keys "cd ~/downloads" C-m
-
-# 5: Create a new window called containers
-tmux new-window -t $session:5 -n containers
-tmux send-keys "cd ~/projects" C-m
-tmux send-keys "podman info" C-m
+# 5: Open the projects directory and run 'podman info'
+open_project_window 5 containers "podman info"
 
 # Return to the main development window
-tmux select-window -t $session:1
+tmux select-window -t $session:0
 
 # Finished setup, attach to the tmux session
 tmux attach-session -t $session

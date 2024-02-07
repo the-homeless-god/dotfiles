@@ -1,6 +1,3 @@
-# Import plugins
-source ~/.zshrc.d/*
-
 # Environment variables
 export ZSH="~/.oh-my-zsh"
 export VIM_SERVERNAME="God"
@@ -34,7 +31,6 @@ alias dev='sh ~/tmux.sh'
 
 # NVM Environment Variables
 export NVM_DIR=~/.nvm
-source $(brew --prefix nvm)/nvm.sh
 
 # Load Powerlevel10k
 source ~/.oh-my-zsh/custom/themes/powerlevel10k/powerlevel10k.zsh-theme

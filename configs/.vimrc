@@ -146,6 +146,7 @@ function! s:initVimHotkeys()
 	" [Leader + ot]: open terminal below
 	nnoremap <silent> <Leader>ot :below terminal ++rows=15 ++close<CR>
 	set number!
+	set paste!
 	set signcolumn=yes
 
 	":remote-send("<ESC>:call remote_startserver('some_name')<CR>")

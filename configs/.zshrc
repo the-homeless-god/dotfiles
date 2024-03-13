@@ -28,6 +28,7 @@ alias f='floaterm'
 alias docker='podman'
 alias docker-compose='podman-compose'
 alias dev='sh ~/tmux.sh'
+alias space='du / -h --max-depth=1 | sort -hr'
 
 # NVM Environment Variables
 export NVM_DIR=~/.nvm

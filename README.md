@@ -4,6 +4,13 @@
 
 All settings for environment
 
+## Usage
+
+```shell
+git clone https://github.com/the-homeless-god/dotfiles
+cp -r ./configs ~/
+```
+
 ## Development
 
 ### Common environment

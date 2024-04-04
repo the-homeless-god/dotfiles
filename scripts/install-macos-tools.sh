@@ -50,8 +50,8 @@ brew install --cask qutebrowser
 brew install --cask insomnia
 brew install neofetch
 
-# Optional: Copy your configuration files (e.g., .zshrc, .tmux.conf, alacritty.yml, etc.) to the appropriate locations
-# Example: cp path/to/your/alacritty.yml ~/.config/alacritty/alacritty.yml
+# Optional: Copy your configuration files (e.g., .zshrc, .tmux.conf, .alacritty.toml, etc.) to the appropriate locations
+# Example: cp path/to/your/.alacritty.toml ~/.config/alacritty/.alacritty.toml
 
 # Optional: Set up your development environment, clone repositories, and configure your tools
 # Example: git clone https://github.com/your/repo.git ~/projects/repo

@@ -1,6 +1,6 @@
 # Environment
 
-![image](./configs//code/back.jpeg)
+![image](./configs/wallpaper.jpeg)
 
 All settings for environment
 

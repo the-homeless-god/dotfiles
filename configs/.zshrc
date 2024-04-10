@@ -1,5 +1,6 @@
 # Environment variables
 export ZSH="~/.oh-my-zsh"
+export PATH="$PATH:/root/.cargo/bin"
 export VIM_SERVERNAME="God"
 
 # Powerlevel10k Theme

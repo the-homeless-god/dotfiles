@@ -14,6 +14,8 @@ Plug 'rhysd/vim-healthcheck'
 Plug 'voldikss/vim-floaterm'
 Plug 'jremmen/vim-ripgrep'
 Plug 'airblade/vim-gitgutter'
+Plug 'fatih/vim-go', { 'do': ':GoUpdateBinaries' }
+Plug 'mg979/vim-visual-multi', {'branch': 'master'}
 
 call plug#end()
 
@@ -23,24 +25,28 @@ function! s:initVimStartup()
 	" 1. initiate update of plugins on each start
 	" 2. initiate autostart of Coc plugins
 	" 3. Highlight the symbol and its references when holding the cursor
-	"	autocmd VimEnter * silent! PlugUpdate
+	autocmd VimEnter * silent! FloatermNew --width=0.8 --height=0.8 vim +PlugUpdate +qall
 	autocmd VimEnter * silent! CocStart
 	autocmd CursorHold * silent call CocActionAsync('highlight')
 
 	" Open terminal by default at bottom
-	augroup term_open
-		autocmd VimEnter * :below terminal ++rows=15 ++close 
-		autocmd VimEnter * command! Rg FloatermNew --width=0.8 --height=0.8 rg
-	augroup END
+	" augroup term_open
+	"	autocmd VimEnter * :below terminal ++rows=15 ++close 
+	"	autocmd VimEnter * command! Rg FloatermNew --width=0.8 --height=0.8 rg
+	" augroup END
 
-	augroup disable_netrw_close
+        augroup disable_netrw_close
 		autocmd!
 		autocmd FileType netrw nnoremap <buffer> <silent> q :echo "Use :Nclose to close Netrw"<CR>
 		autocmd FileType netrw nnoremap <buffer> <silent> x :echo "Use :Nclose to close Netrw"<CR>
-	augroup END
+        augroup END
 
-
-	autocmd VimEnter * :Lexplore
+        if has("gui_running") && (&enc == 'utf-8' || &enc == 'utf-16' || &enc == 'ucs-4')
+                let s:treedepthstring= "O "
+        else
+                let s:treedepthstring= "1 "
+        endif
+	 " autocmd VimEnter * :Lexplore
 
 endfunction
 
@@ -54,7 +60,7 @@ function! s:initVimVariables()
 	"	set hidden
 
 	" Open new buffers on the right side
-	"	 set splitright
+        set splitright
 
 	let g:airline#extensions#tabline#enabled = 1 
 	let g:airline#extensions#tabline#formatter = 'jsformatter'
@@ -87,10 +93,11 @@ function! s:initVimVariables()
 	" File explorer: size of window by default and auto-setup for current directory
 	let g:netrw_keepdir = 0
 	let g:netrw_winsize = 35
+	let g:netrw_altv = 1
 
 	" Keep the side bar open by default
 	let g:netrw_banner = 0
-	let g:netrw_browse_split = 4
+	let g:netrw_browse_split = 2 
 	let g:netrw_altv = 1
 	let g:netrw_winsize = 25
 	let g:netrw_liststyle = 3
@@ -118,14 +125,13 @@ function! s:initVimVariables()
 		let g:coc_global_extensions += ['coc-eslint']
 	endif
 
+	let g:netrw_altv=1
+
 	" status line:
 	set titlestring="File: " + statusline + %F
 
 	" tabline: 
 	set tabline=2
-
-	" tree:
-	let g:netrw_altv=1
 
 	" themes (dracula pro):
 	packadd! dracula_pro
@@ -151,7 +157,7 @@ function! s:initVimHotkeys()
 
 	":remote-send("<ESC>:call remote_startserver('some_name')<CR>")
 
-	" nmap <leader>g :FloatermNew --width=0.8 --height=0.8 rg)<CR>
+	nmap <leader>g :FloatermNew --width=0.8 --height=0.8 rg)<CR>
 
 	" [Leader + f]: format whole file
 	nnoremap <leader>f :Format<CR>

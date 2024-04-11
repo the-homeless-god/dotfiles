@@ -25,15 +25,15 @@ function! s:initVimStartup()
 	" 1. initiate update of plugins on each start
 	" 2. initiate autostart of Coc plugins
 	" 3. Highlight the symbol and its references when holding the cursor
-	autocmd VimEnter * silent! FloatermNew --width=0.8 --height=0.8 vim +PlugUpdate +qall
+	" autocmd VimEnter * silent! FloatermNew --width=0.8 --height=0.8 vim +PlugUpdate +qall
 	autocmd VimEnter * silent! CocStart
 	autocmd CursorHold * silent call CocActionAsync('highlight')
 
 	" Open terminal by default at bottom
-	" augroup term_open
-	"	autocmd VimEnter * :below terminal ++rows=15 ++close 
-	"	autocmd VimEnter * command! Rg FloatermNew --width=0.8 --height=0.8 rg
-	" augroup END
+	augroup term_open
+		autocmd VimEnter * :below terminal ++rows=15 ++close 
+		autocmd VimEnter * command! Rg FloatermNew --width=0.8 --height=0.8 rg
+	augroup END
 
         augroup disable_netrw_close
 		autocmd!
@@ -46,8 +46,8 @@ function! s:initVimStartup()
         else
                 let s:treedepthstring= "1 "
         endif
-	 " autocmd VimEnter * :Lexplore
-
+	
+	" autocmd VimEnter * :Lexplore
 endfunction
 
 function! s:initVimVariables()
@@ -57,7 +57,7 @@ function! s:initVimVariables()
 	let g:terminal_default_height = 10
 
 	" Always show an empty buffer when a file is closed
-	"	set hidden
+	set hidden
 
 	" Open new buffers on the right side
         set splitright
@@ -73,7 +73,7 @@ function! s:initVimVariables()
 	let g:gitgutter_sign_removed = '-'
 
 	" Fonts: usage of specific font with height 
-	set guifont=FuraCodeNF:h10
+	set guifont=FiraCodeNF:h10
 
 	" Prettier: formatting on save
 	let g:prettier#autoformat = 1
@@ -103,7 +103,6 @@ function! s:initVimVariables()
 	let g:netrw_liststyle = 3
 
 	let g:netrw_banner = 0 | autocmd FileType netrw setlocal bufhidden=hide
-
 
 	" Add (Neo)Vim's native statusline support
 	" NOTE: Please see `:h coc-status` for integrations with external plugins that
@@ -147,7 +146,6 @@ function! s:initVimVariables()
 endfunction
 
 function! s:initVimHotkeys()
-
 	" My keymaps
 	" [Leader + ot]: open terminal below
 	nnoremap <silent> <Leader>ot :below terminal ++rows=15 ++close<CR>
@@ -157,7 +155,8 @@ function! s:initVimHotkeys()
 
 	":remote-send("<ESC>:call remote_startserver('some_name')<CR>")
 
-	nmap <leader>g :FloatermNew --width=0.8 --height=0.8 rg)<CR>
+	" [Leader + rg]: opens ripgrep + fzf
+	nmap <leader>rg :FloatermNew --width=0.8 --height=0.8 rg<CR>
 
 	" [Leader + f]: format whole file
 	nnoremap <leader>f :Format<CR>
@@ -249,8 +248,8 @@ function! s:initVimHotkeys()
 	tnoremap   <silent>   <F9>    <C-\><C-n>:FloatermNext<CR>
 	nnoremap   <silent>   <F12>   :FloatermToggle<CR>
 	tnoremap   <silent>   <F12>   <C-\><C-n>:FloatermToggle<CR>
-	nmap <leader>lf :FloatermNew lf<CR>
-	nmap <leader>rg :Rg<CR> 
+	nmap <leader>lf :FloatermNew lf --command 'set hidden'<CR>
+	nmap <leader>Rg :FloatermNew --width=0.8 --height=0.8 rg<CR> 
 
 endfunction
 
@@ -317,8 +316,6 @@ call s:initVimVariables()
 call s:initCocSettings()
 call s:initVimStartup()
 call s:initVimHotkeys()
-
-command! Rg FloatermNew --width=0.8 --height=0.8 rg
 
 if exists(":AirlineRefresh")
 	:AirlineRefresh

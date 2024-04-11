@@ -44,8 +44,8 @@ function! s:initVimStartup()
         if has("gui_running") && (&enc == 'utf-8' || &enc == 'utf-16' || &enc == 'ucs-4')
                 let s:treedepthstring= "O "
         else
-                let s:treedepthstring= "1 "
-        endif
+		let s:treedepthstring= "1 "
+	endif
 	
 	" autocmd VimEnter * :Lexplore
 endfunction
@@ -152,6 +152,12 @@ function! s:initVimHotkeys()
 	set number!
 	set paste!
 	set signcolumn=yes
+
+	nmap <silent> <Leader>v :vsplit<CR>
+	nmap <silent> <Leader>h :split<CR>
+	nmap <silent> <Leader>w :w<CR>
+	nmap <silent> <Leader>x :x<CR>
+	
 
 	":remote-send("<ESC>:call remote_startserver('some_name')<CR>")
 

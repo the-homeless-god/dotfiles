@@ -50,6 +50,34 @@ brew install --cask qutebrowser
 brew install --cask insomnia
 brew install neofetch
 
+# Install Tabby
+brew install tabbyml/tabby/tabby
+tabby serve --device metal --model StarCoder-1B
+
+# Install Surf
+## Install dependencies
+brew install cmake enchant gstreamermm gtk+3 libnotify libsecret libsoup webp
+git clone git@github.com:hunspell/hyphen.git
+cd hyphen
+autoreconf -fvi
+./configure
+make
+make install
+cd ..
+
+## Build webkitgtk-2
+wget https://webkitgtk.org/releases/webkitgtk-2.16.5.tar.xz
+tar xf webkitgtk-2.16.5.tar.xz
+cd webkitgtk-2.16.5
+export CPPFLAGS="-I/opt/local/include"
+export LDFLAGS="-L/opt/local/lib"
+export PKG_CONFIG_PATH=/usr/local/opt/libffi/lib/pkgconfig
+cmake -DPORT=GTK -DENABLE_GEOLOCATION=FALSE -DENABLE_OPENGL=FALSE -DENABLE_MINIBROWSER=ON -DCMAKE_BUILD_TYPE=Release
+make -j`nproc` # fails at this point
+sudo make install
+
+wget http://dl.suckless.org/surf/surf-2.0.tar.gz
+
 # Optional: Copy your configuration files (e.g., .zshrc, .tmux.conf, .alacritty.toml, etc.) to the appropriate locations
 # Example: cp path/to/your/.alacritty.toml ~/.config/alacritty/.alacritty.toml
 

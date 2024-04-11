@@ -25,15 +25,15 @@ function! s:initVimStartup()
 	" 1. initiate update of plugins on each start
 	" 2. initiate autostart of Coc plugins
 	" 3. Highlight the symbol and its references when holding the cursor
-	" autocmd VimEnter * silent! FloatermNew --width=0.8 --height=0.8 vim +PlugUpdate +qall
+	autocmd VimEnter * silent! FloatermNew --width=0.8 --height=0.8 vim +PlugUpdate +qall
 	autocmd VimEnter * silent! CocStart
 	autocmd CursorHold * silent call CocActionAsync('highlight')
 
 	" Open terminal by default at bottom
-	augroup term_open
-		autocmd VimEnter * :below terminal ++rows=15 ++close 
-		autocmd VimEnter * command! Rg FloatermNew --width=0.8 --height=0.8 rg
-	augroup END
+	" augroup term_open
+	"	autocmd VimEnter * :below terminal ++rows=15 ++close 
+	"	autocmd VimEnter * command! Rg FloatermNew --width=0.8 --height=0.8 rg
+	" augroup END
 
         augroup disable_netrw_close
 		autocmd!
@@ -250,7 +250,7 @@ function! s:initVimHotkeys()
 	tnoremap   <silent>   <F12>   <C-\><C-n>:FloatermToggle<CR>
 	nmap <leader>lf :FloatermNew lf --command 'set hidden'<CR>
 	nmap <leader>Rg :FloatermNew --width=0.8 --height=0.8 rg<CR> 
-
+	nmap <leader>cf gg dG<CR> 
 endfunction
 
 

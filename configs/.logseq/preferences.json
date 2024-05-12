@@ -1,0 +1,36 @@
+{
+  "theme": {
+    "name": "Dev theme",
+    "url": "~/.logseq/plugins/logseq-dev-theme/custom.css",
+    "pid": "logseq-dev-theme"
+  },
+  "themes": {
+    "mode": "dark",
+    "light": null,
+    "dark": {
+      "name": "Default Dark Theme",
+      "url": null,
+      "description": "Logseq default dark theme.",
+      "mode": "dark",
+      "selected": true,
+      "group-first": true,
+      "group-desc": "dark themes"
+    }
+  },
+  "externals": [],
+  "pinnedToolbarItems": [
+    "logseq-graph-analysis:logseq-graph-analysis",
+    "logseq-heatmap:heatmap-plugin-open",
+    "logseq-file-manager:logseq-plugin-file-manager",
+    "logseq-journals-calendar:open-calendar",
+    "logseq-agenda:Agenda2-Legacy",
+    "logseq-todo-plugin:logseq-plugin-todo",
+    "logseq-tags:tags-plugin-open",
+    "logseq-journals-calendar:goto-today",
+    "logseq-focus-mode:logseq-focus-toolbar",
+    "logseq-git:git",
+    "logseq-calendars-plugin:open-calendar2",
+    "logseq-pdf-export-plugin:logseq-pdf-export-plugin",
+    "logseq-agenda:Agenda3"
+  ]
+}

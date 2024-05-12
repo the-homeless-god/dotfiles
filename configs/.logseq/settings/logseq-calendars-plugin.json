@@ -1,0 +1,25 @@
+{
+  "template": "{Start} - {End}: {Title}",
+  "useJSON": false,
+  "IndentCommonBlock": false,
+  "templateLine2": "{Description}",
+  "timeFormat": [
+    "12 hour time",
+    "24 hour time"
+  ],
+  "calendar1Name": "Apple",
+  "calendar1URL": "",
+  "calendar2Name": "",
+  "calendar2URL": "",
+  "calendar3Name": "",
+  "calendar3URL": "",
+  "calendar4Name": "",
+  "calendar4URL": "",
+  "calendar5Name": "",
+  "calendar5URL": "",
+  "disabled": false,
+  "accountsDetails": {
+    "Calendar 1": "",
+    "Apple": ""
+  }
+}

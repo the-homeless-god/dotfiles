@@ -1,0 +1,16 @@
+{:logseq-todo-plugin {:version "v1.21.0", :repo "ahonn/logseq-plugin-todo", :effect true, :theme false}
+ :logseq-tags {:version "v0.1.2", :repo "gidongkwon/logseq-plugin-tags", :effect false, :theme false}
+ :logseq-heatmap {:version "v2.4.3", :repo "pengx17/logseq-plugin-heatmap", :effect true, :theme false}
+ :logseq-agenda {:version "v3.10.3", :repo "haydenull/logseq-plugin-agenda", :effect true, :theme false}
+ :logseq-awesome-ui {:version "v2.4.0", :repo "yoyurec/logseq-awesome-ui", :effect true, :theme false}
+ :logseq-graph-analysis {:version "0.12.0", :repo "trashhalo/logseq-graph-analysis", :effect true, :theme false}
+ :logseq-git {:version "v1.5.5", :repo "haydenull/logseq-plugin-git", :effect true, :theme false}
+ :logseq-journals-calendar {:version "v0.10.10", :repo "xyhp915/logseq-journals-calendar", :effect false, :theme false}
+ :logseq-calendars-plugin {:version "2.2.2", :repo "sawhney17/logseq-calendars-plugin", :effect true, :theme false}
+ :logseq-tabs {:version "v1.19.4", :repo "pengx17/logseq-plugin-tabs", :effect true, :theme false}
+ :logseq-pdf-export-plugin {:version "2.2.10", :repo "sawhney17/logseq-pdf-export", :effect true, :theme false}
+ :logseq-focus-mode {:version "v1.0.4", :repo "sethfair/logseq-focus-mode", :effect false, :theme false}
+ :logseq-copy-code-plugin {:version "v.1.2.0", :repo "vyleung/logseq-copy-code-plugin", :effect true, :theme false}
+ :logseq-file-manager {:version "v1.4.0", :repo "haydenull/logseq-plugin-file-manager", :effect true, :theme false}
+ :logseq-reminder {:version "v0.9.1", :repo "sethyuan/logseq-plugin-reminder", :effect true, :theme false}
+ :logseq-dev-theme {:version "v1.26.17", :repo "pengx17/logseq-dev-theme", :effect false, :theme true}}

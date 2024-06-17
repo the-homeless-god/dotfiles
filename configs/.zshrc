@@ -48,4 +48,6 @@ alias projects='cd $HOME/projects'
 alias downloads='cd $HOME/downloads'
 alias git_sync_master='BRANCH=$(git branch --show-current); git checkout master && git pull && git checkout $BRANCH'
 alias git_squash="git reset $(git merge-base master $(git branch --show-current))"
+alias gcm='git checkout master'
+alias grb='BRANCH=$(git branch --show-current); git checkout master && git branch -D $BRANCH && git fetch --all && git checkout $BRANCH && git pull'
 alias node_sync="nvm use $(cat .nvmrc)"

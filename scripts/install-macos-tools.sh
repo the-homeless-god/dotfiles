@@ -33,6 +33,8 @@ brew install imagemagick
 
 # JFYI: video thumbnails
 brew install ffmpeg
+brew install mpv
+brew install GraphicsMagick
 brew install jstkdng/programs/ueberzugpp
 
 # Install Node Version Manager (NVM)

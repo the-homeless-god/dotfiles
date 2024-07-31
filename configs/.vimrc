@@ -93,7 +93,7 @@ function! s:initVimVariables()
 
 	" File explorer: size of window by default and auto-setup for current directory
 	let g:netrw_keepdir = 0
-	let g:netrw_winsize = 35
+	let g:netrw_winsize = 10
 	let g:netrw_altv = 1
 
 	" Keep the side bar open by default
@@ -127,6 +127,7 @@ endfunction
 
 function! s:initVimHotkeys()
 	" My keymaps
+
 	" [Leader + ot]: open terminal below
 	nnoremap <silent> <Leader>ot :below terminal ++rows=15 ++close<CR>
 	set number!
@@ -156,8 +157,10 @@ function! s:initVimHotkeys()
 	" [Leader + d + a]: open explorer at the working directory
 	nnoremap <Leader>da :Lexplore<CR>
 
+	" [Leader + l + f]: look for a file
 	nmap <leader>lf :FloatermNew lf --command 'set hidden'<CR>
-	nmap <leader>Rg :FloatermNew --width=0.8 --height=0.8 rg<CR> 
+
+	" [Leader + c + f]: clear file
 	nmap <leader>cf gg dG<CR> 
 
 	nnoremap   <silent>   <F7>    :FloatermNew<CR>
@@ -168,6 +171,25 @@ function! s:initVimHotkeys()
 	tnoremap   <silent>   <F9>    <C-\><C-n>:FloatermNext<CR>
 	nnoremap   <silent>   <F12>   :FloatermToggle<CR>
 	tnoremap   <silent>   <F12>   <C-\><C-n>:FloatermToggle<CR
+
+	""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+	"                           PROJECT SPECIFIC VIMRC                           "
+	""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+	if !exists("*LoadProjectVimrc")
+		function! LoadProjectVimrc()
+			let vimrcFile = findfile(".vimrc", ".;")
+
+			if !empty(l:vimrcFile)
+				execute ":so" l:vimrcFile
+				echom "A project specifc vimrc has been loaded."
+			endif
+		endfunction
+	endif
+	autocmd DirChanged * :call LoadProjectVimrc()
+
+	" [Leader + l + v]: load vimrc from current dir
+	nmap <leader>lv :call LoadProjectVimrc()<CR>
 endfunction
 
 
@@ -179,7 +201,6 @@ function! s:showDocumentation()
 	endif
 endfunction
 
-
 call s:initVimVariables()
 call s:initVimStartup()
 call s:initVimHotkeys()
@@ -187,4 +208,3 @@ call s:initVimHotkeys()
 if exists(":AirlineRefresh")
 	:AirlineRefresh
 endif
-

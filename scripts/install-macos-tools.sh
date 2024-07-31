@@ -25,6 +25,16 @@ brew install bat
 brew install duf
 brew install fd
 
+# JFYI: pdf previewer
+brew install gs
+
+# JFYI: svg previewer
+brew install imagemagick
+
+# JFYI: video thumbnails
+brew install ffmpeg
+brew install jstkdng/programs/ueberzugpp
+
 # Install Node Version Manager (NVM)
 brew install nvm
 # Configure NVM (add to your shell profile)

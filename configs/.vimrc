@@ -16,7 +16,13 @@ Plug 'jremmen/vim-ripgrep'
 Plug 'airblade/vim-gitgutter'
 Plug 'fatih/vim-go', { 'do': ':GoUpdateBinaries' }
 Plug 'mg979/vim-visual-multi', {'branch': 'master'}
-Plug 'TabbyML/vim-tabby'
+" Plug 'TabbyML/vim-tabby'
+Plug 'vim-scripts/c.vim' " Syntax highlighting and indentation
+Plug 'mbbill/undotree'
+Plug 'jeetsukumaran/vim-buffergator' " [Leader + b] to list all windows: ctrl + v / t / s = vertical / tab / horizontal
+Plug 'vim-scripts/SpellCheck' " Spell checking
+Plug 'ryanoasis/vim-devicons'
+Plug 'madox2/vim-ai'
 
 call plug#end()
 
@@ -33,18 +39,18 @@ function! s:initVimStartup()
 	"	autocmd VimEnter * command! Rg FloatermNew --width=0.8 --height=0.8 rg
 	" augroup END
 
-        augroup disable_netrw_close
+	augroup disable_netrw_close
 		autocmd!
 		autocmd FileType netrw nnoremap <buffer> <silent> q :echo "Use :Nclose to close Netrw"<CR>
 		autocmd FileType netrw nnoremap <buffer> <silent> x :echo "Use :Nclose to close Netrw"<CR>
-        augroup END
+	augroup END
 
-        if has("gui_running") && (&enc == 'utf-8' || &enc == 'utf-16' || &enc == 'ucs-4')
-                let s:treedepthstring= "O "
-        else
+	if has("gui_running") && (&enc == 'utf-8' || &enc == 'utf-16' || &enc == 'ucs-4')
+		let s:treedepthstring= "O "
+	else
 		let s:treedepthstring= "1 "
 	endif
-	
+
 	" autocmd VimEnter * :Lexplore
 endfunction
 
@@ -62,7 +68,7 @@ function! s:initVimVariables()
 	set hidden
 
 	" Open new buffers on the right side
-        set splitright
+	set splitright
 
 	let g:airline#extensions#tabline#enabled = 1 
 	let g:airline#extensions#tabline#formatter = 'jsformatter'
@@ -123,6 +129,31 @@ function! s:initVimVariables()
 	set fillchars+=vert:\│
 	hi VertSplit ctermfg=Black ctermbg=DarkGray
 	highlight EndOfBuffer ctermfg=282A36 ctermbg=282A36
+
+	" This disables the creation of backup files.
+	set nobackup
+	" This disables the creation of swap files.
+	set noswapfile
+	" Automatically reload files when they change
+	set autoread
+	" Enable spell checking
+	set spell
+	set spelllang=en
+	" Highlight the current line
+	set cursorline
+	" Show white space characters and tab characters
+	set list
+
+	" This enables the use of the mouse in all modes (normal, visual, insert,
+	" command-line, etc.).
+	set mouse=a
+
+	let g:vim_ai_chat = {
+				\  "options": {
+				\    "endpoint_url": "http://localhost:1234/v1/chat/completions",
+				\    "enable_auth": 0,
+				\  },
+				\}
 endfunction
 
 function! s:initVimHotkeys()
@@ -190,15 +221,32 @@ function! s:initVimHotkeys()
 
 	" [Leader + l + v]: load vimrc from current dir
 	nmap <leader>lv :call LoadProjectVimrc()<CR>
-endfunction
 
+	" The next four lines define key mappings for switching between windows using
+	" Ctrl + hjkl keys
+	nmap <silent> <c-k> :wincmd k<CR>
+	nmap <silent> <c-j> :wincmd j<CR>
+	nmap <silent> <c-h> :wincmd h<CR>
+	nmap <silent> <c-l> :wincmd l<CR>
 
-function! s:showDocumentation()
-	if CocAction('hasProvider', 'hover')
-		call CocActionAsync('doHover')
-	else
-		call feedkeys('K', 'in')
-	endif
+	" The next four lines define key mappings for resizing windows using Alt +
+	" hjkl keys:
+	map <a-l> :vertical res -5<CR>
+	map <a-h> :vertical res +5<CR>
+	map <a-j> :res -5<CR>
+	map <a-k> :res +5<CR>
+
+	" These lines define key mappings for moving the cursor 10 spaces at a time
+	" using Shift + arrow keys:
+	nmap <S-l> 10l<CR>
+	nmap <S-h> 10h<CR>
+	nmap <S-j> 10j<CR>
+	nmap <S-k> 10k<CR>
+
+	" This maps the '<' and '>' keys in visual mode to shift the selected text one
+	" shift width to the left or right and reselect the shifted text.
+	vnoremap < <gv
+	vnoremap > >gv
 endfunction
 
 call s:initVimVariables()

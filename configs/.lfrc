@@ -1,0 +1,8 @@
+set previewer lf-previewer
+set cleaner lf-cleaner
+
+map x quitcd
+cmd quitcd ${{
+	echo "1" > "$LF_TEMPDIR"/cdtolastdir
+	lf -remote "send $id quit"
+}}

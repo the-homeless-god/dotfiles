@@ -63,6 +63,7 @@ brew install neofetch
 # Install LM Studio
 wget https://releases.lmstudio.ai/mac/arm64/0.2.29/latest/LM-Studio-0.2.29-arm64.dmg
 ~/.cache/lm-studio/bin/lms bootstrap
+python3.11 -m pip install open-interpreter
 
 
 # Optional: Copy your configuration files (e.g., .zshrc, .tmux.conf, .alacritty.toml, etc.) to the appropriate locations

@@ -16,13 +16,18 @@ Plug 'jremmen/vim-ripgrep'
 Plug 'airblade/vim-gitgutter'
 Plug 'fatih/vim-go', { 'do': ':GoUpdateBinaries' }
 Plug 'mg979/vim-visual-multi', {'branch': 'master'}
-" Plug 'TabbyML/vim-tabby'
 Plug 'vim-scripts/c.vim' " Syntax highlighting and indentation
 Plug 'mbbill/undotree'
 Plug 'jeetsukumaran/vim-buffergator' " [Leader + b] to list all windows: ctrl + v / t / s = vertical / tab / horizontal
 Plug 'vim-scripts/SpellCheck' " Spell checking
 Plug 'ryanoasis/vim-devicons'
-Plug 'madox2/vim-ai'
+Plug 'prabirshrestha/asyncomplete.vim'
+Plug 'keremc/asyncomplete-clang.vim'
+Plug 'prabirshrestha/async.vim'
+Plug 'junegunn/goyo.vim'
+Plug 'dense-analysis/ale'
+Plug 'sheerun/vim-polyglot'
+
 
 call plug#end()
 
@@ -39,6 +44,8 @@ function! s:initVimStartup()
 	"	autocmd VimEnter * command! Rg FloatermNew --width=0.8 --height=0.8 rg
 	" augroup END
 
+	autocmd User asyncomplete_setup call asyncomplete#register_source(
+				\ asyncomplete#sources#clang#get_source_options())
 	augroup disable_netrw_close
 		autocmd!
 		autocmd FileType netrw nnoremap <buffer> <silent> q :echo "Use :Nclose to close Netrw"<CR>
@@ -60,9 +67,6 @@ function! s:initVimVariables()
 	set termwinsize = "10*0"
 	let g:terminal_default_height = 10
 
-	" Setup Tabby
-	let g:tabby_trigger_mode = 'manual'
-	let g:tabby_keybinding_accept = '<Tab>'
 
 	" Always show an empty buffer when a file is closed
 	set hidden
@@ -105,7 +109,6 @@ function! s:initVimVariables()
 	" Keep the side bar open by default
 	let g:netrw_banner = 0
 	let g:netrw_browse_split = 2 
-	let g:netrw_altv = 1
 	let g:netrw_winsize = 25
 	let g:netrw_liststyle = 3
 
@@ -148,12 +151,11 @@ function! s:initVimVariables()
 	" command-line, etc.).
 	set mouse=a
 
-	let g:vim_ai_chat = {
-				\  "options": {
-				\    "endpoint_url": "http://localhost:1234/v1/chat/completions",
-				\    "enable_auth": 0,
-				\  },
-				\}
+	let g:ale_linters = {'c': ['clang', 'cppcheck']}
+	let g:ale_fixers = {'c': ['uncrustify', 'clang-format']}
+	let g:ale_fixers_always_run = 1
+	let g:ale_fixers_on_save = 1
+	let g:ale_sign_priority = 50
 endfunction
 
 function! s:initVimHotkeys()
@@ -203,25 +205,6 @@ function! s:initVimHotkeys()
 	nnoremap   <silent>   <F12>   :FloatermToggle<CR>
 	tnoremap   <silent>   <F12>   <C-\><C-n>:FloatermToggle<CR
 
-	""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-	"                           PROJECT SPECIFIC VIMRC                           "
-	""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-
-	if !exists("*LoadProjectVimrc")
-		function! LoadProjectVimrc()
-			let vimrcFile = findfile(".vimrc", ".;")
-
-			if !empty(l:vimrcFile)
-				execute ":so" l:vimrcFile
-				echom "A project specifc vimrc has been loaded."
-			endif
-		endfunction
-	endif
-	autocmd DirChanged * :call LoadProjectVimrc()
-
-	" [Leader + l + v]: load vimrc from current dir
-	nmap <leader>lv :call LoadProjectVimrc()<CR>
-
 	" The next four lines define key mappings for switching between windows using
 	" Ctrl + hjkl keys
 	nmap <silent> <c-k> :wincmd k<CR>
@@ -247,6 +230,10 @@ function! s:initVimHotkeys()
 	" shift width to the left or right and reselect the shifted text.
 	vnoremap < <gv
 	vnoremap > >gv
+
+	inoremap <expr> <Tab>   pumvisible() ? "\<C-n>" : "\<Tab>"
+	inoremap <expr> <S-Tab> pumvisible() ? "\<C-p>" : "\<S-Tab>"
+	inoremap <expr> <cr>    pumvisible() ? asyncomplete#close_popup() : "\<cr>"
 endfunction
 
 call s:initVimVariables()

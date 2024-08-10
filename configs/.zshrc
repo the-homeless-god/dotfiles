@@ -25,7 +25,7 @@ plugins=(
 source $ZSH/oh-my-zsh.sh
 
 # Custom aliases
-alias ls='exa -a --icons --color=always --group-directories-first -la'
+alias ls='eza -a --icons --color=always --group-directories-first -la'
 alias cat='bat --theme=Dracula'
 alias du='dust'
 alias df='duf'
@@ -61,7 +61,7 @@ source $(brew --prefix nvm)/nvm.sh
 alias projects='cd $HOME/projects'
 alias downloads='cd $HOME/downloads'
 alias git_sync_master='BRANCH=$(git branch --show-current); git checkout master && git pull && git checkout $BRANCH'
-alias git_squash="git reset $(git merge-base master $(git branch --show-current))"
+alias git_squash='git reset $(git merge-base master $(git branch --show-current))'
 alias gcm='git checkout master'
 alias grb='BRANCH=$(git branch --show-current); git checkout master && git branch -D $BRANCH && git fetch --all && git checkout $BRANCH && git pull'
 alias node_sync="nvm use $(cat .nvmrc)"
@@ -83,15 +83,8 @@ export PATH="/opt/homebrew/opt/icu4c/bin:$PATH"
 export PATH="/opt/homebrew/opt/icu4c/sbin:$PATH"
 export PATH="/opt/homebrew/opt/php@7.4/bin:$PATH"
 export PATH="/opt/homebrew/opt/php@7.4/sbin:$PATH"
+export PATH="/Users/developer/dotfiles/scripts/lf:$PATH"
 
-# zshrc or bashrc
-lf () {
-LF_TEMPDIR="$(mktemp -d -t lf-tempdir-XXXXXX)"
-LF_TEMPDIR="$LF_TEMPDIR" lf-run -last-dir-path="$LF_TEMPDIR/lastdir" "$@"
-if [ "$(cat "$LF_TEMPDIR/cdtolastdir" 2>/dev/null)" = "1" ]; then
-cd "$(cat "$LF_TEMPDIR/lastdir")"
-fi
-rm -r "$LF_TEMPDIR"
-unset LF_TEMPDIR
-}
+# Added by LM Studio CLI tool (lms)
+export PATH="$PATH:/Users/developer/.cache/lm-studio/bin"
 

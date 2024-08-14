@@ -29,24 +29,26 @@ Plug 'dense-analysis/ale'
 Plug 'sheerun/vim-polyglot'
 
 
+
 call plug#end()
 
 function! s:initVimStartup()
 	" VIM STARTUP: exec functions on start of vim
 	" 1. initiate update of plugins on each start
-	" 2. initiate autostart of Coc plugins
-	" 3. Highlight the symbol and its references when holding the cursor
+	" 2. Highlight the symbol and its references when holding the cursor
 	" autocmd VimEnter * silent! FloatermNew --width=0.8 --height=0.8 vim +PlugUpdate +qall
+	" autocmd VimEnter * :Lexplore
 
+		autocmd VimEnter * :vnew
 	" Open terminal by default at bottom
-	" augroup term_open
-	"	autocmd VimEnter * :below terminal ++rows=15 ++close 
-	"	autocmd VimEnter * command! Rg FloatermNew --width=0.8 --height=0.8 rg
-	" augroup END
+	 augroup term_open
+		autocmd VimEnter * :below terminal ++rows=10 ++close 
+		autocmd VimEnter * command! Rg FloatermNew --width=0.8 --height=0.8 rg
+	 augroup END
 
 	autocmd User asyncomplete_setup call asyncomplete#register_source(
 				\ asyncomplete#sources#clang#get_source_options())
-	augroup disable_netrw_close
+augroup disable_netrw_close
 		autocmd!
 		autocmd FileType netrw nnoremap <buffer> <silent> q :echo "Use :Nclose to close Netrw"<CR>
 		autocmd FileType netrw nnoremap <buffer> <silent> x :echo "Use :Nclose to close Netrw"<CR>
@@ -58,7 +60,6 @@ function! s:initVimStartup()
 		let s:treedepthstring= "1 "
 	endif
 
-	" autocmd VimEnter * :Lexplore
 endfunction
 
 function! s:initVimVariables()
@@ -109,7 +110,6 @@ function! s:initVimVariables()
 	" Keep the side bar open by default
 	let g:netrw_banner = 0
 	let g:netrw_browse_split = 2 
-	let g:netrw_winsize = 25
 	let g:netrw_liststyle = 3
 
 	let g:netrw_banner = 0 | autocmd FileType netrw setlocal bufhidden=hide
@@ -170,7 +170,8 @@ function! s:initVimHotkeys()
 	nmap <silent> <Leader>h :split<CR>
 	nmap <silent> <Leader>w :w<CR>
 	nmap <silent> <Leader>x :x<CR>
-
+	nmap <silent> <Leader>q :qa<CR>
+  nmap <silent> <Leader><F2> :map<CR>
 	":remote-send("<ESC>:call remote_startserver('some_name')<CR>")
 
 	" [Leader + rg]: opens ripgrep + fzf
@@ -193,8 +194,12 @@ function! s:initVimHotkeys()
 	" [Leader + l + f]: look for a file
 	nmap <leader>lf :FloatermNew lf --command 'set hidden'<CR>
 
+	" [Leader + r]: reload vimrc 
+	nmap <leader>r :so ~/.vimrc<CR>
+
 	" [Leader + c + f]: clear file
 	nmap <leader>cf gg dG<CR> 
+	nmap <leader>nt :tabnew<CR> 
 
 	nnoremap   <silent>   <F7>    :FloatermNew<CR>
 	tnoremap   <silent>   <F7>    <C-\><C-n>:FloatermNew<CR>
@@ -234,6 +239,17 @@ function! s:initVimHotkeys()
 	inoremap <expr> <Tab>   pumvisible() ? "\<C-n>" : "\<Tab>"
 	inoremap <expr> <S-Tab> pumvisible() ? "\<C-p>" : "\<S-Tab>"
 	inoremap <expr> <cr>    pumvisible() ? asyncomplete#close_popup() : "\<cr>"
+	" Go to tab by number
+noremap <leader>1 1gt
+noremap <leader>2 2gt
+noremap <leader>3 3gt
+noremap <leader>4 4gt
+noremap <leader>5 5gt
+noremap <leader>6 6gt
+noremap <leader>7 7gt
+noremap <leader>8 8gt
+noremap <leader>9 9gt
+noremap <leader>0 :tablast<cr>
 endfunction
 
 call s:initVimVariables()

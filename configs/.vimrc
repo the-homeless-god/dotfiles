@@ -37,14 +37,6 @@ function! s:initVimStartup()
 	" 1. initiate update of plugins on each start
 	" 2. Highlight the symbol and its references when holding the cursor
 	" autocmd VimEnter * silent! FloatermNew --width=0.8 --height=0.8 vim +PlugUpdate +qall
-	" autocmd VimEnter * :Lexplore
-
-		autocmd VimEnter * :vnew
-	" Open terminal by default at bottom
-	 augroup term_open
-		autocmd VimEnter * :below terminal ++rows=10 ++close 
-		autocmd VimEnter * command! Rg FloatermNew --width=0.8 --height=0.8 rg
-	 augroup END
 
 	autocmd User asyncomplete_setup call asyncomplete#register_source(
 				\ asyncomplete#sources#clang#get_source_options())
@@ -104,7 +96,7 @@ function! s:initVimVariables()
 
 	" File explorer: size of window by default and auto-setup for current directory
 	let g:netrw_keepdir = 0
-	let g:netrw_winsize = 10
+	let g:netrw_winsize = 50
 	let g:netrw_altv = 1
 
 	" Keep the side bar open by default
@@ -114,6 +106,8 @@ function! s:initVimVariables()
 
 	let g:netrw_banner = 0 | autocmd FileType netrw setlocal bufhidden=hide
 	let g:netrw_altv=1
+	let g:netrw_list_hide='.*\.swp$'
+
 
 	" status line:
 	set titlestring="File: " + statusline + %F
@@ -172,6 +166,7 @@ function! s:initVimHotkeys()
 	nmap <silent> <Leader>x :x<CR>
 	nmap <silent> <Leader>q :qa<CR>
   nmap <silent> <Leader><F2> :map<CR>
+  nmap <silent> <Leader>. <C-x><C-f><CR>
 	":remote-send("<ESC>:call remote_startserver('some_name')<CR>")
 
 	" [Leader + rg]: opens ripgrep + fzf
@@ -200,7 +195,7 @@ function! s:initVimHotkeys()
 	" [Leader + c + f]: clear file
 	nmap <leader>cf gg dG<CR> 
 	nmap <leader>nt :tabnew<CR> 
-
+  nmap <leader>mt :tab split<CR>
 	nnoremap   <silent>   <F7>    :FloatermNew<CR>
 	tnoremap   <silent>   <F7>    <C-\><C-n>:FloatermNew<CR>
 	nnoremap   <silent>   <F8>    :FloatermPrev<CR>
@@ -250,6 +245,13 @@ noremap <leader>7 7gt
 noremap <leader>8 8gt
 noremap <leader>9 9gt
 noremap <leader>0 :tablast<cr>
+
+map gb :bnext<cr>
+map gbp :bprevious<cr>
+map gbd :bdelete<cr>
+map gtn :tabnext<cr>
+map gtp :tabprevious<cr>
+map gtd :tabdelete<cr>
 endfunction
 
 call s:initVimVariables()

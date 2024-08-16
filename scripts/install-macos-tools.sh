@@ -5,7 +5,8 @@
 
 # Install Git and useful utilities
 brew install git
-brew install exa
+brew install eza
+brew install --cask db-browser-for-sqlite
 brew install ripgrep
 brew install procs
 brew install gping

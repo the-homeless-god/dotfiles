@@ -13,4 +13,10 @@
  :logseq-copy-code-plugin {:version "v.1.2.0", :repo "vyleung/logseq-copy-code-plugin", :effect true, :theme false}
  :logseq-file-manager {:version "v1.4.0", :repo "haydenull/logseq-plugin-file-manager", :effect true, :theme false}
  :logseq-reminder {:version "v0.9.1", :repo "sethyuan/logseq-plugin-reminder", :effect true, :theme false}
- :logseq-dev-theme {:version "v1.26.17", :repo "pengx17/logseq-dev-theme", :effect false, :theme true}}
+ :logseq-dev-theme {:version "v1.26.17", :repo "pengx17/logseq-dev-theme", :effect false, :theme true}
+ :logseq-bionic-speedreader {:version "1.0.1", :repo "sawhney17/logseq-bionic-speedreader", :effect true, :theme false}
+ :logseq-quick-capture {:version "0.0.7", :repo "tankcool/logseq-quick-capture", :effect false, :theme false}
+ :logseq-datetag-plugin {:version "1.03", :repo "sawhney17/logseq-datetag-plugin", :effect false, :theme false}
+ :logseq-trackhabits2-plugin {:version "v2.0.5", :repo "hkgnp/logseq-trackhabits2-plugin", :effect false, :theme false}
+ :logseq-dictionary {:version "0.0.2", :repo "trashhalo/logseq-dictionary", :effect false, :theme false}
+ :logseq-go-home-now {:version "1.0.7", :repo "sawhney17/logseq-go-now", :effect true, :theme false}}

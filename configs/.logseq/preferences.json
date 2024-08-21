@@ -1,7 +1,7 @@
 {
   "theme": {
     "name": "Dev theme",
-    "url": "~/.logseq/plugins/logseq-dev-theme/custom.css",
+    "url": "assets:///Users/developer/.logseq/plugins/logseq-dev-theme/custom.css",
     "pid": "logseq-dev-theme"
   },
   "themes": {

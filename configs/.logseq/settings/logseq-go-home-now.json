@@ -1,0 +1,7 @@
+{
+  "keyboardShortcut": "mod+g",
+  "enterEditingMode": "scroll",
+  "customTimeout": 300,
+  "useAlternateDateParser": false,
+  "disabled": false
+}

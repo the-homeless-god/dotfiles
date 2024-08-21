@@ -10,7 +10,6 @@ mv ~/.gitconfig $DOTFILES_BACKUP_PATH
 mv ~/.editorconfig $DOTFILES_BACKUP_PATH
 mv ~/.alacritty.toml $DOTFILES_BACKUP_PATH
 mv ~/.vscode $DOTFILES_BACKUP_PATH
-mv ~/.logseq $DOTFILES_BACKUP_PATH
 mv ~/wallpaper.jpeg $DOTFILES_BACKUP_PATH
 mv ~/.tmux.conf $DOTFILES_BACKUP_PATH
 mv ~/.lfrc $DOTFILES_BACKUP_PATH
@@ -38,7 +37,6 @@ cp ../configs/tmux.sh $DOTFILES_BACKUP_PATH
 cp ../configs/wallpaper.jpeg $DOTFILES_BACKUP_PATH
 
 cp -r ../.vscode $DOTFILES_BACKUP_PATH
-cp -r ../.logseq $DOTFILES_BACKUP_PATH
 
 cp -r ../configs/.config/lf ~/.config/lf
 cp -r ../configs/.config/vifm ~/.config/vifm

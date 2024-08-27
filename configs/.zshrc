@@ -7,7 +7,8 @@ if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]
   source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
 fi
 
-export ZSH="/Users/developer/.oh-my-zsh"
+export USER_HOME_DIR = "/Users/developer"
+export ZSH="$USER_HOME_DIR/.oh-my-zsh"
 export PATH="$PATH:/root/.cargo/bin"
 export VIM_SERVERNAME="God"
 
@@ -37,9 +38,14 @@ alias f='floaterm'
 alias docker='podman'
 alias docker-compose='podman-compose'
 alias dev='sh ~/tmux.sh'
+
+# Example: sudo devbsd /dev/disk0s1
+function devbsd () {
+  qemu-system-x86_64 -drive file=$1,format=raw,if=virtio -hda $USER_HOME_DIR/Downloads/NetBSD-10.0-amd64.iso -m $2
+}
+
 alias projects='cd ~/projects'
 
-alias nvm-node='nvm use $(cat .nvmrc)'
 alias downloads='cd ~/downloads'
 alias space='du / -h --max-depth=1 | sort -hr'
 alias python3='python3.11'
@@ -69,4 +75,4 @@ alias convert_video_to_ps5_supported_format=" ffmpeg -i "$file" -vf "scale='if(g
 
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 
-export PATH="/Users/developer/dotfiles/scripts/lf:$PATH"
+export PATH="$USER_HOME_DIR/dotfiles/scripts/lf:$PATH"

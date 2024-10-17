@@ -76,3 +76,4 @@ alias convert_video_to_ps5_supported_format=" ffmpeg -i "$file" -vf "scale='if(g
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 
 export PATH="$USER_HOME_DIR/dotfiles/scripts/lf:$PATH"
+export PATH="$PATH:/Users/thg/.dotnet/tools"

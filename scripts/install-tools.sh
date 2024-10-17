@@ -106,4 +106,11 @@ git clone --depth=1 https://github.com/romkatv/powerlevel10k.git ${ZSH_CUSTOM:-$
 curl -fLo ~/.vim/autoload/plug.vim --create-dirs \
     https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
 
+# Install C#
+brew install --cask dotnet-sdk
+
+# Install C# language server for Vim's support
+dotnet tool install --global csharp-ls
+
+
 echo "Installation complete. Don't forget to configure your dotfiles and development environment!"

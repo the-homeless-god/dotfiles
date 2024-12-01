@@ -12,6 +12,7 @@ brew install procs
 brew install gping
 brew install mcfly
 brew install git-delta
+brew install wget
 
 # Install podman and related tools
 brew install podman
@@ -105,6 +106,13 @@ git clone --depth=1 https://github.com/romkatv/powerlevel10k.git ${ZSH_CUSTOM:-$
 # Install Vim plugin manager
 curl -fLo ~/.vim/autoload/plug.vim --create-dirs \
     https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+
+# Install tiling window manager for Vim
+mkdir -p ~/.vim/plugin ~/.vim/doc; \
+wget -qO ~/.vim/plugin/dwm.vim \
+    https://raw.github.com/spolu/dwm.vim/master/plugin/dwm.vim; \
+wget -qO ~/.vim/doc/dwm.txt \
+    https://raw.github.com/spolu/dwm.vim/master/doc/dwm.txt;
 
 # Install C#
 brew install --cask dotnet-sdk

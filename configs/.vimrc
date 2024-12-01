@@ -153,6 +153,9 @@ function! s:initVimVariables()
 	" command-line, etc.).
 	set mouse=a
 
+	" This enabled to resize buffers using mouse
+	set ttymouse=xterm2
+
 	let g:ale_linters = {'c': ['clang', 'cppcheck']}
 	let g:ale_fixers = {'c': ['uncrustify', 'clang-format']}
 	let g:ale_fixers_always_run = 1

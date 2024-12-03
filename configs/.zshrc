@@ -12,6 +12,8 @@ export ZSH="$USER_HOME_DIR/.oh-my-zsh"
 export PATH="$PATH:/root/.cargo/bin"
 export VIM_SERVERNAME="God"
 
+export NODE_PATH=$NODE_PATH:`npm root -g`
+
 # Powerlevel10k Theme
 ZSH_THEME="powerlevel10k/powerlevel10k"
 
@@ -38,14 +40,7 @@ alias f='floaterm'
 alias docker='podman'
 alias docker-compose='podman-compose'
 alias dev='sh ~/tmux.sh'
-
-# Example: sudo devbsd /dev/disk0s1
-function devbsd () {
-  qemu-system-x86_64 -drive file=$1,format=raw,if=virtio -hda $USER_HOME_DIR/Downloads/NetBSD-10.0-amd64.iso -m $2
-}
-
 alias projects='cd ~/projects'
-
 alias downloads='cd ~/downloads'
 alias space='du / -h --max-depth=1 | sort -hr'
 alias python3='python3.11'
@@ -73,7 +68,27 @@ alias grb='BRANCH=$(git branch --show-current); git checkout master && git branc
 alias node_sync='nvm use $(cat .nvmrc)'
 alias convert_video_to_ps5_supported_format=" ffmpeg -i "$file" -vf "scale='if(gt(a,3840/2160),min(iw,3840),iw)':'if(gt(a,3840/2160),min(ih,2160),ih)'" -pix_fmt yuv420p -c:v libx264 -preset slow -profile:v high -level 5.2 -crf 20 -c:a aac -b:a 192k -movflags +faststart "converted/${file%.*}_ps5.mp4"; done"
 
+function devbsd () {
+	qemu-system-x86_64 -drive file=$1,format=raw,if=virtio -hda $USER_HOME_DIR/Downloads/NetBSD-10.0-amd64.iso -m $2
+}
+
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 
+export PATH="/opt/homebrew/opt/texinfo/bin:$PATH"
+PATH="/opt/homebrew/opt/make/libexec/gnubin:$PATH"
+PATH="/$USER_HOME_DIR/.local/share/bob/nvim-bin:$PATH"
+
+# Add RVM to PATH for scripting. Make sure this is the last PATH variable change.
+export PATH="$PATH:$HOME/.rvm/bin"
+
+export PATH="/opt/homebrew/opt/conan@1/bin:$PATH"
+export PATH="/opt/homebrew/opt/openjdk/bin:$PATH"
+export PATH="/opt/homebrew/opt/icu4c/bin:$PATH"
+export PATH="/opt/homebrew/opt/icu4c/sbin:$PATH"
+export PATH="/opt/homebrew/opt/php@7.4/bin:$PATH"
+export PATH="/opt/homebrew/opt/php@7.4/sbin:$PATH"
 export PATH="$USER_HOME_DIR/dotfiles/scripts/lf:$PATH"
-export PATH="$PATH:/Users/thg/.dotnet/tools"
+export PATH="$USER_HOME_DIR/dotfiles/scripts/customs:$PATH"
+
+# Added by LM Studio CLI Tool (lms)
+export PATH="$PATH:$USER_HOME_DIR/.cache/lm-studio/bin"

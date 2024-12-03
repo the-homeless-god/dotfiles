@@ -4,6 +4,7 @@ filetype plugin on
 call plug#begin()
 
 " plugins:
+Plug 'tpope/vim-fugitive'
 Plug 'vim-airline/vim-airline'
 Plug 'pangloss/vim-javascript'    " JavaScript support
 Plug 'leafgarland/typescript-vim' " TypeScript syntax
@@ -61,6 +62,8 @@ augroup disable_netrw_close
 	endif
 
 endfunction
+
+
 
 function! s:initVimVariables()
 	" VIM VARIABLES: set variables on start of vim  
@@ -123,7 +126,7 @@ function! s:initVimVariables()
 	" tabline: 
 	set tabline=2
 
-	" themes (dracula pro):
+  themes (dracula pro):
 	packadd! dracula_pro
 
 	syntax enable
@@ -153,6 +156,7 @@ function! s:initVimVariables()
 	" command-line, etc.).
 	set mouse=a
 
+
 	" This enabled to resize buffers using mouse
 	set ttymouse=xterm2
 
@@ -161,6 +165,8 @@ function! s:initVimVariables()
 	let g:ale_fixers_always_run = 1
 	let g:ale_fixers_on_save = 1
 	let g:ale_sign_priority = 50
+	
+
 endfunction
 
 function! s:initVimHotkeys()
@@ -180,15 +186,16 @@ function! s:initVimHotkeys()
   nmap <silent> <Leader>. <C-x><C-f><CR>
 	":remote-send("<ESC>:call remote_startserver('some_name')<CR>")
 
-	" [Leader + rg]: opens ripgrep + fzf
-	nmap <leader>rg :FloatermNew --width=0.8 --height=0.8 rg<CR>
+	" [Leader + g]: opens ripgrep + fzf
+	nmap <leader>g :FloatermNew --width=0.8 --height=0.8 rgfzf.sh<CR>
 
 	" [Leader + f]: format whole file
-	nnoremap <leader>f :Format<CR>
+	nnoremap <leader>f :Prettier<CR>
 
 	" [Leader + c + a]: copy content of whole file
 	nnoremap <leader>ca :%y+<CR>
 
+	vnoremap <leader>c "+y<CR>
 	" [K]: to show documentation in preview window
 	nnoremap <silent> K :call ShowDocumentation()<CR>
 

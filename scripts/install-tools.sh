@@ -28,6 +28,8 @@ brew install bat
 brew install duf
 brew install fd
 
+brew install vifm
+brew install vifmimg
 # JFYI: pdf previewer
 brew install gs
 

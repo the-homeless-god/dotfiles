@@ -4,13 +4,18 @@ filetype plugin on
 call plug#begin()
 
 " plugins:
+
+Plug 'tpope/vim-obsession'
+Plug 'dhruvasagar/vim-prosession'
+Plug 'ptzz/lf.vim'
+Plug 'tmux-plugins/vim-tmux'
 Plug 'tpope/vim-fugitive'
 Plug 'vim-airline/vim-airline'
 Plug 'pangloss/vim-javascript'    " JavaScript support
 Plug 'leafgarland/typescript-vim' " TypeScript syntax
 Plug 'maxmellon/vim-jsx-pretty'   " JS and JSX syntax
 Plug 'jparise/vim-graphql'        " GraphQL syntax
-Plug 'prettier/vim-prettier', { 'do': 'npm ci' }
+Plug 'prettier/vim-prettier'
 Plug 'rhysd/vim-healthcheck'
 Plug 'voldikss/vim-floaterm'
 Plug 'jremmen/vim-ripgrep'
@@ -78,6 +83,7 @@ function! s:initVimVariables()
 	" Open new buffers on the right side
 	set splitright
 
+	let g:airline#extensions#obsession#enabled = 1
 	let g:airline#extensions#tabline#enabled = 1 
 	let g:airline#extensions#tabline#formatter = 'jsformatter'
 	let g:airline#extensions#branch#enabled = 1
@@ -118,7 +124,8 @@ function! s:initVimVariables()
 	let g:netrw_banner = 0 | autocmd FileType netrw setlocal bufhidden=hide
 	let g:netrw_altv=1
 	let g:netrw_list_hide='.*\.swp$'
-
+	let g:NERDTreeHijackNetrw = 0 " Add this line if you use NERDTree
+	let g:lf_replace_netrw = 1 " Open lf when vim opens a directory
 
 	" status line:
 	set titlestring="File: " + statusline + %F
@@ -126,7 +133,7 @@ function! s:initVimVariables()
 	" tabline: 
 	set tabline=2
 
-  themes (dracula pro):
+    themes (dracula pro):
 	packadd! dracula_pro
 
 	syntax enable

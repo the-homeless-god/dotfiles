@@ -13,6 +13,7 @@ brew install gping
 brew install mcfly
 brew install git-delta
 brew install wget
+brew install zoxide
 
 # Install podman and related tools
 brew install podman
@@ -87,6 +88,7 @@ brew install w3m
 brew install --cask qutebrowser
 brew install --cask insomnia
 brew install neofetch
+brew install tree
 
 # Install LM Studio
 wget https://releases.lmstudio.ai/mac/arm64/0.2.29/latest/LM-Studio-0.2.29-arm64.dmg

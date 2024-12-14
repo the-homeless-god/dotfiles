@@ -1,3 +1,4 @@
+
 packloadall
 filetype plugin on
 
@@ -50,11 +51,12 @@ function! s:initVimStartup()
 	" VIM STARTUP: exec functions on start of vim
 	" 1. initiate update of plugins on each start
 	" 2. Highlight the symbol and its references when holding the cursor
-	" autocmd VimEnter * silent! FloatermNew --width=0.8 --height=0.8 vim +PlugUpdate +qall
+	autocmd VimEnter * silent! 
 
 	autocmd User asyncomplete_setup call asyncomplete#register_source(
 				\ asyncomplete#sources#clang#get_source_options())
-augroup disable_netrw_close
+
+  augroup disable_netrw_close
 		autocmd!
 		autocmd FileType netrw nnoremap <buffer> <silent> q :echo "Use :Nclose to close Netrw"<CR>
 		autocmd FileType netrw nnoremap <buffer> <silent> x :echo "Use :Nclose to close Netrw"<CR>
@@ -65,10 +67,7 @@ augroup disable_netrw_close
 	else
 		let s:treedepthstring= "1 "
 	endif
-
 endfunction
-
-
 
 function! s:initVimVariables()
 	" VIM VARIABLES: set variables on start of vim  
@@ -113,7 +112,7 @@ function! s:initVimVariables()
 
 	" File explorer: size of window by default and auto-setup for current directory
 	let g:netrw_keepdir = 0
-	let g:netrw_winsize = 50
+	let g:netrw_winsize = 15
 	let g:netrw_altv = 1
 
 	" Keep the side bar open by default
@@ -133,14 +132,16 @@ function! s:initVimVariables()
 	" tabline: 
 	set tabline=2
 
-    themes (dracula pro):
-	packadd! dracula_pro
+    if v:version < 802
+      packadd! dracula_pro
+  	endif
 
 	syntax enable
 
-	let g:dracula_colorterm = 0
+	let g:dracula_colorterm = 0 
 
 	colorscheme dracula_pro
+
 	set fillchars+=vert:\│
 	hi VertSplit ctermfg=Black ctermbg=DarkGray
 	highlight EndOfBuffer ctermfg=282A36 ctermbg=282A36
@@ -152,7 +153,6 @@ function! s:initVimVariables()
 	" Automatically reload files when they change
 	set autoread
 	" Enable spell checking
-	set spell
 	set spelllang=en
 	" Highlight the current line
 	set cursorline
@@ -167,13 +167,33 @@ function! s:initVimVariables()
 	" This enabled to resize buffers using mouse
 	set ttymouse=xterm2
 
+	" Add folding: za, zc, zo
+	set foldmethod=indent   
+	set foldnestmax=10
+	set nofoldenable
+	set foldlevel=2
+  set paste
+
 	let g:ale_linters = {'c': ['clang', 'cppcheck']}
 	let g:ale_fixers = {'c': ['uncrustify', 'clang-format']}
 	let g:ale_fixers_always_run = 1
 	let g:ale_fixers_on_save = 1
 	let g:ale_sign_priority = 50
-	
 
+	if has("termguicolors")
+		  set termguicolors
+	endif
+
+	set number!
+	set signcolumn=yes
+	
+	"Ultisnips Settings
+  let g:UltiSnipsExpandTrigger="<tab>"
+  let g:UltiSnipsJumpForwardTrigger="<c-b>"
+  let g:UltiSnipsJumpBackwardTrigger="<c-z>"
+
+	" If you want :UltiSnipsEdit to split your window.
+	let g:UltiSnipsEditSplit="vertical"
 endfunction
 
 function! s:initVimHotkeys()
@@ -181,9 +201,7 @@ function! s:initVimHotkeys()
 
 	" [Leader + ot]: open terminal below
 	nnoremap <silent> <Leader>ot :below terminal ++rows=15 ++close<CR>
-	set number!
-	set signcolumn=yes
-
+	nnoremap <silent> <Leader>u :FloatermNew --width=0.8 --height=0.8 vim +PlugUpdate +qall<CR>
 	nmap <silent> <Leader>v :vsplit<CR>
 	nmap <silent> <Leader>h :split<CR>
 	nmap <silent> <Leader>w :w<CR>
@@ -259,24 +277,50 @@ function! s:initVimHotkeys()
 	inoremap <expr> <Tab>   pumvisible() ? "\<C-n>" : "\<Tab>"
 	inoremap <expr> <S-Tab> pumvisible() ? "\<C-p>" : "\<S-Tab>"
 	inoremap <expr> <cr>    pumvisible() ? asyncomplete#close_popup() : "\<cr>"
+	
 	" Go to tab by number
-noremap <leader>1 1gt
-noremap <leader>2 2gt
-noremap <leader>3 3gt
-noremap <leader>4 4gt
-noremap <leader>5 5gt
-noremap <leader>6 6gt
-noremap <leader>7 7gt
-noremap <leader>8 8gt
-noremap <leader>9 9gt
-noremap <leader>0 :tablast<cr>
+  	noremap <leader>1 1gt
+  	noremap <leader>2 2gt
+  	noremap <leader>3 3gt
+  	noremap <leader>4 4gt
+  	noremap <leader>5 5gt
+  	noremap <leader>6 6gt
+  	noremap <leader>7 7gt
+  	noremap <leader>8 8gt
+  	noremap <leader>9 9gt
+  	noremap <leader>0 :tablast<cr>
 
-map gb :bnext<cr>
-map gbp :bprevious<cr>
-map gbd :bdelete<cr>
-map gtn :tabnext<cr>
-map gtp :tabprevious<cr>
-map gtd :tabdelete<cr>
+	" Add folding by Space
+  	vnoremap <space> @=((foldclosed(line('.')) < 0) ? 'zc' : 'zo')<CR>
+
+  	map gb :bnext<cr>
+  	map gbp :bprevious<cr>
+  	map gbd :bdelete<cr>
+  	map gtn :tabnext<cr>
+  	map gtp :tabprevious<cr>
+  	map gtd :tabdelete<cr>
+
+
+	" Make <CR> to accept selected completion item or notify coc.nvim to format
+	" <C-g>u breaks current undo, please make your own choice.
+	inoremap <silent><expr> <CR> coc#pum#visible() ? coc#pum#confirm()
+									\: "\<C-g>u\<CR>\<c-r>=coc#on_enter()\<CR>"
+
+	"CoC Settings
+	" Use tab for trigger completion with characters ahead and navigate.
+	" NOTE: Use command ':verbose imap <tab>' to make sure tab is not mapped by
+	" other plugin before putting this into your config.
+	inoremap <silent><expr> <TAB>
+	      \ pumvisible() ? "\<C-n>" :
+	      \ <SID>check_back_space() ? "\<TAB>" :
+	      \ coc#refresh()
+	inoremap <expr><S-TAB> pumvisible() ? "\<C-p>" : "\<C-h>"	
+
+	function! s:check_back_space() abort
+	  let col = col('.') - 1
+	  return !col || getline('.')[col - 1]  =~# '\s'
+	endfunction
+
 endfunction
 
 call s:initVimVariables()
@@ -286,30 +330,3 @@ call s:initVimHotkeys()
 if exists(":AirlineRefresh")
 	:AirlineRefresh
 endif
-
-"CoC Settings
-" Use tab for trigger completion with characters ahead and navigate.
-" NOTE: Use command ':verbose imap <tab>' to make sure tab is not mapped by
-" other plugin before putting this into your config.
-inoremap <silent><expr> <TAB>
-      \ pumvisible() ? "\<C-n>" :
-      \ <SID>check_back_space() ? "\<TAB>" :
-      \ coc#refresh()
-inoremap <expr><S-TAB> pumvisible() ? "\<C-p>" : "\<C-h>"
-
-function! s:check_back_space() abort
-  let col = col('.') - 1
-  return !col || getline('.')[col - 1]  =~# '\s'
-endfunction
-
-" Make <CR> to accept selected completion item or notify coc.nvim to format
-" <C-g>u breaks current undo, please make your own choice.
-inoremap <silent><expr> <CR> coc#pum#visible() ? coc#pum#confirm()
-                              \: "\<C-g>u\<CR>\<c-r>=coc#on_enter()\<CR>"
-"Ultisnips Settings
-let g:UltiSnipsExpandTrigger="<tab>"
-let g:UltiSnipsJumpForwardTrigger="<c-b>"
-let g:UltiSnipsJumpBackwardTrigger="<c-z>"
-
-" If you want :UltiSnipsEdit to split your window.
-let g:UltiSnipsEditSplit="vertical"

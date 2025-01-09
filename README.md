@@ -22,14 +22,24 @@ cd ~/dotfiles/scripts
 
 #### Using pre-built image
 ```bash
+# Run container
 docker pull ghcr.io/the-homeless-god/dotfiles:latest
-docker run -it ghcr.io/the-homeless-god/dotfiles:latest
+docker run -it --name dotfiles ghcr.io/the-homeless-god/dotfiles:latest
+
+# To reconnect to the container later
+docker start dotfiles
+docker exec -it dotfiles /bin/bash
 ```
 
 #### Building locally
 ```bash
+# Build and run container
 docker build -t dotfiles-test .
-docker run -it dotfiles-test
+docker run -it --name dotfiles-dev dotfiles-test
+
+# To reconnect to the container later
+docker start dotfiles-dev
+docker exec -it dotfiles-dev /bin/bash
 ```
 
 ## Preview

@@ -79,23 +79,27 @@
 Мы публикуем готовые Docker образы в GitHub Container Registry:
 
 ```bash
+# Запуск контейнера
 docker pull ghcr.io/the-homeless-god/dotfiles:latest
-docker run -it ghcr.io/the-homeless-god/dotfiles:latest
-```
+docker run -it --name dotfiles ghcr.io/the-homeless-god/dotfiles:latest
 
-Доступные теги:
-- `latest` - Последняя стабильная версия
-- `vX.Y.Z` - Конкретные версии релизов
-- `main` - Последняя версия из ветки разработки
-- `sha-XXXXXXX` - Сборки конкретных коммитов
+# Для повторного подключения к контейнеру
+docker start dotfiles
+docker exec -it dotfiles /bin/bash
+```
 
 #### Локальная сборка
 
 Если вы хотите собрать образ локально:
 
 ```bash
+# Сборка и запуск контейнера
 docker build -t dotfiles-test .
-docker run -it dotfiles-test
+docker run -it --name dotfiles-dev dotfiles-test
+
+# Для повторного подключения к контейнеру
+docker start dotfiles-dev
+docker exec -it dotfiles-dev /bin/bash
 ```
 
 ## Структура конфигурации

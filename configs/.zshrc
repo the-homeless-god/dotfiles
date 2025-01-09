@@ -103,3 +103,4 @@ export PATH="$USER_HOME_DIR/dotfiles/scripts/customs:$PATH"
 
 # Added by LM Studio CLI Tool (lms)
 export PATH="$PATH:$USER_HOME_DIR/.cache/lm-studio/bin"
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion

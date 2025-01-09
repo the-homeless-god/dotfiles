@@ -1,92 +1,77 @@
-# Environment
+# Dotfiles & Development Tools
 
-![image](./configs/wallpaper.jpeg)
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
+![Docker Build](https://github.com/the-homeless-god/dotfiles/actions/workflows/docker-publish.yml/badge.svg)
+![GitHub release (latest by date)](https://img.shields.io/github/v/release/the-homeless-god/dotfiles)
 
-All settings for environment
+Environment configuration and development tools setup automation.
 
-## Usage
+[🇷🇺 Русская версия](docs/ru.md) | [🇬🇧 English version](docs/en.md)
 
-```shell
-git clone https://github.com/the-homeless-god/dotfiles
-cp -r ./configs ~/
+## Quick Start
+
+### macOS
+
+```bash
+git clone https://github.com/the-homeless-god/dotfiles.git ~/dotfiles
+cd ~/dotfiles/scripts
+./install-tools.sh
 ```
 
-## Development
+### Docker
 
-### Common environment
+#### Using pre-built image
+```bash
+docker pull ghcr.io/the-homeless-god/dotfiles:latest
+docker run -it ghcr.io/the-homeless-god/dotfiles:latest
+```
 
-- [Fonts: Nerd](https://github.com/ryanoasis/nerd-fonts)
-- [Oh My Zsh: Home](https://ohmyz.sh/)
-- [NeoVim: Home](https://neovim.io/)
-- [NeoVim: Installation](https://github.com/neovim/neovim/wiki/Installing-Neovim)
-- [Vim/NeoVim: Plugin Manager](https://github.com/junegunn/vim-plug)
+#### Building locally
+```bash
+docker build -t dotfiles-test .
+docker run -it dotfiles-test
+```
 
-### Mac OS
+## Preview
 
-- [Visual Studio Code](https://code.visualstudio.com/download)
+![Terminal Preview](configs/wallpaper.jpeg)
 
-### Arch Linux
+## CI/CD
 
-- [Code OSS](https://archlinux.org/packages/community/x86_64/code/)
+This repository uses GitHub Actions for continuous integration and delivery:
 
-## TBD
+- Automatic Docker image builds on every push to main branch
+- Automatic releases when tags are pushed
+- Image publishing to GitHub Container Registry
+- Build caching for faster builds
+- Automated tagging system
 
-- Fill in installation and other applications
+### Automated Builds
 
-### About VIM
+The following events trigger builds:
+- Push to main branch
+- Creation of tags (vX.Y.Z)
+- Pull requests
 
-#### Hotkeys:
+### Docker Tags
 
-- `<Leader>ot`: Opens a terminal below.
-- `<leader>f`: Formats the whole file.
-- `<leader>ca`: Copies the content of the whole file.
-- `<K>`: Shows documentation in a preview window.
-- `<leader>dd`: Opens the file explorer at the file path.
-- `<Leader>da`: Opens the file explorer at the working directory.
-- `<leader>ac`: Applies code actions to the current line.
-- `<leader>qf`: Applies AutoFix to the problem on the current line.
-- `<leader>gd`: Jumps to the definition.
-- `<leader>gy`: Jumps to the type definition.
-- `<leader>gi`: Jumps to the implementation.
-- `<leader>gr`: Shows references.
-- `[g` and `]g`: Navigates diagnostics.
-- `<leader>a`: Applies code actions to the selected code block.
-- `<leader>rn`: Renames symbols.
-- `<leader>cl`: Runs the Code Lens action on the current line.
-- `<C-f>` and `<C-b>`: Scrolls float windows/popups.
-- `<C-s>`: Selects ranges.
+Available tags in the registry:
+- `latest` - Latest stable version
+- `vX.Y.Z` - Specific version releases
+- `main` - Latest development version
+- `sha-XXXXXXX` - Specific commit builds
 
-#### Plugins:
+### Registry
 
-- `vim-airline`: Provides a status bar for Vim.
-- `vim-javascript`: Adds JavaScript support.
-- `typescript-vim`: Adds TypeScript syntax highlighting.
-- `vim-jsx-pretty`: Adds JS and JSX syntax highlighting.
-- `vim-graphql`: Adds GraphQL syntax highlighting.
-- `coc.nvim`: Provides autocompletion.
-- `vim-prettier`: Formats code using Prettier.
-- `vim-healthcheck`: Performs health checks for Vim.
-- `vim-floaterm`: Enables floating terminal windows.
-- `vim-ripgrep`: Integrates ripgrep search tool.
-- `vim-gitgutter`: Shows Git diff in the gutter.
+Images are published to GitHub Container Registry (ghcr.io):
+```bash
+ghcr.io/the-homeless-god/dotfiles
+```
 
-#### Advantages:
+### Build Status
 
-- Update of plugins and autostart of Coc plugins on each Vim start.
-- Highlights the symbol and its references when holding the cursor.
-- Opens a terminal by default at the bottom.
-- Sets the size of the terminal with a small height to avoid taking up half of the screen.
-- Shows an empty buffer when a file is closed.
-- Opens new buffers on the right side.
-- Configures various settings for the vim-airline plugin.
-- Enables Git lens to show Git diff symbols.
-- Uses a specific font with a height.
-- Enables formatting on save using Prettier.
-- Improves user experience by reducing update time and always showing the signcolumn.
-- Sets encoding to utf-8 for Vim.
-- Configures various settings for the file explorer.
-- Adds (Neo)Vim's native statusline support.
-- Sets various key mappings for different actions.
-- Configures CoCList mappings for diagnostics, extensions, commands, outline, and workspace symbols.
-- Enables scrolling of float windows/popups using Ctrl+f and Ctrl+b.
-- Sets key mapping for selecting ranges using Ctrl+s.
+You can check the current build status on the [Actions tab](https://github.com/the-homeless-god/dotfiles/actions) or by the badge at the top of this README.
+
+## License
+
+MIT

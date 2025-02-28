@@ -4,7 +4,6 @@ ZSH_WEB_SEARCH_ENGINES=(google "https://www.google.com/search?q=")
 
 eval "$(zoxide init zsh)"
 
-
 if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
   source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
 fi
@@ -14,7 +13,6 @@ export PATH="$PATH:/root/.cargo/bin"
 export VIM_SERVERNAME="God"
 
 export NODE_PATH=$NODE_PATH:`npm root -g`
-
 
 # Powerlevel10k Theme
 ZSH_THEME="powerlevel10k/powerlevel10k"
@@ -105,3 +103,6 @@ export PATH="$USER_HOME_DIR/dotfiles/scripts/customs:$PATH"
 # Added by LM Studio CLI Tool (lms)
 export PATH="$PATH:$USER_HOME_DIR/.cache/lm-studio/bin"
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+export PATH="$HOME/.asdf/installs/dotnet-core/6.0.418:$PATH"
+export PATH="$HOME/.asdf/installs/dotnet-core/9.0.102:$PATH"
+export PATH="/usr/local/opt/openjdk/bin:$PATH"

@@ -35,7 +35,7 @@ bindkey "^[[1;2D" backward-word
 
 # Custom aliases
 alias ls='eza -a --icons --color=always --group-directories-first -la'
-alias cat='bat --theme=Dracula'
+alias cat='bat -pp --theme=Dracula'
 alias du='dust'
 alias df='duf'
 alias find='fd'

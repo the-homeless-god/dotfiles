@@ -12,7 +12,8 @@ export ZSH="$USER_HOME_DIR/.oh-my-zsh"
 export PATH="$PATH:/root/.cargo/bin"
 export VIM_SERVERNAME="God"
 
-export NODE_PATH=$NODE_PATH:`npm root -g`
+export NODE_PATH="$NODE_PATH:`npm root -g`"
+
 
 # Powerlevel10k Theme
 ZSH_THEME="powerlevel10k/powerlevel10k"
@@ -106,3 +107,4 @@ export PATH="$PATH:$USER_HOME_DIR/.cache/lm-studio/bin"
 export PATH="$HOME/.asdf/installs/dotnet-core/6.0.418:$PATH"
 export PATH="$HOME/.asdf/installs/dotnet-core/9.0.102:$PATH"
 export PATH="/usr/local/opt/openjdk/bin:$PATH"
+export PATH="/usr/local/opt/bison/bin:$PATH"

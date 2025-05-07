@@ -2,7 +2,7 @@
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Docker Build](https://github.com/the-homeless-god/dotfiles/actions/workflows/docker-publish.yml/badge.svg)
-![GitHub release (latest by date)](https://img.shields.io/github/v/release/the-homeless-god/dotfiles)
+![GitHub package (latest by date)](https://github.com/the-homeless-god/dotfiles/pkgs/container/dotfiles)
 
 Environment configuration and development tools setup automation.
 

@@ -28,6 +28,9 @@
 " \da          - открыть проводник в рабочей директории
 " \lf          - открыть lf файловый менеджер
 " \g           - открыть ripgrep + fzf поиск
+" \P           - открыть ripgrep + fzf поиск в новом окне
+" \sf          - глобальный поиск
+" \o           - быстрый поиск файлов через fd + fzf
 "
 " Редактирование:
 " \f           - форматировать файл через Prettier
@@ -37,6 +40,12 @@
 " K            - показать документацию
 " Space        - сворачивание/разворачивание кода
 "
+" Git команды:
+" \gg          - открыть Git панель
+" \gc          - сделать коммит
+" \gp          - отправить изменения
+" \gl          - получить изменения
+"
 " Терминал:
 " F7           - новый терминал
 " F8           - предыдущий терминал
@@ -45,6 +54,7 @@
 
 packloadall
 filetype plugin on
+filetype plugin indent on
 
 call plug#begin()
 
@@ -99,6 +109,8 @@ Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
 Plug 'junegunn/fzf.vim'
 Plug 'iamcco/markdown-preview.nvim', { 'do': { -> mkdp#util#install() }, 'for': ['markdown', 'vim-plug']}
 Plug 'turbio/bracey.vim', {'do': 'npm install --prefix server'}
+Plug 'elixir-editors/vim-elixir'
+Plug 'elixir-lsp/coc-elixir', {'do': 'yarn install && yarn prepack'}
 
 call plug#end()
 
@@ -127,13 +139,13 @@ vnoremap <silent> <leader> :<c-u>WhichKeyVisual '\'<CR>
 augroup which_key_init
     autocmd!
     autocmd VimEnter * call which_key#register('\', "g:which_key_map")
-    autocmd VimEnter * call which_key#register('/', "g:which_key_map")
+    " autocmd VimEnter * call which_key#register('/', "g:which_key_map")
 augroup END
 
 " Обновляем маппинги
 nnoremap <silent> <leader> :<c-u>WhichKey '\'<CR>
 vnoremap <silent> <leader> :<c-u>WhichKeyVisual '\'<CR>
-nnoremap <silent> / :<c-u>WhichKey '/'<CR>
+" nnoremap <silent> / :<c-u>WhichKey '/'<CR>
 
 " Добавляем описание для пробела
 let g:which_key_map['<Space>'] = ['za', 'fold/unfold']
@@ -172,6 +184,12 @@ let g:bracey_browser_command = 'open'
 let g:bracey_auto_start_browser = 1
 let g:bracey_refresh_on_save = 1
 let g:bracey_eval_on_save = 1
+
+" Prettier настройки
+let g:prettier#autoformat = 1
+let g:prettier#autoformat_require_pragma = 0
+let g:prettier#exec_cmd_path = "prettier"
+let g:prettier#quick_fix = 1
 
 function! s:initVimStartup()
 	" VIM STARTUP: exec functions on start of vim
@@ -249,7 +267,7 @@ function! s:initVimVariables()
 	let g:netrw_altv=1
 	let g:netrw_list_hide='.*\.swp$'
 	let g:NERDTreeHijackNetrw = 0 " Add this line if you use NERDTree
-	let g:lf_replace_netrw = 1 " Open lf when vim opens a directory
+	let g:lf_replace_netrw = 0 " Open lf when vim opens a directory
 
 	" status line:
 	set titlestring="File: " + statusline + %F
@@ -297,8 +315,10 @@ colorscheme dracula_pro
 	set foldlevel=2
   set paste
 
-	let g:ale_linters = {'c': ['clang', 'cppcheck']}
+	let g:ale_linters = {'c': ['clang', 'cppcheck'], 'elixir': ['elixir-ls']}
 	let g:ale_fixers = {'c': ['uncrustify', 'clang-format']}
+	set completeopt=menu,menuone,preview,noselect,noinsert
+	let g:ale_completion_enabled = 1
 	let g:ale_fixers_always_run = 1
 	let g:ale_fixers_on_save = 1
 	let g:ale_sign_priority = 50
@@ -327,18 +347,20 @@ function! s:initVimHotkeys()
 	nnoremap <silent> <Leader>u :FloatermNew --width=0.8 --height=0.8 vim +PlugUpdate +qall<CR>
 	nmap <silent> <Leader>v :vsplit<CR>
 	nmap <silent> <Leader>h :split<CR>
-	nmap <silent> <Leader>w :w<CR>
+	nnoremap <silent> <Leader>w :w<CR>
 	nmap <silent> <Leader>x :x<CR>
 	nmap <silent> <Leader>q :qa<CR>
-  nmap <silent> <Leader><F2> :map<CR>
-  nmap <silent> <Leader>. <C-x><C-f><CR>
-	":remote-send("<ESC>:call remote_startserver('some_name')<CR>")
+    nmap <silent> <Leader><F2> :map<CR>
+    nmap <silent> <Leader>. <C-x><C-f><CR>
 
 	" [Leader + g]: opens ripgrep + fzf
 	nmap <leader>g :FloatermNew --width=0.8 --height=0.8 rgfzf.sh<CR>
 
 	" [Leader + f]: format whole file
-	nnoremap <leader>f :Prettier<CR>
+    command! -nargs=0 Prettier :CocCommand prettier.formatFile
+    vmap <leader>f  <Plug>(coc-format-selected)
+    nmap <leader>f  <Plug>(coc-format-selected)
+    nnoremap <leader>f :Prettier<CR>
 
 	" [Leader + c + a]: copy content of whole file
 	nnoremap <leader>ca :%y+<CR>
@@ -346,14 +368,6 @@ function! s:initVimHotkeys()
 	vnoremap <leader>c "+y<CR>
 	" [K]: to show documentation in preview window
 	nnoremap <silent> K :call ShowDocumentation()<CR>
-
-	" [Leader + d + d]: open explorer at the file path
-	nnoremap <leader>dd :Lexplore %:p:h<CR>
-	" [Leader + d + a]: open explorer at the working directory
-	nnoremap <Leader>da :Lexplore<CR>
-
-	" [Leader + l + f]: look for a file
-	nmap <leader>lf :FloatermNew lf --command 'set hidden'<CR>
 
 	" [Leader + r]: reload vimrc 
 	nmap <leader>r :so ~/.vimrc<CR>
@@ -439,6 +453,23 @@ function! s:initVimHotkeys()
 	      \ coc#refresh()
 	inoremap <expr><S-TAB> pumvisible() ? "\<C-p>" : "\<C-h>"	
 
+  " Applying codeAction to the selected region.
+
+" Example: \`<leader>aap\` for current paragraph
+
+xmap <leader>a  <Plug>(coc-codeaction-selected)
+
+nmap <leader>a  <Plug>(coc-codeaction-selected)
+
+
+" My config
+
+" Remap keys for applying codeAction to the current word.
+
+" I add w mean select current word for codeaction.
+
+nmap <leader>ac   <Plug>(coc-codeaction-selected)w
+
 	function! s:check_back_space() abort
 	  let col = col('.') - 1
 	  return !col || getline('.')[col - 1]  =~# '\s'
@@ -467,11 +498,36 @@ let g:NERDTreeShowHidden = 1
 let g:NERDTreeMinimalUI = 1
 let g:NERDTreeStatusline = ''
 
-" Floaterm настройки в стиле VS Code
+" Floaterm настройки
 let g:floaterm_width = 0.8
 let g:floaterm_height = 0.3
 let g:floaterm_position = 'top'
 let g:floaterm_title = ''
+let g:floaterm_borderchars = '─│─│╭╮╯╰'
+let g:floaterm_autoclose = 0
+let g:floaterm_autoinsert = 1
+let g:floaterm_wintype = 'float'
+let g:floaterm_rootmarkers = ['.git', '.svn', '.hg', '.project', '.root']
+let g:floaterm_opener = 'edit'
+let g:floaterm_winblend = 0
+let g:floaterm_autohide = 0
+let g:floaterm_keymap_toggle = '<F12>'
+let g:floaterm_keymap_next = '<F9>'
+let g:floaterm_keymap_prev = '<F8>'
+let g:floaterm_keymap_new = '<F7>'
+let g:floaterm_keymap_kill = '<C-c>'
+let g:floaterm_scrollback = 10000
+
+" Улучшенные маппинги для терминала
+" nnoremap <silent> <Leader>ot :FloatermNew --width=0.8 --height=0.3 --position=top --wintype=float --autoclose=0<CR>
+" tnoremap <silent> <C-h> <C-\><C-n>:FloatermPrev<CR>
+" tnoremap <silent> <C-l> <C-\><C-n>:FloatermNext<CR>
+" tnoremap <silent> <C-n> <C-\><C-n>:FloatermNew<CR>
+" tnoremap <silent> <C-c> <C-\><C-n>:FloatermKill<CR>
+" tnoremap <silent> <Esc> <C-\><C-n>
+
+" Автоматическое переключение в режим вставки при открытии терминала
+autocmd TerminalOpen * startinsert
 
 " Автоматическое сохранение сессии
 let g:prosession_dir = '~/.vim/session/'
@@ -480,254 +536,451 @@ let g:prosession_on_startup = 1
 " Новые маппинги в стиле VS Code (обновленные)
 nnoremap <Leader>e :NERDTreeToggle<CR>
 nnoremap <Leader>E :NERDTreeFind<CR>
-nnoremap <Leader>p :FloatermNew lf --command 'set hidden'<CR>
+nnoremap <Leader>l :FloatermNew lf --command 'set hidden'<CR>
 nnoremap <Leader>P :FloatermNew --width=0.8 --height=0.3 --position=top rgfzf.sh<CR>
 nnoremap <Leader>g :Git<CR>
 
-" Убираем автоматическое разделение окна, которое вызывает дублирование
-" autocmd BufWinEnter * if winnr('$') > 3 | tabe | else | vsplit | endif
-
-" Настройка для автоматического открытия в вертикальном режиме только для новых буферов
-" augroup AutoSplit
-  "  autocmd!
-   " autocmd BufWinEnter * if &buftype == '' && winnr('$') > 3 | tabe | elseif &buftype == '' && winnr('$') <= 3 | wincmd L | endif
-" augroup END
-
-" Vista настройки
-let g:vista_default_executive = 'coc'
+" Настройки для постоянного отображения Vista
+let g:vista_stay_on_open = 0
+let g:vista_sidebar_position = 'right'
 let g:vista_sidebar_width = 40
-let g:vista_stay_on_open = 1
+let g:vista_close_on_jump = 1
+let g:vista_echo_cursor = 1
+let g:vista_update_on_text_changed = 0
+let g:vista_update_on_text_changed_delay = 500
+let g:vista#renderer#enable_icon = 1
 let g:vista_icon_indent = ["╰─▸ ", "├─▸ "]
 let g:vista_fzf_preview = ['right:50%']
-let g:vista#renderer#enable_icon = 1
-let g:vista_update_on_text_changed = 1
-let g:vista_close_on_jump = 0
-let g:vista_echo_cursor = 1
-let g:vista_blink = [2, 100]
+let g:vista_default_executive = 'coc'
 
-" Relative numbers
-set number
-set relativenumber
+" Улучшенные настройки для CoC
+let g:coc_global_extensions = [
+  \ 'coc-tsserver',
+  \ 'coc-json',
+  \ 'coc-html',
+  \ 'coc-css',
+  \ 'coc-python',
+  \ 'coc-go',
+  \ 'coc-rust-analyzer',
+  \ 'coc-clangd',
+  \ 'coc-snippets',
+  \ 'coc-pairs',
+  \ 'coc-highlight',
+  \ 'coc-git',
+  \ 'coc-elixir'
+  \ ]
 
-" Folding settings
-set foldmethod=indent
-set foldlevel=99
-nnoremap <space> za
-vnoremap <space> za
-
-" Dashboard function
-function! OpenDashboard()
-    " Создаем новую вкладку и называем её
-    tabnew
-    let t:dashboard = 1  " Помечаем таб как дашборд
-    
-    " Закрываем начальный буфер и отключаем UI
-    only
-    set showtabline=0
-    set laststatus=0
-    
-    " Создаем базовое разделение: вертикальное на две части
-    vsplit
-    
-    " Настраиваем левую часть (bpytop)
-    wincmd h
-    terminal bpytop
-    file Dashboard-System
-    
-    " Настраиваем правую часть
-    wincmd l
-    " Создаем три окна в правой части
-    split
-    split
-    
-    " Настраиваем верхнее окно (календарь)
-    wincmd k
-    wincmd k
-    terminal cal -3
-    file Dashboard-Calendar
-    
-    " Настраиваем среднее окно (часы)
-    wincmd j
-    terminal watch -n 1 date
-    file Dashboard-Clock
-    
-    " Настраиваем нижнее окно (cmus)
-    wincmd j
-    terminal cmus
-    file Dashboard-Music
-    
-    " Устанавливаем размеры окон
-    " Настраиваем левую часть (bpytop)
-    wincmd h
-    resize 30
-    vertical resize 100
-    
-    " Настраиваем правую часть
-    wincmd l
-    wincmd k
-    wincmd k
-    resize 10  " Размер для календаря
-    
-    wincmd j
-    resize 3   " Размер для часов
-    
-    " Отключаем UI элементы для всех окон
-    windo setlocal nonumber norelativenumber
-    windo setlocal signcolumn=no
-    windo setlocal nocursorline
-    windo setlocal nocursorcolumn
-    windo setlocal noshowmode
-    windo setlocal noruler
-    windo setlocal laststatus=0
-    windo setlocal noshowcmd
-    
-    " Устанавливаем режим терминала и скрываем буферы
-    windo setlocal buftype=terminal
-    windo setlocal nobuflisted
-    
-    " Очищаем все неиспользуемые буферы в текущем табе
-    let l:buffers = filter(range(1, bufnr('$')), 'buflisted(v:val)')
-    for l:buf in l:buffers
-        if bufname(l:buf) !~# '^Dashboard-'
-            execute 'bdelete ' . l:buf
-        endif
-    endfor
-    
-    " Возвращаемся в окно с bpytop
-    wincmd h
-    
-    " Переименовываем таб
-    set titlestring=Dashboard
-    let t:title = 'Dashboard'
-    
-    " Отключаем возможность закрытия окон
-    windo nnoremap <buffer> q <NOP>
-    windo nnoremap <buffer> <C-w> <NOP>
-endfunction
-
-" Автоматически восстанавливаем UI при выходе из дашборда
-augroup dashboard_exit
-    autocmd!
-    autocmd BufWinLeave * if exists('t:dashboard') | 
-                \ set showtabline=2 |
-                \ set laststatus=2 |
-                \ endif
-augroup END
-
-" Маппинг для dashboard
-nnoremap <Leader>D :call OpenDashboard()<CR>
-
-" Which Key настройки для отображения доступных команд
-let g:which_key_map = {
-      \ 'name': 'Leader Commands',
-      \ 'ot': [':below terminal ++rows=15 ++close', 'открыть терминал'],
-      \ 'u': [':FloatermNew --width=0.8 --height=0.8 vim +PlugUpdate +qall', '��бновить плагины'],
-      \ 'v': [':Vista!!', 'структура кода'],
-      \ 'h': [':split', 'разделить горизонтально'],
-      \ 'w': [':w', 'сохранить'],
-      \ 'x': [':x', 'сохранить и выйти'],
-      \ 'q': [':qa', 'выйти из всех окон'],
-      \ '<F2>': [':map', 'показать маппинги'],
-      \ '.': ['<C-x><C-f>', 'автодополнение путей'],
-      \ 'p': [':FloatermNew lf --command "set hidden"', 'файловый менеджер'],
-      \ 'P': [':FloatermNew --width=0.8 --height=0.3 --position=top rgfzf.sh', 'поиск в файлах'],
-      \ 'e': [':NERDTreeToggle', 'дерево файлов'],
-      \ 'E': [':NERDTreeFind', 'найти текущий файл'],
-      \ 'H': [':ShowHotkeys', 'показать все хоткеи'],
-      \ 'D': [':call OpenDashboard()', 'открыть дашборд'],
-      \ }
-
-" Git команды
-let g:which_key_map.g = {
-      \ 'name': '+git',
-      \ 's': [':G', 'статус'],
-      \ 'p': [':Git push', 'push'],
-      \ 'c': [':Git commit', 'commit'],
-      \ 'd': [':Git diff', 'diff'],
-      \ 'b': [':Git blame', 'blame'],
-      \ 'l': [':Git log', 'log'],
-      \ }
-
-" GitGutter команды
-let g:which_key_map.h = {
-      \ 'name': '+hunk',
-      \ 'p': ['<Plug>(GitGutterPreviewHunk)', 'предпросмотр изменений'],
-      \ 'u': ['<Plug>(GitGutterUndoHunk)', 'отменить изменения'],
-      \ 's': ['<Plug>(GitGutterStageHunk)', 'добавить изменения'],
-      \ }
-
-" Файлы и директории
-let g:which_key_map.d = {
-      \ 'name': '+directory',
-      \ 'd': [':Lexplore %:p:h', 'открыть директорию файла'],
-      \ 'a': [':Lexplore', 'открыть рабочую директорию'],
-      \ }
-
-" Буферы и вкладки
-let g:which_key_map.b = {
-      \ 'name': '+buffer',
-      \ 'd': [':Bclose', 'закрыть буфер'],
-      \ '<S-Down>': [':BuffergatorMruCycleNext rightbelow sbuffer', 'следующий буфер вниз'],
-      \ '<S-Right>': [':BuffergatorMruCycleNext rightbelow vert sbuffer', 'следующий буфер вправо'],
-      \ '<S-Up>': [':BuffergatorMruCycleNext leftabove sbuffer', 'следующий буфер вверх'],
-      \ '<S-Left>': [':BuffergatorMruCycleNext leftabove vert sbuffer', 'следующий буфер влево'],
-      \ '<Down>': [':BuffergatorMruCyclePrev rightbelow sbuffer', 'предыдущий буфер вниз'],
-      \ '<Right>': [':BuffergatorMruCyclePrev rightbelow vert sbuffer', 'предыдущий буфер вправо'],
-      \ '<Up>': [':BuffergatorMruCyclePrev leftabove sbuffer', 'предыдущий буфер вверх'],
-      \ '<Left>': [':BuffergatorMruCyclePrev leftabove vert sbuffer', 'предыдущий буфер влево'],
-      \ }
-
-" Вкладки
-let g:which_key_map.t = {
-      \ 'name': '+tabs',
-      \ 'c': [':BuffergatorTabsClose', 'закрыть вкладки'],
-      \ 'o': [':BuffergatorTabsOpen', 'открыть вкладки'],
-      \ 'n': [':tabnew', 'новая вкладка'],
-      \ 'm': [':tab split', 'разделить в новую вкладку'],
-      \ }
-
-" Нумерация вкладок
-for i in range(1, 9)
-  let g:which_key_map[string(i)] = [string(i) . 'gt', 'вкладка ' . string(i)]
-endfor
-let g:which_key_map['0'] = [':tablast', 'последняя вкла��ка']
-
-" Проверяем, загружен ли which-key плагин
-if exists('g:loaded_which_key')
-  " Регистрация which-key
-  call which_key#register('\', "g:which_key_map")
-  call which_key#register('/', "g:which_key_map")
-  nnoremap <silent> <leader> :<c-u>WhichKey '\'<CR>
-  vnoremap <silent> <leader> :<c-u>WhichKeyVisual '\'<CR>
-  nnoremap <silent> / :<c-u>WhichKey '/'<CR>
+" Автоматическая установка расширений CoC
+if empty(glob($HOME . '/.config/coc/extensions/node_modules/coc-tsserver'))
+  autocmd VimEnter * CocInstall coc-tsserver
 endif
 
-" Добавляем в which-key маппинги для превью
-let g:which_key_map.m = {
-      \ 'name': '+markdown',
-      \ 'p': [':MarkdownPreview', 'открыть превью'],
-      \ 's': [':MarkdownPreviewStop', 'остановить превью'],
-      \ 't': [':MarkdownPreviewToggle', 'переключить превью'],
-      \ }
+" Улучшенная навигация по коду для TypeScript, Elixir
+autocmd BufEnter *.{js,jsx,ts,tsx,ex,exs} :silent! call coc#config("suggest.autoTrigger", "always")
+autocmd BufEnter *.{js,jsx,ts,tsx,ex,exs} :silent! call coc#config("suggest.triggerAfterInsertEnter", v:true)
 
-let g:which_key_map.l = {
-      \ 'name': '+live-preview',
-      \ 'h': [':Bracey', 'запустить HTML превью'],
-      \ 's': [':BraceyStop', 'остановить HTML превью'],
-      \ 'r': [':BraceyReload', 'перезагрузить HTML превью'],
-      \ }
+" Улучшенные маппинги для навигации
+nmap <silent> gd <Plug>(coc-definition)
+nmap <silent> gy <Plug>(coc-type-definition)
+nmap <silent> gi <Plug>(coc-implementation)
+nmap <silent> gr <Plug>(coc-references)
 
-" Автоматическое открытие превью для markdown и html файлов
-augroup preview_files
-    autocmd!
-    " Для Markdown файлов
-    autocmd FileType markdown nmap <buffer><Leader>mp <Plug>MarkdownPreview
-    autocmd FileType markdown nmap <buffer><Leader>ms <Plug>MarkdownPreviewStop
-    autocmd FileType markdown nmap <buffer><Leader>mt <Plug>MarkdownPreviewToggle
-    
-    " Для HTML файлов
-    autocmd FileType html nmap <buffer><Leader>lh :Bracey<CR>
-    autocmd FileType html nmap <buffer><Leader>ls :BraceyStop<CR>
-    autocmd FileType html nmap <buffer><Leader>lr :BraceyReload<CR>
+" Используем K для показа документации
+nnoremap <silent> K :call ShowDocumentation()<CR>
+
+function! ShowDocumentation()
+  if CocAction('hasProvider', 'hover')
+    call CocActionAsync('doHover')
+  else
+    call feedkeys('K', 'in')
+  endif
+endfunction
+
+" Автоматическое обновление тегов при сохранении
+autocmd BufWritePost *.{js,jsx,ts,tsx} :silent! call CocAction('reloadWorkspace')
+
+" Настройка рабочего каталога
+autocmd FileType typescript,elixir,javascript,typescriptreact,javascriptreact let b:coc_root_patterns = ['.git', '.env', 'package.json', 'tsconfig.json', 'jsconfig.json']
+
+" Улучшенные настройки для airline
+let g:airline#extensions#tabline#enabled = 1
+let g:airline#extensions#tabline#formatter = 'unique_tail'
+let g:airline#extensions#tabline#show_buffers = 0
+let g:airline#extensions#tabline#show_tabs = 1
+let g:airline#extensions#tabline#show_tab_nr = 1
+let g:airline#extensions#tabline#tab_nr_type = 1
+let g:airline#extensions#tabline#show_tab_type = 1
+let g:airline#extensions#tabline#buffer_idx_mode = 1
+let g:airline#extensions#tabline#buffer_nr_show = 0
+let g:airline#extensions#tabline#buffer_nr_format = '%s:'
+let g:airline#extensions#tabline#fnamemod = ':t'
+let g:airline#extensions#tabline#fnamecollapse = 1
+let g:airline#extensions#tabline#fnametruncate = 0
+let g:airline#extensions#tabline#formatter = 'unique_tail'
+let g:airline#extensions#tabline#left_sep = ' '
+let g:airline#extensions#tabline#left_alt_sep = '|'
+let g:airline#extensions#tabline#right_sep = ' '
+let g:airline#extensions#tabline#right_alt_sep = '|'
+let g:airline#extensions#tabline#tab_min_count = 2
+let g:airline#extensions#tabline#show_splits = 0
+let g:airline#extensions#tabline#show_tab_count = 0
+let g:airline#extensions#tabline#show_close_button = 0
+
+" Настройки для devicons
+let g:webdevicons_enable = 1
+let g:webdevicons_enable_nerdtree = 1
+let g:webdevicons_enable_airline_tabline = 1
+let g:webdevicons_enable_airline_statusline = 1
+let g:webdevicons_enable_ctrlp = 1
+let g:webdevicons_enable_flagship_statusline = 1
+let g:webdevicons_enable_flagship_statusline_fileformat_symbols = 1
+let g:WebDevIconsUnicodeDecorateFolderNodes = 1
+let g:WebDevIconsUnicodeGlyphDoubleWidth = 1
+
+" Отключаем наложение буферов
+set nohidden
+set bufhidden=wipe
+
+" Показываем хоткеи при старте
+function! ShowHotkeys()
+  if exists('g:loaded_which_key')
+    call which_key#register('\', "g:which_key_map")
+    WhichKey '\'
+  endif
+endfunction
+
+augroup show_hotkeys_on_start
+  autocmd!
+  autocmd VimEnter * call ShowHotkeys()
 augroup END
+
+" Чтоб сделать как VS Code
+" 1. Основные настройки интерфейса
+set termguicolors
+set cursorline
+set number
+set relativenumber
+set signcolumn=yes
+set cmdheight=2
+set updatetime=300
+set shortmess+=c
+set mouse=a
+set clipboard=unnamed
+set hidden
+
+" 2. Табы и отступы
+set expandtab
+set tabstop=2
+set shiftwidth=2
+set softtabstop=2
+set autoindent
+set smartindent
+
+" 3. Поиск
+set ignorecase
+set smartcase
+set incsearch
+set hlsearch
+nnoremap <Esc><Esc> :nohlsearch<CR>
+
+" 4. VS Code-подобные хоткеи
+" Сохранение (перемещаем в более приоритетное место)
+nnoremap <C-s> :w<CR>
+inoremap <C-s> <Esc>:w<CR>
+
+" Глобальный поиск (Ctrl+Shift+F)
+nnoremap <Leader><S-f> :FloatermNew --width=0.8 --height=0.8 --title='Global Search' rgfzf.sh<CR>
+" Для более удобного доступа также вариант через пробел
+nnoremap <Leader>sf :FloatermNew --width=0.8 --height=0.8 --title='Global Search' rgfzf.sh<CR>
+
+" Отмена/Повтор
+nnoremap <C-z> u
+inoremap <C-z> <Esc>ui
+nnoremap <C-y> <C-r>
+inoremap <C-y> <Esc><C-r>i
+
+" Копировать/Вставить/Вырезать
+vnoremap <C-c> "+y
+vnoremap <C-x> "+d
+inoremap <C-v> <Esc>"+pi
+
+" Выделить все
+nnoremap <C-a> ggVG
+
+" Мультикурсор (надо ставить ещё vim-visual-multi)
+let g:VM_maps = {}
+let g:VM_maps['Find Under'] = '<C-d>'
+let g:VM_maps['Find Subword Under'] = '<C-d>'
+
+" 5. Автодополнение
+" Улучшенные настройки CoC
+inoremap <silent><expr> <TAB>
+      \ coc#pum#visible() ? coc#pum#next(1) :
+      \ CheckBackspace() ? "\<Tab>" :
+      \ coc#refresh()
+inoremap <expr><S-TAB> coc#pum#visible() ? coc#pum#prev(1) : "\<C-h>"
+inoremap <silent><expr> <CR> coc#pum#visible() ? coc#pum#confirm() : "\<CR>"
+
+function! CheckBackspace() abort
+  let col = col('.') - 1
+  return !col || getline('.')[col - 1]  =~# '\s'
+endfunction
+
+" 6. Быстрая навигация
+" Переключение между файлами
+nnoremap <C-p> :Files<CR>
+nnoremap <C-f> :Rg<CR>
+nnoremap <C-b> :Buffers<CR>
+
+" Переключение между окнами
+nnoremap <C-h> <C-w>h
+nnoremap <C-j> <C-w>j
+nnoremap <C-k> <C-w>k
+nnoremap <C-l> <C-w>l
+
+" 7. Интеграция с Git
+" Быстрый доступ к git командам
+nnoremap <leader>gg :Git<CR>
+nnoremap <leader>gc :Git commit<CR>
+nnoremap <leader>gp :Git push<CR>
+nnoremap <leader>gl :Git pull<CR>
+
+" 8. Улучшенный статусбар
+let g:airline_powerline_fonts = 1
+let g:airline#extensions#tabline#enabled = 1
+let g:airline#extensions#tabline#formatter = 'unique_tail'
+
+" 9. Автоматическое закрытие скобок и кавычек
+inoremap ( ()<Left>
+inoremap [ []<Left>
+inoremap { {}<Left>
+inoremap ' ''<Left>
+inoremap " ""<Left>
+
+" 10. Подсветка при копировании
+augroup highlight_yank
+    autocmd!
+    au TextYankPost * silent! lua vim.highlight.on_yank{higroup="IncSearch", timeout=700}
+augroup END
+
+" 11. VS Code-подобные команды через Command Palette
+nnoremap <leader>p :Commands<CR>
+
+" 12. Быстрый просмотр определения (hover)
+nnoremap <silent> K :call CocAction('doHover')<CR>
+nmap <leader>rn <Plug>(coc-rename)
+
+" 13. Улучшенная навигация по ошибкам
+nmap <silent> [g <Plug>(coc-diagnostic-prev)
+nmap <silent> ]g <Plug>(coc-diagnostic-next)
+
+" 14. Автоматическое форматирование
+command! -nargs=0 Format :call CocAction('format')
+nmap <leader>f :Format<CR>
+
+" 15. VS Code-подобные сниппеты
+let g:UltiSnipsExpandTrigger="<tab>"
+let g:UltiSnipsJumpForwardTrigger="<tab>"
+let g:UltiSnipsJumpBackwardTrigger="<s-tab>"
+
+" 16. Улучшенный поиск и замена
+" Настройки для поиска и замены в обычном Vim
+set incsearch
+set hlsearch
+nnoremap <C-h> :%s///g<Left><Left><Left>
+nnoremap <C-r> :%s///gc<Left><Left><Left>
+nnoremap <C-f> /
+nnoremap <C-g> ?
+
+" 26. Улучшенная стабильность
+set nocompatible
+set ttyfast
+set lazyredraw
+
+" 27. Улучшенная работа с буферами
+" Предотвращаем потерю несохраненных изменений
+set confirm
+set autowrite
+set autowriteall
+
+" 28. Улучшенная работа с историей
+set history=1000
+set undolevels=1000
+set undofile
+set undodir=~/.vim/undodir
+
+" 29. Улучшенная работа с поиском
+set wrapscan
+set showmatch
+set matchtime=2
+set matchpairs+=<:>
+
+" 30. Улучшенная работа с отступами
+set copyindent
+set preserveindent
+set shiftround
+set smarttab
+
+" 31. Улучшенная работа с окнами
+set winminheight=0
+set winminwidth=0
+set equalalways
+set splitbelow
+set splitright
+
+" 32. Улучшенная работа с курсором
+set cursorline
+set scrolloff=5
+set sidescrolloff=5
+set cursorlineopt=number  " Показываем номер строки для текущей строки
+set cursorlineopt=screenline  " Подсвечиваем только экранную строку
+set cursorlineopt=both  " Комбинируем оба эффекта
+
+" 33. Улучшенная работа с буфером обмена
+set clipboard+=unnamedplus
+set clipboard+=unnamed
+
+" 34. Улучшенная работа с терминалом
+" TODO
+
+" 35. Улучшенная работа с файлами
+set fileencoding=utf-8
+set encoding=utf-8
+set fileformats=unix,dos,mac
+set undodir=~/.vim/undo//
+set undofile
+
+" 36. Улучшенная работа с поиском
+set ignorecase
+set smartcase
+set incsearch
+set hlsearch
+set wrapscan
+set showmatch
+set matchtime=2
+
+" 37. Улучшенная работа с отступами
+set expandtab
+set tabstop=2
+set shiftwidth=2
+set softtabstop=2
+set autoindent
+set smartindent
+set copyindent
+set preserveindent
+set shiftround
+set smarttab
+
+" 38. Улучшенная работа с окнами
+set winminheight=0
+set winminwidth=0
+set equalalways
+set splitbelow
+set splitright
+
+" 39. Улучшенная работа с курсором
+set cursorline
+" set cursorcolumn  " Отключаем вертикальную линию
+set scrolloff=5
+set sidescrolloff=5
+
+" 40. Улучшенная работа с буфером обмена
+set clipboard+=unnamedplus
+set clipboard+=unnamed
+
+" Навигация назад/вперед как в VS Code
+nnoremap <silent> <C-o> <C-o>zz
+nnoremap <silent> <C-i> <C-i>zz
+
+" Контекстное меню и навигация мышью, а также через \ + m
+" Лучшая фича из лучших не удалять
+nnoremap <silent> <RightMouse> :call <SID>ShowContextMenu()<CR>
+nnoremap <silent> <Leader>m :call <SID>ShowContextMenu()<CR>
+vnoremap <silent> <RightMouse> :<C-U>call <SID>ShowContextMenu()<CR>
+vnoremap <silent> <Leader>m :<C-U>call <SID>ShowContextMenu()<CR>
+
+function! s:ShowContextMenu()
+  " Проверка, что это нормальный буфер
+  if &buftype != '' || !buflisted(bufnr('%'))
+    return
+  endif
+
+  let l:menu = []
+  call add(l:menu, ['Перейти к определению (gd)', 'normal! gd'])
+  call add(l:menu, ['Перейти к типу (gy)', 'normal! gy'])
+  call add(l:menu, ['Перейти к реализации (gi)', 'normal! gi'])
+  call add(l:menu, ['Показать ссылки (gr)', 'normal! gr'])
+  call add(l:menu, ['Показать документацию (K)', 'normal! K'])
+  call add(l:menu, ['-', ''])
+  call add(l:menu, ['Открыть справа', 'vsplit | normal! gd'])
+  call add(l:menu, ['Открыть снизу', 'split | normal! gd'])
+  call add(l:menu, ['Открыть в новой вкладке', 'tab split | normal! gd'])
+  call add(l:menu, ['-', ''])
+  call add(l:menu, ['Переименовать символ', 'call CocActionAsync("rename")'])
+  call add(l:menu, ['Форматировать', 'call CocAction("format")'])
+  call add(l:menu, ['Исправить (Quick Fix)', 'call CocActionAsync("doQuickfix")'])
+  
+  let l:choice = popup_menu(map(copy(l:menu), 'v:val[0]'), #{
+        \ line: line('.'),
+        \ col: col('.'),
+        \ callback: function('s:ExecuteContextMenuChoice', [l:menu])
+        \ })
+endfunction
+
+function! s:ExecuteContextMenuChoice(menu, id, choice)
+  if a:choice <= 0 || a:menu[a:choice-1][0] == '-'
+    return
+  endif
+  
+  try
+    let l:cmd = a:menu[a:choice-1][1]
+    if l:cmd =~# '^normal!'
+      execute l:cmd
+    elseif l:cmd =~# '^call'
+      execute l:cmd
+    else
+      execute 'silent! ' . l:cmd
+    endif
+  catch
+    echohl ErrorMsg
+    echo "Ошибка при выполнении команды: " . v:exception
+    echohl None
+  endtry
+endfunction
+
+" Маппинги навигации для использования в меню
+nmap gd <Plug>(coc-definition)
+nmap gy <Plug>(coc-type-definition)
+nmap gi <Plug>(coc-implementation)
+nmap gr <Plug>(coc-references)
+nnoremap <silent> K :call <SID>ShowDocumentation()<CR>
+
+function! s:ShowDocumentation()
+  if CocAction('hasProvider', 'hover')
+    call CocActionAsync('doHover')
+  else
+    call feedkeys('K', 'in')
+  endif
+endfunction
+
+" Airline настройки для отображения пути файла
+let g:airline_section_c = '%{expand("%:p:h")} %#__accent_bold#%{expand("%:t")}%#__restore__#'
+let g:airline#extensions#tabline#enabled = 1
+let g:airline#extensions#tabline#formatter = 'unique_tail'
+
+" Добавляем кликабельный путь файла в верхней панели
+function! OpenLfInCurrentFileDir()
+  let path = expand('%:p:h')
+  execute 'FloatermNew lf ' . path
+endfunction
+
+" Маппинг для клика по пути файла
+nnoremap <expr> <C-LeftMouse> ':call OpenLfInCurrentFileDir()<CR>'
+
+" Настройка statusline с кликабельным путем
+set statusline=%#StatusLine#%{expand('%:p:h')}/%#StatusLineBold#%{expand('%:t')}%#StatusLine#
+set laststatus=2
+
+" Быстрый поиск файлов через fd + fzf
+nnoremap <silent> <Leader>o :let $FZF_DEFAULT_COMMAND = "fd -H -t f -E '.git/'"<CR>:Files<CR>
 

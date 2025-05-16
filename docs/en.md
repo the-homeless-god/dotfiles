@@ -16,6 +16,7 @@ This repository contains configuration files (dotfiles) and scripts for automati
   - `lf` - File manager
   - `tmux` - Session configurations
   - `vifm` - Vim-style file manager
+- `configs/tools.json` - Tool configuration for interactive installation mode
 
 ### Scripts
 - `install-tools.sh` - Main installation script
@@ -58,7 +59,20 @@ This repository contains configuration files (dotfiles) and scripts for automati
    - Choosing components to install
    - Installing configuration files
    - Running post-installation setup
-   - Working with VS Code extensions
+
+### Interactive Installation Mode
+
+For more detailed control over the installation process, use the interactive mode:
+
+```bash
+./install-tools.sh --interactive
+```
+
+This mode provides a convenient checkbox interface for selecting:
+- Tool categories (development, media, containers, etc.)
+- Individual programs within each category
+
+You can easily choose only the tools you need without having to answer multiple separate questions.
 
 ### Testing with Docker
 

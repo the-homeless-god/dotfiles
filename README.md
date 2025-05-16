@@ -18,6 +18,16 @@ cd ~/dotfiles/scripts
 ./install-tools.sh
 ```
 
+#### Interactive Mode
+
+For more control over what gets installed, use the interactive mode:
+
+```bash
+./install-tools.sh --interactive
+```
+
+This provides a checkbox interface to select specific tool categories and individual tools.
+
 ### Docker
 
 #### Using pre-built image

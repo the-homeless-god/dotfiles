@@ -200,15 +200,47 @@ show_interactive_menu() {
                 all_tools="$all_tools $tools"
             fi
             
-            # Add to tools list for display
+            # Add to tools list for display with installed status
             for tool in $tools; do
                 local desc=$(get_description "$tool")
-                gum_tools+=("$tool:$desc")
+                local status=""
+                if check_package_installed "$tool"; then
+                    local version=$(get_package_version "$tool")
+                    status=" [✓ $version]"
+                else
+                    status=" [✗]"
+                fi
+                gum_tools+=("$tool:$desc$status")
             done
         done
         
         # По умолчанию выбираем все инструменты
         SELECTED_TOOLS="$all_tools"
+        
+        # Check for config updates
+        echo "Проверяем наличие обновлений конфигурации..."
+        local has_config_updates=false
+        local config_updates=""
+        
+        # Check if any config files were modified compared to installed versions
+        if [ -f "$HOME/.zshrc" ] && [ -f "$(dirname "$SCRIPT_DIR")/configs/.zshrc" ]; then
+            if ! cmp -s "$HOME/.zshrc" "$(dirname "$SCRIPT_DIR")/configs/.zshrc"; then
+                has_config_updates=true
+                config_updates+="- .zshrc\n"
+            fi
+        fi
+        
+        if [ -f "$HOME/.vimrc" ] && [ -f "$(dirname "$SCRIPT_DIR")/configs/.vimrc" ]; then
+            if ! cmp -s "$HOME/.vimrc" "$(dirname "$SCRIPT_DIR")/configs/.vimrc"; then
+                has_config_updates=true
+                config_updates+="- .vimrc\n"
+            fi
+        fi
+        
+        if $has_config_updates; then
+            echo "Обнаружены обновленные конфигурационные файлы:"
+            echo -e "$config_updates"
+        fi
         
         # Спрашиваем пользователя, хочет ли он выбрать все инструменты
         echo "Выбрать все инструменты? [Y/n]"
@@ -219,14 +251,36 @@ show_interactive_menu() {
             SELECTED_TOOLS=""
             echo "Выберите инструменты (нажмите Enter после выбора каждого инструмента, Ctrl+C когда закончите):"
             
+            # Show selected items with a checkmark
+            echo "Выбранные инструменты будут помечены при следующем выборе."
+            
             # Loop until user cancels with Ctrl+C
             while true; do
+                # Update display to show already selected tools
+                local display_tools=()
+                for item in "${gum_tools[@]}"; do
+                    local tool_name=$(echo "$item" | cut -d':' -f1)
+                    if [[ "$SELECTED_TOOLS" =~ "$tool_name" ]]; then
+                        display_tools+=("✅ $item")
+                    else
+                        display_tools+=("  $item")
+                    fi
+                done
+                
                 local choice
-                choice=$(printf "%s\n" "${gum_tools[@]}" | gum choose) || break
+                choice=$(printf "%s\n" "${display_tools[@]}" | gum choose) || break
+                
+                # Remove potential checkmark prefix
+                choice=${choice#"✅ "}
                 local tool_name=$(echo "$choice" | cut -d':' -f1)
                 
-                # Add to selected tools if not already there
-                if [[ ! "$SELECTED_TOOLS" =~ "$tool_name" ]]; then
+                # Toggle selection
+                if [[ "$SELECTED_TOOLS" =~ "$tool_name" ]]; then
+                    # Remove from selection
+                    SELECTED_TOOLS=$(echo "$SELECTED_TOOLS" | sed "s/$tool_name//g" | tr -s ' ' | sed 's/^ //' | sed 's/ $//')
+                    echo "Отменено: $tool_name"
+                else
+                    # Add to selection
                     if [ -z "$SELECTED_TOOLS" ]; then
                         SELECTED_TOOLS="$tool_name"
                     else
@@ -851,3 +905,61 @@ print_summary() {
 
 print_summary
 echo "$(get_localized_string "system" "complete")"
+
+# Function to check if package is already installed
+check_package_installed() {
+    local package=$1
+    
+    if command_exists brew; then
+        # For Homebrew packages
+        if brew list --formula | grep -q "^$package$"; then
+            return 0
+        elif brew list --cask | grep -q "^$package$"; then
+            return 0
+        fi
+    elif command_exists apt-get; then
+        # For apt-based systems
+        dpkg -l | grep -q "^ii.*$package "
+        return $?
+    elif command_exists pacman; then
+        # For pacman-based systems
+        pacman -Qi "$package" &> /dev/null
+        return $?
+    elif command_exists yum || command_exists dnf; then
+        # For rpm-based systems
+        rpm -q "$package" &> /dev/null
+        return $?
+    else
+        # Default fallback - check if command exists
+        command_exists "$package"
+        return $?
+    fi
+    
+    return 1
+}
+
+# Function to get package version
+get_package_version() {
+    local package=$1
+    local version="unknown"
+    
+    if command_exists brew; then
+        # For Homebrew packages
+        if brew list --formula | grep -q "^$package$"; then
+            version=$(brew info $package | grep -E "^$package:" | head -1 | awk '{print $3}')
+        elif brew list --cask | grep -q "^$package$"; then
+            version=$(brew info --cask $package | grep -E "^$package:" | head -1 | awk '{print $3}')
+        fi
+    elif command_exists apt-get; then
+        # For apt-based systems
+        version=$(dpkg -l | grep "^ii.*$package " | awk '{print $3}')
+    elif command_exists pacman; then
+        # For pacman-based systems
+        version=$(pacman -Qi "$package" 2>/dev/null | grep "^Version" | awk '{print $3}')
+    elif command_exists yum || command_exists dnf; then
+        # For rpm-based systems
+        version=$(rpm -q --qf "%{VERSION}" "$package" 2>/dev/null)
+    fi
+    
+    echo "$version"
+}

@@ -24,58 +24,17 @@ command_exists() {
 check_package_installed() {
     local package=$1
     
-    if command_exists brew; then
-        # For Homebrew packages
-        if brew list --formula | grep -q "^$package$"; then
-            return 0
-        elif brew list --cask | grep -q "^$package$"; then
-            return 0
-        fi
-    elif command_exists apt-get; then
-        # For apt-based systems
-        dpkg -l | grep -q "^ii.*$package "
-        return $?
-    elif command_exists pacman; then
-        # For pacman-based systems
-        pacman -Qi "$package" &> /dev/null
-        return $?
-    elif command_exists yum || command_exists dnf; then
-        # For rpm-based systems
-        rpm -q "$package" &> /dev/null
-        return $?
-    else
-        # Default fallback - check if command exists
-        command_exists "$package"
-        return $?
-    fi
+    echo "DEBUG: Проверка установки пакета $package..." >&2
     
-    return 1
+    # Упрощенная проверка - используем только command_exists
+    command_exists "$package"
+    return $?
 }
 
 # Function to get package version
 get_package_version() {
     local package=$1
-    local version="unknown"
-    
-    if command_exists brew; then
-        # For Homebrew packages
-        if brew list --formula | grep -q "^$package$"; then
-            version=$(brew info $package | grep -E "^$package:" | head -1 | awk '{print $3}')
-        elif brew list --cask | grep -q "^$package$"; then
-            version=$(brew info --cask $package | grep -E "^$package:" | head -1 | awk '{print $3}')
-        fi
-    elif command_exists apt-get; then
-        # For apt-based systems
-        version=$(dpkg -l | grep "^ii.*$package " | awk '{print $3}')
-    elif command_exists pacman; then
-        # For pacman-based systems
-        version=$(pacman -Qi "$package" 2>/dev/null | grep "^Version" | awk '{print $3}')
-    elif command_exists yum || command_exists dnf; then
-        # For rpm-based systems
-        version=$(rpm -q --qf "%{VERSION}" "$package" 2>/dev/null)
-    fi
-    
-    echo "$version"
+    echo "unknown"  # Возвращаем unknown для всех пакетов, чтобы избежать зависаний
 }
 
 # Function to get localized string
@@ -292,8 +251,11 @@ show_interactive_menu() {
         local gum_tools=()
         local all_tools=""
         
+        echo "DEBUG: Формирование списка инструментов..." >&2
+        
         for category in $selected_categories; do
             # Get tools for this category
+            echo "DEBUG: Получение инструментов для категории $category..." >&2
             local tools=$(jq -r ".categories[] | select(.name == \"$category\") | .tools[]" "$TOOLS_FILE")
             
             # Add to all tools list
@@ -305,6 +267,7 @@ show_interactive_menu() {
             
             # Add to tools list for display with installed status
             for tool in $tools; do
+                echo "DEBUG: Добавление инструмента $tool в список..." >&2
                 local desc=$(get_description "$tool")
                 local status=""
                 if check_package_installed "$tool"; then

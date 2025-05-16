@@ -21,6 +21,7 @@ cd ~/dotfiles/scripts
 ### Docker
 
 #### Using pre-built image
+
 ```bash
 # Run container
 docker pull ghcr.io/the-homeless-god/dotfiles:latest
@@ -32,6 +33,7 @@ docker exec -it dotfiles /bin/bash
 ```
 
 #### Building locally
+
 ```bash
 # Build and run container
 docker build -t dotfiles-test .
@@ -59,6 +61,7 @@ This repository uses GitHub Actions for continuous integration and delivery:
 ### Automated Builds
 
 The following events trigger builds:
+
 - Push to main branch
 - Creation of tags (vX.Y.Z)
 - Pull requests
@@ -66,6 +69,7 @@ The following events trigger builds:
 ### Docker Tags
 
 Available tags in the registry:
+
 - `latest` - Latest stable version
 - `vX.Y.Z` - Specific version releases
 - `main` - Latest development version
@@ -74,6 +78,7 @@ Available tags in the registry:
 ### Registry
 
 Images are published to GitHub Container Registry (ghcr.io):
+
 ```bash
 ghcr.io/the-homeless-god/dotfiles
 ```

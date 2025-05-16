@@ -96,15 +96,12 @@ export PATH="/opt/homebrew/opt/conan@1/bin:$PATH"
 export PATH="/opt/homebrew/opt/openjdk/bin:$PATH"
 export PATH="/opt/homebrew/opt/icu4c/bin:$PATH"
 export PATH="/opt/homebrew/opt/icu4c/sbin:$PATH"
-export PATH="/opt/homebrew/opt/php@7.4/bin:$PATH"
-export PATH="/opt/homebrew/opt/php@7.4/sbin:$PATH"
 export PATH="$USER_HOME_DIR/dotfiles/scripts/lf:$PATH"
 export PATH="$USER_HOME_DIR/dotfiles/scripts/customs:$PATH"
 
 # Added by LM Studio CLI Tool (lms)
 export PATH="$PATH:$USER_HOME_DIR/.cache/lm-studio/bin"
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
-export PATH="$HOME/.asdf/installs/dotnet-core/6.0.418:$PATH"
-export PATH="$HOME/.asdf/installs/dotnet-core/9.0.102:$PATH"
+
 export PATH="/usr/local/opt/openjdk/bin:$PATH"
 export PATH="/usr/local/opt/bison/bin:$PATH"

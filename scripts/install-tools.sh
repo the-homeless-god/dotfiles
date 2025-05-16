@@ -756,6 +756,26 @@ EOF
     fi
 }
 
+# Установка open-interpreter
+if [ "$INTERACTIVE" = true ]; then
+    if is_tool_selected "open-interpreter"; then
+        install_open_interpreter
+        INSTALLATION_SUMMARY_INSTALLED="$INSTALLATION_SUMMARY_INSTALLED open-interpreter"
+    else
+        echo "$(get_localized_string "system" "skipping") open-interpreter"
+        INSTALLATION_SUMMARY_SKIPPED="$INSTALLATION_SUMMARY_SKIPPED open-interpreter"
+    fi
+else
+    read -p "$(get_localized_string "system" "install") open-interpreter? [y/N] " install_response
+    if [[ "$install_response" =~ ^[Yy]$ ]]; then
+        install_open_interpreter
+        INSTALLATION_SUMMARY_INSTALLED="$INSTALLATION_SUMMARY_INSTALLED open-interpreter"
+    else
+        echo "$(get_localized_string "system" "skipping") open-interpreter"
+        INSTALLATION_SUMMARY_SKIPPED="$INSTALLATION_SUMMARY_SKIPPED open-interpreter"
+    fi
+fi
+
 # Install Oh My Zsh
 install_if_confirmed "oh-my-zsh"
 

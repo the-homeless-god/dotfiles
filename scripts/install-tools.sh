@@ -1,5 +1,111 @@
 #!/bin/bash
 
+# Переменные для режимов работы
+DRY_RUN=false
+VERBOSE=false
+AUTO_LANG=""
+LANG="en"  # Значение по умолчанию
+
+# Загружаем локализации
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+LOCALES_FILE="$SCRIPT_DIR/locales.json"
+
+# Function to get localized string
+get_localized_string() {
+    local section=$1
+    local key=$2
+    jq -r ".[\"$LANG\"][\"$section\"][\"$key\"] // \"$key\"" "$LOCALES_FILE"
+}
+
+# Function to get package description
+get_description() {
+    local package=$1
+    jq -r ".[\"$LANG\"][\"packages\"][\"$package\"] // \"$package\"" "$LOCALES_FILE"
+}
+
+# Function to select language
+select_language() {
+    # Если язык уже указан через аргумент командной строки
+    if [ -n "$AUTO_LANG" ]; then
+        case "$AUTO_LANG" in
+            ru)
+                LANG="ru"
+                ;;
+            en)
+                LANG="en"
+                ;;
+            *)
+                echo "Неподдерживаемый язык: $AUTO_LANG, используется английский"
+                LANG="en"
+                ;;
+        esac
+        return
+    fi
+
+    echo "$(get_localized_string "system" "choose_language")"
+    echo "1) Русский"
+    echo "2) English"
+    read -p "Введите номер / Enter number (1-2): " lang_choice
+    case $lang_choice in
+        1)
+            LANG="ru"
+            ;;
+        2)
+            LANG="en"
+            ;;
+        *)
+            echo "$(get_localized_string "system" "invalid_choice")"
+            LANG="en"
+            ;;
+    esac
+}
+
+# Функция для обработки аргументов командной строки
+parse_args() {
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            --dry-run)
+                DRY_RUN=true
+                shift
+                ;;
+            --verbose)
+                VERBOSE=true
+                shift
+                ;;
+            --lang)
+                if [ -n "$2" ] && [[ "$2" != --* ]]; then
+                    AUTO_LANG="$2"
+                    LANG="$2"  # Устанавливаем язык сразу для справки
+                    shift 2
+                else
+                    echo "$(get_localized_string "system" "error_lang_value")"
+                    exit 1
+                fi
+                ;;
+            --help)
+                echo "$(get_localized_string "system" "help_usage"): $0 [$(get_localized_string "system" "help_options")]"
+                echo "$(get_localized_string "system" "help_options"):"
+                echo "  --dry-run      $(get_localized_string "system" "help_dry_run")"
+                echo "  --verbose      $(get_localized_string "system" "help_verbose")"
+                echo "  --lang ru|en   $(get_localized_string "system" "help_lang")"
+                echo "  --help         $(get_localized_string "system" "help_help")"
+                exit 0
+                ;;
+            *)
+                echo "$(get_localized_string "system" "error_unknown_arg"): $1"
+                echo "$(get_localized_string "system" "error_use_help")"
+                exit 1
+                ;;
+        esac
+    done
+}
+
+# Обработка аргументов командной строки
+parse_args "$@"
+
+# Выбор языка
+select_language
+
 # Function to check if command exists
 command_exists() {
     command -v "$1" >/dev/null 2>&1
@@ -58,6 +164,11 @@ install_package() {
     local package=$1
     local pkg_manager=$(detect_package_manager)
     
+    if [ "$DRY_RUN" = true ]; then
+        echo "[DRY-RUN] Установка пакета $package через $pkg_manager"
+        return 0
+    fi
+    
     case $pkg_manager in
         brew)
             brew install $package
@@ -76,9 +187,8 @@ install_package() {
 }
 
 # Add after the initial variable declarations
-declare -A INSTALLATION_SUMMARY
-INSTALLATION_SUMMARY["installed"]=()
-INSTALLATION_SUMMARY["skipped"]=()
+INSTALLATION_SUMMARY_INSTALLED=""
+INSTALLATION_SUMMARY_SKIPPED=""
 
 # Modify install_if_confirmed function to track installations
 install_if_confirmed() {
@@ -89,30 +199,42 @@ install_if_confirmed() {
     local str_installed=$(get_localized_string "system" "installed")
     local str_skipping=$(get_localized_string "system" "skipping")
 
+    if [ "$DRY_RUN" = true ]; then
+        if [ "$VERBOSE" = true ]; then
+            echo "[DRY-RUN] Запрос на установку $package ($description)"
+        fi
+    fi
+
     if [ "$INSTALL_ALL" = true ]; then
         echo "${str_installing} $package..."
         install_package "$package"
-        INSTALLATION_SUMMARY["installed"]+=("$package")
+        INSTALLATION_SUMMARY_INSTALLED="$INSTALLATION_SUMMARY_INSTALLED $package"
         echo "$package ${str_installed}"
         return
     fi
 
-    read -p "${str_install} ${description} ($package)? [y/N/q/default] " response
+    if [ "$DRY_RUN" = true ]; then
+        # В режиме dry-run симулируем ответ "да" для тестирования
+        response="y"
+    else
+        read -p "${str_install} ${description} ($package)? [y/N/q/default] " response
+    fi
+    
     handle_input "$response"
     
     if [ "$INSTALL_ALL" = true ]; then
         echo "${str_installing} $package..."
         install_package "$package"
-        INSTALLATION_SUMMARY["installed"]+=("$package")
+        INSTALLATION_SUMMARY_INSTALLED="$INSTALLATION_SUMMARY_INSTALLED $package"
         echo "$package ${str_installed}"
     elif [[ "$response" =~ ^[Yy]$ ]]; then
         echo "${str_installing} $package..."
         install_package "$package"
-        INSTALLATION_SUMMARY["installed"]+=("$package")
+        INSTALLATION_SUMMARY_INSTALLED="$INSTALLATION_SUMMARY_INSTALLED $package"
         echo "$package ${str_installed}"
     else
         echo "${str_skipping} $package"
-        INSTALLATION_SUMMARY["skipped"]+=("$package")
+        INSTALLATION_SUMMARY_SKIPPED="$INSTALLATION_SUMMARY_SKIPPED $package"
     fi
 }
 
@@ -146,73 +268,6 @@ if ! command_exists jq; then
     fi
 fi
 
-# Load localization
-SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-LOCALES_FILE="$SCRIPT_DIR/locales.json"
-
-# Function to get localized string
-get_localized_string() {
-    local section=$1
-    local key=$2
-    jq -r ".[\"$LANG\"][\"$section\"][\"$key\"]" "$LOCALES_FILE"
-}
-
-# Function to extract VS Code extensions
-extract_vscode_extensions() {
-    local str_extract_complete=$(get_localized_string "system" "vscode_extract_complete")
-    local output_file="$SCRIPT_DIR/vscode-extensions.sh"
-    
-    echo "#!/bin/bash" > "$output_file"
-    code --list-extensions | xargs -L 1 echo code --install-extension >> "$output_file"
-    chmod +x "$output_file"
-    
-    echo "$str_extract_complete $output_file"
-}
-
-# Function to install VS Code extensions
-install_vscode_extensions() {
-    local str_install_complete=$(get_localized_string "system" "vscode_install_complete")
-    local extensions_file="$SCRIPT_DIR/vscode-extensions.sh"
-    
-    if [ -f "$extensions_file" ]; then
-        bash "$extensions_file"
-        echo "$str_install_complete"
-    else
-        echo "Extensions file not found: $extensions_file"
-    fi
-}
-
-# Function to select language
-select_language() {
-    echo "$(get_localized_string "system" "choose_language")"
-    echo "1) Русский"
-    echo "2) English"
-    read -p "Введите номер / Enter number (1-2): " lang_choice
-    case $lang_choice in
-        1)
-            LANG="ru"
-            ;;
-        2)
-            LANG="en"
-            ;;
-        *)
-            echo "$(get_localized_string "system" "invalid_choice")"
-            LANG="en"
-            ;;
-    esac
-}
-
-# Function to get package description
-get_description() {
-    local package=$1
-    jq -r ".[\"$LANG\"][\"packages\"][\"$package\"] // \"$package\"" "$LOCALES_FILE"
-}
-
-# Select language
-select_language
-
-
-
 # Install Git and useful utilities
 install_if_confirmed "git" "git"
 install_if_confirmed "curl" "curl"
@@ -222,7 +277,7 @@ install_if_confirmed "bat" "bat"
 install_if_confirmed "fd" "fd"
 
 # Install Python 3.11
-install_if_confirmed "python3" "python3"
+install_if_confirmed "python@3.11"
 if command_exists python3; then
     python3 -m ensurepip --upgrade
 fi
@@ -243,95 +298,80 @@ install_if_confirmed "unzip" "unzip"
 install_if_confirmed "wget" "wget"
 
 # Install podman and related tools
-install_if_confirmed "podman" "brew install podman"
-install_if_confirmed "podman-compose" "brew install podman-compose"
+install_if_confirmed "podman"
+install_if_confirmed "podman-compose"
 
 # Install file management and search utilities
-install_if_confirmed "dust" "brew install dust"
-install_if_confirmed "duf" "brew install duf"
+install_if_confirmed "dust"
+install_if_confirmed "duf"
 
-install_if_confirmed "vifmimg" "brew install vifmimg"
-install_if_confirmed "gs" "brew install gs"
+install_if_confirmed "vifmimg"
+install_if_confirmed "gs"
 
 # Media utilities
-install_if_confirmed "mpv" "brew install mpv"
-install_if_confirmed "GraphicsMagick" "brew install GraphicsMagick"
-install_if_confirmed "ueberzugpp" "brew install jstkdng/programs/ueberzugpp"
+install_if_confirmed "mpv"
+install_if_confirmed "GraphicsMagick"
+install_if_confirmed "ueberzugpp"
 
 # Other utilities for preview
-install_if_confirmed "chafa" "brew install chafa"
-install_if_confirmed "archive-tools" "brew install unzip 7-zip rar"
-install_if_confirmed "document-tools" "brew install docx2txt odt2txt gnumeric exiftool"
-install_if_confirmed "media-tools" "brew install cdrtools simple-comic"
-install_if_confirmed "wkhtmltopdf" "brew install wkhtmltopdf"
-install_if_confirmed "markdown-tools" "brew install glow mdcat"
-install_if_confirmed "transmission" "brew install --cask transmission"
+install_if_confirmed "chafa"
+install_if_confirmed "archive-tools"
+install_if_confirmed "document-tools"
+install_if_confirmed "media-tools"
+install_if_confirmed "wkhtmltopdf"
+install_if_confirmed "markdown-tools"
+install_if_confirmed "transmission"
 
 # MacPorts installation
-install_if_confirmed "macports" "curl -O https://distfiles.macports.org/MacPorts/MacPorts-2.10.0.tar.bz2 && \
-tar xf MacPorts-2.10.0.tar.bz2 && \
-cd MacPorts-2.10.0/ && \
-./configure && \
-make && \
-sudo make install && \
-cd .. && \
-rm -rf MacPorts-2.10.0 && \
-rm -rf MacPorts-2.10.0.tar.bz2 && \
-port install catdoc"
+install_if_confirmed "macports"
 
 # Install Node Version Manager (NVM)
-install_if_confirmed "nvm" "brew install nvm && \
-echo 'export NVM_DIR=\"\$HOME/.nvm\"' >> ~/.zshrc && \
-echo 'source \$(brew --prefix nvm)/nvm.sh' >> ~/.zshrc"
+install_if_confirmed "nvm"
 
 # Install text editors and terminal tools
-install_if_confirmed "alacritty" "brew install alacritty"
-install_if_confirmed "vim" "brew install vim"
-install_if_confirmed "tmux" "brew install tmux"
+install_if_confirmed "alacritty"
+install_if_confirmed "vim"
+install_if_confirmed "tmux"
 
 # Install TPM
-install_if_confirmed "tpm" "git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm"
+install_if_confirmed "tpm"
 
 # Install fonts
-install_if_confirmed "nerd-fonts" "brew tap homebrew/cask-fonts && \
-brew install --cask font-meslo-lg-nerd-font && \
-brew install --cask font-fira-code-nerd-font"
+install_if_confirmed "nerd-fonts"
 
 # Install browsers and applications
-install_if_confirmed "w3m" "brew install w3m"
-install_if_confirmed "qutebrowser" "brew install --cask qutebrowser"
-install_if_confirmed "insomnia" "brew install --cask insomnia"
-install_if_confirmed "neofetch" "brew install neofetch"
-install_if_confirmed "tree" "brew install tree"
+install_if_confirmed "w3m"
+install_if_confirmed "qutebrowser"
+install_if_confirmed "insomnia"
+install_if_confirmed "neofetch"
+install_if_confirmed "tree"
 
 # Install LM Studio
-install_if_confirmed "lm-studio" "wget https://releases.lmstudio.ai/mac/arm64/0.2.29/latest/LM-Studio-0.2.29-arm64.dmg && \
-~/.cache/lm-studio/bin/lms bootstrap"
+install_if_confirmed "lm-studio"
+if command_exists lms; then
+    mkdir -p ~/.cache/lm-studio/bin
+    lms bootstrap
+fi
 
-install_if_confirmed "open-interpreter" "python3.11 -m pip install open-interpreter"
+install_if_confirmed "open-interpreter"
 
 # Install Oh My Zsh
-install_if_confirmed "oh-my-zsh" "sh -c \"\$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)\""
+install_if_confirmed "oh-my-zsh"
 
 # Install powerlevel10k
-install_if_confirmed "powerlevel10k" "git clone --depth=1 https://github.com/romkatv/powerlevel10k.git \${ZSH_CUSTOM:-\$HOME/.oh-my-zsh/custom}/themes/powerlevel10k"
+install_if_confirmed "powerlevel10k"
 
 # Install Vim plugin manager
-install_if_confirmed "vim-plug" "curl -fLo ~/.vim/autoload/plug.vim --create-dirs \
-    https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim"
+install_if_confirmed "vim-plug"
 
 # Install tiling window manager for Vim
-install_if_confirmed "dwm-vim" "mkdir -p ~/.vim/plugin ~/.vim/doc && \
-wget -qO ~/.vim/plugin/dwm.vim \
-    https://raw.github.com/spolu/dwm.vim/master/plugin/dwm.vim && \
-wget -qO ~/.vim/doc/dwm.txt \
-    https://raw.github.com/spolu/dwm.vim/master/doc/dwm.txt"
+install_if_confirmed "dwm-vim"
 
 # Install C#
-install_if_confirmed "dotnet-sdk" "brew install --cask dotnet-sdk"
+install_if_confirmed "dotnet-sdk"
 
 # Install C# language server
-install_if_confirmed "csharp-ls" "dotnet tool install --global csharp-ls"
+install_if_confirmed "csharp-ls"
 
 # Function to install configurations
 install_configs() {
@@ -341,6 +381,11 @@ install_configs() {
     local str_import_complete=$(get_localized_string "system" "import_complete")
 
     echo "$str_backup_start"
+    
+    if [ "$DRY_RUN" = true ]; then
+        echo "[DRY-RUN] Создание резервных копий и установка конфигураций"
+        return 0
+    fi
     
     DOTFILES_BACKUP_PATH=~/.dotfiles-backup
     
@@ -364,7 +409,6 @@ install_configs() {
     [ -f ~/.lfrc ] && mv ~/.lfrc "$DOTFILES_BACKUP_PATH"
     [ -f ~/tmux.sh ] && mv ~/tmux.sh "$DOTFILES_BACKUP_PATH"
     [ -f ~/wallpaper.jpeg ] && mv ~/wallpaper.jpeg "$DOTFILES_BACKUP_PATH"
-    [ -d ~/.vscode ] && mv ~/.vscode "$DOTFILES_BACKUP_PATH"
     [ -d ~/.config/lf ] && mv ~/.config/lf "$DOTFILES_BACKUP_PATH/.config/"
     [ -d ~/.config/vifm ] && mv ~/.config/vifm "$DOTFILES_BACKUP_PATH/.config/"
     [ -d ~/.config/bpytop ] && mv ~/.config/bpytop "$DOTFILES_BACKUP_PATH/.config/"
@@ -395,7 +439,6 @@ install_configs() {
     [ -f "$CONFIGS_DIR/.lfrc" ] && cp "$CONFIGS_DIR/.lfrc" ~/
     [ -f "$CONFIGS_DIR/tmux.sh" ] && cp "$CONFIGS_DIR/tmux.sh" ~/
     [ -f "$CONFIGS_DIR/wallpaper.jpeg" ] && cp "$CONFIGS_DIR/wallpaper.jpeg" ~/
-    [ -d "$CONFIGS_DIR/.vscode" ] && cp -r "$CONFIGS_DIR/.vscode" ~/
     [ -d "$CONFIGS_DIR/.config/lf" ] && cp -r "$CONFIGS_DIR/.config/lf" ~/.config/
     [ -d "$CONFIGS_DIR/.config/vifm" ] && cp -r "$CONFIGS_DIR/.config/vifm" ~/.config/
     [ -d "$CONFIGS_DIR/.config/bpytop" ] && cp -r "$CONFIGS_DIR/.config/bpytop" ~/.config/
@@ -412,12 +455,137 @@ install_configs() {
     echo "$str_import_complete ~/"
 }
 
+# Function to install Oh My Zsh
+install_oh_my_zsh() {
+    if ! [ -d "$HOME/.oh-my-zsh" ]; then
+        if [ "$DRY_RUN" = true ]; then
+            echo "[DRY-RUN] Установка Oh My Zsh"
+        else
+            sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+        fi
+    fi
+}
+
+# Function to install powerlevel10k
+install_powerlevel10k() {
+    if ! [ -d "${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k" ]; then
+        if [ "$DRY_RUN" = true ]; then
+            echo "[DRY-RUN] Установка Powerlevel10k"
+        else
+            git clone --depth=1 https://github.com/romkatv/powerlevel10k.git ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k
+        fi
+    fi
+}
+
+# Function to install Vim plugin manager
+install_vim_plug() {
+    if ! [ -f "$HOME/.vim/autoload/plug.vim" ]; then
+        if [ "$DRY_RUN" = true ]; then
+            echo "[DRY-RUN] Установка Vim-plug"
+        else
+            curl -fLo ~/.vim/autoload/plug.vim --create-dirs \
+                https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+        fi
+    fi
+}
+
+# Function to install tiling window manager for Vim
+install_dwm_vim() {
+    if ! [ -f "$HOME/.vim/plugin/dwm.vim" ]; then
+        if [ "$DRY_RUN" = true ]; then
+            echo "[DRY-RUN] Установка DWM для Vim"
+        else
+            mkdir -p ~/.vim/plugin ~/.vim/doc
+            wget -qO ~/.vim/plugin/dwm.vim \
+                https://raw.github.com/spolu/dwm.vim/master/plugin/dwm.vim
+            wget -qO ~/.vim/doc/dwm.txt \
+                https://raw.github.com/spolu/dwm.vim/master/doc/dwm.txt
+        fi
+    fi
+}
+
+# Function to install macports
+install_macports() {
+    if ! command_exists port; then
+        if [ "$DRY_RUN" = true ]; then
+            echo "[DRY-RUN] Установка MacPorts"
+        else
+            curl -O https://distfiles.macports.org/MacPorts/MacPorts-2.10.0.tar.bz2
+            tar xf MacPorts-2.10.0.tar.bz2
+            cd MacPorts-2.10.0/
+            ./configure
+            make
+            sudo make install
+            cd ..
+            rm -rf MacPorts-2.10.0
+            rm -rf MacPorts-2.10.0.tar.bz2
+            port install catdoc
+        fi
+    fi
+}
+
+# Function to install NVM
+install_nvm() {
+    if ! [ -d "$HOME/.nvm" ]; then
+        if [ "$DRY_RUN" = true ]; then
+            echo "[DRY-RUN] Установка NVM"
+        else
+            brew install nvm
+            echo 'export NVM_DIR="$HOME/.nvm"' >> ~/.zshrc
+            echo 'source $(brew --prefix nvm)/nvm.sh' >> ~/.zshrc
+        fi
+    fi
+}
+
+# Function to install LM Studio
+install_lm_studio() {
+    if ! command_exists lms; then
+        if [ "$DRY_RUN" = true ]; then
+            echo "[DRY-RUN] Установка LM Studio"
+        else
+            wget https://releases.lmstudio.ai/mac/arm64/0.2.29/latest/LM-Studio-0.2.29-arm64.dmg
+            mkdir -p ~/.cache/lm-studio/bin
+            # Note: This requires manual installation of the DMG file
+            echo "Please manually install LM Studio from the downloaded DMG file"
+        fi
+    fi
+}
+
 # Function to run post-installation settings
 run_post_install() {
     local str_post_start=$(get_localized_string "system" "post_install_start")
     local str_post_complete=$(get_localized_string "system" "post_install_complete")
     
     echo "$str_post_start"
+    
+    # Install and configure special tools
+    if [[ "$INSTALLATION_SUMMARY_INSTALLED" == *"oh-my-zsh"* ]]; then
+        install_oh_my_zsh
+    fi
+    
+    if [[ "$INSTALLATION_SUMMARY_INSTALLED" == *"powerlevel10k"* ]]; then
+        install_powerlevel10k
+    fi
+    
+    if [[ "$INSTALLATION_SUMMARY_INSTALLED" == *"vim-plug"* ]]; then
+        install_vim_plug
+    fi
+    
+    if [[ "$INSTALLATION_SUMMARY_INSTALLED" == *"dwm-vim"* ]]; then
+        install_dwm_vim
+    fi
+    
+    if [[ "$INSTALLATION_SUMMARY_INSTALLED" == *"macports"* ]]; then
+        install_macports
+    fi
+    
+    if [[ "$INSTALLATION_SUMMARY_INSTALLED" == *"nvm"* ]]; then
+        install_nvm
+    fi
+    
+    if [[ "$INSTALLATION_SUMMARY_INSTALLED" == *"lm-studio"* ]]; then
+        install_lm_studio
+    fi
     
     # Install and configure coc.nvim
     if [ -d ~/.vim/plug/coc.nvim ]; then
@@ -430,30 +598,34 @@ run_post_install() {
         git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions
     fi
     
+    # Install open-interpreter if selected
+    if [[ "$INSTALLATION_SUMMARY_INSTALLED" == *"open-interpreter"* ]]; then
+        python3.11 -m pip install open-interpreter
+    fi
+    
     echo "$str_post_complete"
 }
 
 # Ask about installing configurations
-read -p "$(get_localized_string "system" "install_configs")? [y/N] " install_configs_response
+if [ "$DRY_RUN" = true ]; then
+    install_configs_response="y"
+else
+    read -p "$(get_localized_string "system" "install_configs")? [y/N] " install_configs_response
+fi
+
 if [[ "$install_configs_response" =~ ^[Yy]$ ]]; then
     install_configs
 fi
 
 # Ask about post-installation
-read -p "$(get_localized_string "system" "run_post_install")? [y/N] " post_install_response
+if [ "$DRY_RUN" = true ]; then
+    post_install_response="y"
+else
+    read -p "$(get_localized_string "system" "run_post_install")? [y/N] " post_install_response
+fi
+
 if [[ "$post_install_response" =~ ^[Yy]$ ]]; then
     run_post_install
-fi
-
-# Ask about VS Code extensions
-read -p "$(get_localized_string "system" "vscode_extract")? [y/N] " extract_extensions_response
-if [[ "$extract_extensions_response" =~ ^[Yy]$ ]]; then
-    extract_vscode_extensions
-fi
-
-read -p "$(get_localized_string "system" "vscode_install")? [y/N] " install_extensions_response
-if [[ "$install_extensions_response" =~ ^[Yy]$ ]]; then
-    install_vscode_extensions
 fi
 
 # Add before the final "complete" message
@@ -466,20 +638,20 @@ print_summary() {
     echo "=== ${str_summary_header} ==="
     echo
     echo "${str_installed_header}:"
-    if [ ${#INSTALLATION_SUMMARY["installed"]} -eq 0 ]; then
+    if [ -z "$INSTALLATION_SUMMARY_INSTALLED" ]; then
         echo "  - None"
     else
-        for pkg in "${INSTALLATION_SUMMARY["installed"][@]}"; do
+        for pkg in $INSTALLATION_SUMMARY_INSTALLED; do
             echo "  - $pkg: $(get_description "$pkg")"
         done
     fi
     
     echo
     echo "${str_skipped_header}:"
-    if [ ${#INSTALLATION_SUMMARY["skipped"]} -eq 0 ]; then
+    if [ -z "$INSTALLATION_SUMMARY_SKIPPED" ]; then
         echo "  - None"
     else
-        for pkg in "${INSTALLATION_SUMMARY["skipped"][@]}"; do
+        for pkg in $INSTALLATION_SUMMARY_SKIPPED; do
             echo "  - $pkg: $(get_description "$pkg")"
         done
     fi

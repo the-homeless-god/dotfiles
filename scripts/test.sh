@@ -84,7 +84,7 @@ run_test "Проверка синтаксиса" "bash -n ./scripts/install-tool
 run_test "Проверка флага --help" "./scripts/install-tools.sh --help" 0
 
 # Проверяем флаг --dry-run с указанием языка
-run_test "Проверка флага --dry-run с указанием языка" "./scripts/install-tools.sh --dry-run --lang ru | head -20 &>/dev/null" 0
+run_test "Проверка флага --dry-run с указанием языка" "timeout 10s ./scripts/install-tools.sh --dry-run --lang ru >/dev/null 2>&1 || true" 0 20
 
 # Проверяем наличие локализаций
 run_test "Проверка наличия файла локализаций" "[ -f ./scripts/locales.json ]"

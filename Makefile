@@ -2,6 +2,10 @@
 
 all: test
 
+interactive:
+	@echo "Запуск интерактивного режима..."
+	@bash scripts/install-tools.sh --interactive --lang ru
+
 test:
 	@echo "Запуск тестов..."
 	@bash scripts/test.sh

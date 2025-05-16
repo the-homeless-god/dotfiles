@@ -144,8 +144,26 @@ show_interactive_menu() {
             gum_categories+=("$category:$title - $desc")
         done
         
-        # Use gum choose with multiple flag
-        selected_categories=$(printf "%s\n" "${gum_categories[@]}" | gum choose --multiple --selected-prefix="[✓] " --unselected-prefix="[ ] " | cut -d':' -f1)
+        # Use gum choose for categories (one by one selection)
+        local selected_categories=""
+        echo "Выберите категории (нажмите Enter после выбора каждой категории, Ctrl+C когда закончите):"
+        
+        # Loop until user cancels with Ctrl+C
+        while true; do
+            local choice
+            choice=$(printf "%s\n" "${gum_categories[@]}" | gum choose) || break
+            local category_name=$(echo "$choice" | cut -d':' -f1)
+            
+            # Add to selected categories if not already there
+            if [[ ! "$selected_categories" =~ "$category_name" ]]; then
+                if [ -z "$selected_categories" ]; then
+                    selected_categories="$category_name"
+                else
+                    selected_categories="$selected_categories $category_name"
+                fi
+                echo "Выбрано: $category_name"
+            fi
+        done
         
         if [ -z "$selected_categories" ]; then
             echo "$(get_localized_string "system" "installation_cancelled")"
@@ -169,8 +187,26 @@ show_interactive_menu() {
             done
         done
         
-        # Use gum choose with multiple flag for tools
-        SELECTED_TOOLS=$(printf "%s\n" "${gum_tools[@]}" | gum choose --multiple --selected-prefix="[✓] " --unselected-prefix="[ ] " | cut -d':' -f1)
+        # Use gum choose for tools (one by one selection)
+        SELECTED_TOOLS=""
+        echo "Выберите инструменты (нажмите Enter после выбора каждого инструмента, Ctrl+C когда закончите):"
+        
+        # Loop until user cancels with Ctrl+C
+        while true; do
+            local choice
+            choice=$(printf "%s\n" "${gum_tools[@]}" | gum choose) || break
+            local tool_name=$(echo "$choice" | cut -d':' -f1)
+            
+            # Add to selected tools if not already there
+            if [[ ! "$SELECTED_TOOLS" =~ "$tool_name" ]]; then
+                if [ -z "$SELECTED_TOOLS" ]; then
+                    SELECTED_TOOLS="$tool_name"
+                else
+                    SELECTED_TOOLS="$SELECTED_TOOLS $tool_name"
+                fi
+                echo "Выбрано: $tool_name"
+            fi
+        done
         
         if [ -z "$SELECTED_TOOLS" ]; then
             echo "$(get_localized_string "system" "installation_cancelled")"
@@ -178,10 +214,12 @@ show_interactive_menu() {
         fi
         
         # Show confirmation
-        gum confirm "$(get_localized_string "system" "confirm_text")" || {
+        echo "$(get_localized_string "system" "confirm_text") [y/N]"
+        read -r confirm
+        if [[ ! "$confirm" =~ ^[Yy]$ ]]; then
             echo "$(get_localized_string "system" "installation_cancelled")"
             exit 0
-        }
+        fi
     else
         # Build categories list for checklist
         for category in $all_categories; do

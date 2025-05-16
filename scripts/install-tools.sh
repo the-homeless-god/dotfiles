@@ -144,26 +144,37 @@ show_interactive_menu() {
             gum_categories+=("$category:$title - $desc")
         done
         
-        # Use gum choose for categories (one by one selection)
-        local selected_categories=""
-        echo "Выберите категории (нажмите Enter после выбора каждой категории, Ctrl+C когда закончите):"
+        # По умолчанию выбираем все категории
+        local selected_categories="$all_categories"
         
-        # Loop until user cancels with Ctrl+C
-        while true; do
-            local choice
-            choice=$(printf "%s\n" "${gum_categories[@]}" | gum choose) || break
-            local category_name=$(echo "$choice" | cut -d':' -f1)
+        # Спрашиваем пользователя, хочет ли он выбрать все категории
+        echo "Выбрать все категории? [Y/n]"
+        read -r select_all_cats
+        
+        # Если пользователь не хочет выбрать все категории, предлагаем индивидуальный выбор
+        if [[ "$select_all_cats" =~ ^[Nn]$ ]]; then
+            selected_categories=""
+            echo "Выберите категории (нажмите Enter после выбора каждой категории, Ctrl+C когда закончите):"
             
-            # Add to selected categories if not already there
-            if [[ ! "$selected_categories" =~ "$category_name" ]]; then
-                if [ -z "$selected_categories" ]; then
-                    selected_categories="$category_name"
-                else
-                    selected_categories="$selected_categories $category_name"
+            # Loop until user cancels with Ctrl+C
+            while true; do
+                local choice
+                choice=$(printf "%s\n" "${gum_categories[@]}" | gum choose) || break
+                local category_name=$(echo "$choice" | cut -d':' -f1)
+                
+                # Add to selected categories if not already there
+                if [[ ! "$selected_categories" =~ "$category_name" ]]; then
+                    if [ -z "$selected_categories" ]; then
+                        selected_categories="$category_name"
+                    else
+                        selected_categories="$selected_categories $category_name"
+                    fi
+                    echo "Выбрано: $category_name"
                 fi
-                echo "Выбрано: $category_name"
-            fi
-        done
+            done
+        else
+            echo "Выбраны все категории"
+        fi
         
         if [ -z "$selected_categories" ]; then
             echo "$(get_localized_string "system" "installation_cancelled")"
@@ -174,39 +185,59 @@ show_interactive_menu() {
         echo "$(get_localized_string "system" "tools_select_title")"
         echo "$(get_localized_string "system" "tools_select_text")"
         
-        # Create array for tools
+        # Create array for tools and get all available tools from selected categories
         local gum_tools=()
+        local all_tools=""
+        
         for category in $selected_categories; do
             # Get tools for this category
             local tools=$(jq -r ".categories[] | select(.name == \"$category\") | .tools[]" "$TOOLS_FILE")
             
-            # Add to tools list
+            # Add to all tools list
+            if [ -z "$all_tools" ]; then
+                all_tools="$tools"
+            else
+                all_tools="$all_tools $tools"
+            fi
+            
+            # Add to tools list for display
             for tool in $tools; do
                 local desc=$(get_description "$tool")
                 gum_tools+=("$tool:$desc")
             done
         done
         
-        # Use gum choose for tools (one by one selection)
-        SELECTED_TOOLS=""
-        echo "Выберите инструменты (нажмите Enter после выбора каждого инструмента, Ctrl+C когда закончите):"
+        # По умолчанию выбираем все инструменты
+        SELECTED_TOOLS="$all_tools"
         
-        # Loop until user cancels with Ctrl+C
-        while true; do
-            local choice
-            choice=$(printf "%s\n" "${gum_tools[@]}" | gum choose) || break
-            local tool_name=$(echo "$choice" | cut -d':' -f1)
+        # Спрашиваем пользователя, хочет ли он выбрать все инструменты
+        echo "Выбрать все инструменты? [Y/n]"
+        read -r select_all_tools
+        
+        # Если пользователь не хочет выбрать все инструменты, предлагаем индивидуальный выбор
+        if [[ "$select_all_tools" =~ ^[Nn]$ ]]; then
+            SELECTED_TOOLS=""
+            echo "Выберите инструменты (нажмите Enter после выбора каждого инструмента, Ctrl+C когда закончите):"
             
-            # Add to selected tools if not already there
-            if [[ ! "$SELECTED_TOOLS" =~ "$tool_name" ]]; then
-                if [ -z "$SELECTED_TOOLS" ]; then
-                    SELECTED_TOOLS="$tool_name"
-                else
-                    SELECTED_TOOLS="$SELECTED_TOOLS $tool_name"
+            # Loop until user cancels with Ctrl+C
+            while true; do
+                local choice
+                choice=$(printf "%s\n" "${gum_tools[@]}" | gum choose) || break
+                local tool_name=$(echo "$choice" | cut -d':' -f1)
+                
+                # Add to selected tools if not already there
+                if [[ ! "$SELECTED_TOOLS" =~ "$tool_name" ]]; then
+                    if [ -z "$SELECTED_TOOLS" ]; then
+                        SELECTED_TOOLS="$tool_name"
+                    else
+                        SELECTED_TOOLS="$SELECTED_TOOLS $tool_name"
+                    fi
+                    echo "Выбрано: $tool_name"
                 fi
-                echo "Выбрано: $tool_name"
-            fi
-        done
+            done
+        else
+            echo "Выбраны все инструменты"
+        fi
         
         if [ -z "$SELECTED_TOOLS" ]; then
             echo "$(get_localized_string "system" "installation_cancelled")"
@@ -214,9 +245,9 @@ show_interactive_menu() {
         fi
         
         # Show confirmation
-        echo "$(get_localized_string "system" "confirm_text") [y/N]"
+        echo "$(get_localized_string "system" "confirm_text") [Y/n]"
         read -r confirm
-        if [[ ! "$confirm" =~ ^[Yy]$ ]]; then
+        if [[ "$confirm" =~ ^[Nn]$ ]]; then
             echo "$(get_localized_string "system" "installation_cancelled")"
             exit 0
         fi

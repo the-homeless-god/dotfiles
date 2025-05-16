@@ -110,7 +110,7 @@ y = 50
 size = 18.0
 
 [font.bold]
-family = "Menlo"
+family = "Fira Code"
 style = "Bold"
 
 [font.glyph_offset]
@@ -118,11 +118,11 @@ x = 0
 y = 0
 
 [font.italic]
-family = "Menlo"
+family = "Fira Code"
 style = "Bold Italic"
 
 [font.normal]
-family = "Menlo"
+family = "MesloLGS NF"
 
 [font.offset]
 x = 0

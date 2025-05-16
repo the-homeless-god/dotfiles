@@ -275,6 +275,7 @@ install_if_confirmed "zsh" "zsh"
 install_if_confirmed "ripgrep" "ripgrep"
 install_if_confirmed "bat" "bat"
 install_if_confirmed "fd" "fd"
+install_if_confirmed "zoxide" "zoxide"
 
 # Install Python 3.11
 install_if_confirmed "python@3.11"

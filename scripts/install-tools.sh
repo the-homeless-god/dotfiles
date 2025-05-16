@@ -131,79 +131,132 @@ show_interactive_menu() {
     # Get all categories
     local all_categories=$(jq -r ".categories[].name" "$TOOLS_FILE")
     
-    # Build categories list for checklist
-    for category in $all_categories; do
-        local title=$(jq -r ".categories[] | select(.name == \"$category\") | .$title_key" "$TOOLS_FILE")
-        local desc=$(jq -r ".categories[] | select(.name == \"$category\") | .$description_key" "$TOOLS_FILE")
-        categories_list="$categories_list $category \"$title - $desc\" ON "
-    done
-    
-    # Display categories checklist
-    local category_title="$(get_localized_string "system" "category_select_title")"
-    local category_text="$(get_localized_string "system" "category_select_text")"
-    
-    $DIALOG --title "$category_title" \
-        --checklist "$category_text" \
-        $menu_height $menu_width $((menu_height - 8)) \
-        $categories_list 2> "$categories_temp"
-    
-    # If user cancels, exit
-    if [ $? -ne 0 ]; then
-        rm "$categories_temp"
-        echo "$(get_localized_string "system" "installation_cancelled")"
-        exit 0
-    fi
-    
-    local selected_categories=$(cat "$categories_temp")
-    rm "$categories_temp"
-    
-    # Next, let user select tools from selected categories
-    local tools_temp=$(mktemp)
-    local tools_list=""
-    
-    # Build tools list for checklist
-    for category in $selected_categories; do
-        # Get tools for this category
-        local tools=$(jq -r ".categories[] | select(.name == \"$category\") | .tools[]" "$TOOLS_FILE")
+    if [ "$DIALOG" = "gum" ]; then
+        # For gum, we use a different approach
+        echo "$(get_localized_string "system" "category_select_title")"
+        echo "$(get_localized_string "system" "category_select_text")"
         
-        # Add to tools list
-        for tool in $tools; do
-            local desc=$(get_description "$tool")
-            tools_list="$tools_list $tool \"$desc\" ON "
+        # Create array for gum choose
+        local gum_categories=()
+        for category in $all_categories; do
+            local title=$(jq -r ".categories[] | select(.name == \"$category\") | .$title_key" "$TOOLS_FILE")
+            local desc=$(jq -r ".categories[] | select(.name == \"$category\") | .$description_key" "$TOOLS_FILE")
+            gum_categories+=("$category:$title - $desc")
         done
-    done
-    
-    # Display tools checklist
-    local tools_title="$(get_localized_string "system" "tools_select_title")"
-    local tools_text="$(get_localized_string "system" "tools_select_text")"
-    
-    $DIALOG --title "$tools_title" \
-        --checklist "$tools_text" \
-        $menu_height $menu_width $((menu_height - 8)) \
-        $tools_list 2> "$tools_temp"
-    
-    # If user cancels, exit
-    if [ $? -ne 0 ]; then
+        
+        # Use gum choose with multiple flag
+        selected_categories=$(printf "%s\n" "${gum_categories[@]}" | gum choose --multiple --selected-prefix="[✓] " --unselected-prefix="[ ] " | cut -d':' -f1)
+        
+        if [ -z "$selected_categories" ]; then
+            echo "$(get_localized_string "system" "installation_cancelled")"
+            exit 0
+        fi
+        
+        # Next, let user select tools from selected categories
+        echo "$(get_localized_string "system" "tools_select_title")"
+        echo "$(get_localized_string "system" "tools_select_text")"
+        
+        # Create array for tools
+        local gum_tools=()
+        for category in $selected_categories; do
+            # Get tools for this category
+            local tools=$(jq -r ".categories[] | select(.name == \"$category\") | .tools[]" "$TOOLS_FILE")
+            
+            # Add to tools list
+            for tool in $tools; do
+                local desc=$(get_description "$tool")
+                gum_tools+=("$tool:$desc")
+            done
+        done
+        
+        # Use gum choose with multiple flag for tools
+        SELECTED_TOOLS=$(printf "%s\n" "${gum_tools[@]}" | gum choose --multiple --selected-prefix="[✓] " --unselected-prefix="[ ] " | cut -d':' -f1)
+        
+        if [ -z "$SELECTED_TOOLS" ]; then
+            echo "$(get_localized_string "system" "installation_cancelled")"
+            exit 0
+        fi
+        
+        # Show confirmation
+        gum confirm "$(get_localized_string "system" "confirm_text")" || {
+            echo "$(get_localized_string "system" "installation_cancelled")"
+            exit 0
+        }
+    else
+        # Build categories list for checklist
+        for category in $all_categories; do
+            local title=$(jq -r ".categories[] | select(.name == \"$category\") | .$title_key" "$TOOLS_FILE")
+            local desc=$(jq -r ".categories[] | select(.name == \"$category\") | .$description_key" "$TOOLS_FILE")
+            categories_list="$categories_list $category \"$title - $desc\" ON "
+        done
+        
+        # Display categories checklist
+        local category_title="$(get_localized_string "system" "category_select_title")"
+        local category_text="$(get_localized_string "system" "category_select_text")"
+        
+        $DIALOG --title "$category_title" \
+            --checklist "$category_text" \
+            $menu_height $menu_width $((menu_height - 8)) \
+            $categories_list 2> "$categories_temp"
+        
+        # If user cancels, exit
+        if [ $? -ne 0 ]; then
+            rm "$categories_temp"
+            echo "$(get_localized_string "system" "installation_cancelled")"
+            exit 0
+        fi
+        
+        local selected_categories=$(cat "$categories_temp")
+        rm "$categories_temp"
+        
+        # Next, let user select tools from selected categories
+        local tools_temp=$(mktemp)
+        local tools_list=""
+        
+        # Build tools list for checklist
+        for category in $selected_categories; do
+            # Get tools for this category
+            local tools=$(jq -r ".categories[] | select(.name == \"$category\") | .tools[]" "$TOOLS_FILE")
+            
+            # Add to tools list
+            for tool in $tools; do
+                local desc=$(get_description "$tool")
+                tools_list="$tools_list $tool \"$desc\" ON "
+            done
+        done
+        
+        # Display tools checklist
+        local tools_title="$(get_localized_string "system" "tools_select_title")"
+        local tools_text="$(get_localized_string "system" "tools_select_text")"
+        
+        $DIALOG --title "$tools_title" \
+            --checklist "$tools_text" \
+            $menu_height $menu_width $((menu_height - 8)) \
+            $tools_list 2> "$tools_temp"
+        
+        # If user cancels, exit
+        if [ $? -ne 0 ]; then
+            rm "$tools_temp"
+            echo "$(get_localized_string "system" "installation_cancelled")"
+            exit 0
+        fi
+        
+        # Read selected tools
+        SELECTED_TOOLS=$(cat "$tools_temp")
         rm "$tools_temp"
-        echo "$(get_localized_string "system" "installation_cancelled")"
-        exit 0
-    fi
-    
-    # Read selected tools
-    SELECTED_TOOLS=$(cat "$tools_temp")
-    rm "$tools_temp"
-    
-    # Show confirmation
-    local confirm_title="$(get_localized_string "system" "confirm_title")"
-    local confirm_text="$(get_localized_string "system" "confirm_text")"
-    
-    $DIALOG --title "$confirm_title" \
-        --yesno "$confirm_text" \
-        10 60
-    
-    if [ $? -ne 0 ]; then
-        echo "$(get_localized_string "system" "installation_cancelled")"
-        exit 0
+        
+        # Show confirmation
+        local confirm_title="$(get_localized_string "system" "confirm_title")"
+        local confirm_text="$(get_localized_string "system" "confirm_text")"
+        
+        $DIALOG --title "$confirm_title" \
+            --yesno "$confirm_text" \
+            10 60
+        
+        if [ $? -ne 0 ]; then
+            echo "$(get_localized_string "system" "installation_cancelled")"
+            exit 0
+        fi
     fi
 }
 

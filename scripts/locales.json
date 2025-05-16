@@ -35,7 +35,10 @@
             "tools_select_text": "Выберите инструменты для установки (используйте пробел для выбора/отмены, Enter для подтверждения):",
             "confirm_title": "Подтверждение",
             "confirm_text": "Вы уверены, что хотите установить выбранные инструменты?",
-            "installation_cancelled": "Установка отменена."
+            "installation_cancelled": "Установка отменена.",
+            "installing_ui_tools": "Установка инструментов для интерактивного интерфейса...",
+            "ui_tools_required": "Ошибка: для интерактивного режима требуется whiptail, dialog или gum.",
+            "ui_tools_install_error": "Ошибка: Не удалось установить инструменты интерфейса. Пожалуйста, установите whiptail, dialog или gum вручную."
         },
         "packages": {
             "git": "Git - система контроля версий",
@@ -134,7 +137,10 @@
             "tools_select_text": "Select tools to install (use space to select/deselect, Enter to confirm):",
             "confirm_title": "Confirmation",
             "confirm_text": "Are you sure you want to install the selected tools?",
-            "installation_cancelled": "Installation cancelled."
+            "installation_cancelled": "Installation cancelled.",
+            "installing_ui_tools": "Installing UI tools for interactive mode...",
+            "ui_tools_required": "Error: whiptail, dialog, or gum is required for interactive mode.",
+            "ui_tools_install_error": "Error: Could not install UI tools. Please install whiptail, dialog, or gum manually."
         },
         "packages": {
             "git": "Git - version control system",

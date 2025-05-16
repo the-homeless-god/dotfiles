@@ -13,6 +13,11 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 LOCALES_FILE="$SCRIPT_DIR/locales.json"
 TOOLS_FILE="$(dirname "$SCRIPT_DIR")/configs/tools.json"
 
+# Function to check if a command exists
+command_exists() {
+    type "$1" &> /dev/null
+}
+
 # Function to get localized string
 get_localized_string() {
     local section=$1
@@ -26,7 +31,28 @@ get_description() {
     jq -r ".[\"$LANG\"][\"packages\"][\"$package\"] // \"$package\"" "$LOCALES_FILE"
 }
 
-# Function to check if dialog/whiptail is installed
+# Install a package depending on the system
+install_package() {
+    local package=$1
+    if command_exists brew; then
+        brew install "$package"
+    elif command_exists apt-get; then
+        sudo apt-get update && sudo apt-get install -y "$package"
+    elif command_exists apk; then
+        sudo apk add --no-cache "$package"
+    elif command_exists yum; then
+        sudo yum install -y "$package"
+    elif command_exists dnf; then
+        sudo dnf install -y "$package"
+    elif command_exists pacman; then
+        sudo pacman -S --noconfirm "$package"
+    else
+        echo "Error: Unsupported package manager. Please install $package manually."
+        return 1
+    fi
+}
+
+# Function to check if dialog/whiptail/gum is installed
 check_dialog_installed() {
     if command_exists whiptail; then
         DIALOG="whiptail"
@@ -34,9 +60,49 @@ check_dialog_installed() {
     elif command_exists dialog; then
         DIALOG="dialog"
         return 0
+    elif command_exists gum; then
+        DIALOG="gum"
+        return 0
     else
         return 1
     fi
+}
+
+# Function to ensure dialog tool is installed
+ensure_dialog_installed() {
+    if check_dialog_installed; then
+        return 0
+    fi
+    
+    echo "$(get_localized_string "system" "installing_ui_tools")"
+    
+    # Try to install whiptail first (widely available)
+    if command_exists brew; then
+        brew install ncurses
+        if ! command_exists whiptail; then
+            # On macOS, whiptail comes with ncurses
+            if ! command_exists gum; then
+                brew install gum
+            fi
+        fi
+    elif command_exists apt-get; then
+        sudo apt-get update && sudo apt-get install -y whiptail
+    elif command_exists apk; then
+        sudo apk add --no-cache whiptail
+    elif command_exists yum; then
+        sudo yum install -y whiptail
+    elif command_exists dnf; then
+        sudo dnf install -y whiptail
+    elif command_exists pacman; then
+        sudo pacman -S --noconfirm whiptail
+    else
+        echo "$(get_localized_string "system" "ui_tools_install_error")"
+        exit 1
+    fi
+    
+    # Check if installation was successful
+    check_dialog_installed
+    return $?
 }
 
 # Function to show interactive tool selection
@@ -50,9 +116,10 @@ show_interactive_menu() {
     local menu_height=$((term_height - 10))
     local menu_width=$((term_width - 20))
     
-    if ! check_dialog_installed; then
-        echo "Error: whiptail or dialog is required for interactive mode."
-        echo "Please install one of them and try again."
+    # Ensure we have a dialog tool installed
+    if ! ensure_dialog_installed; then
+        echo "$(get_localized_string "system" "ui_tools_required")"
+        echo "$(get_localized_string "system" "ui_tools_install_error")"
         exit 1
     fi
     

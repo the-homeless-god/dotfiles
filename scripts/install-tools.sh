@@ -7,6 +7,8 @@ AUTO_LANG=""
 LANG="en"  # Значение по умолчанию
 INTERACTIVE=false
 SELECTED_TOOLS=()
+INSTALLATION_SUMMARY_INSTALLED=""
+INSTALLATION_SUMMARY_SKIPPED=""
 
 # Загружаем локализации
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
@@ -16,6 +18,64 @@ TOOLS_FILE="$(dirname "$SCRIPT_DIR")/configs/tools.json"
 # Function to check if a command exists
 command_exists() {
     type "$1" &> /dev/null
+}
+
+# Function to check if package is already installed
+check_package_installed() {
+    local package=$1
+    
+    if command_exists brew; then
+        # For Homebrew packages
+        if brew list --formula | grep -q "^$package$"; then
+            return 0
+        elif brew list --cask | grep -q "^$package$"; then
+            return 0
+        fi
+    elif command_exists apt-get; then
+        # For apt-based systems
+        dpkg -l | grep -q "^ii.*$package "
+        return $?
+    elif command_exists pacman; then
+        # For pacman-based systems
+        pacman -Qi "$package" &> /dev/null
+        return $?
+    elif command_exists yum || command_exists dnf; then
+        # For rpm-based systems
+        rpm -q "$package" &> /dev/null
+        return $?
+    else
+        # Default fallback - check if command exists
+        command_exists "$package"
+        return $?
+    fi
+    
+    return 1
+}
+
+# Function to get package version
+get_package_version() {
+    local package=$1
+    local version="unknown"
+    
+    if command_exists brew; then
+        # For Homebrew packages
+        if brew list --formula | grep -q "^$package$"; then
+            version=$(brew info $package | grep -E "^$package:" | head -1 | awk '{print $3}')
+        elif brew list --cask | grep -q "^$package$"; then
+            version=$(brew info --cask $package | grep -E "^$package:" | head -1 | awk '{print $3}')
+        fi
+    elif command_exists apt-get; then
+        # For apt-based systems
+        version=$(dpkg -l | grep "^ii.*$package " | awk '{print $3}')
+    elif command_exists pacman; then
+        # For pacman-based systems
+        version=$(pacman -Qi "$package" 2>/dev/null | grep "^Version" | awk '{print $3}')
+    elif command_exists yum || command_exists dnf; then
+        # For rpm-based systems
+        version=$(rpm -q --qf "%{VERSION}" "$package" 2>/dev/null)
+    fi
+    
+    echo "$version"
 }
 
 # Function to get localized string
@@ -49,6 +109,49 @@ install_package() {
     else
         echo "Error: Unsupported package manager. Please install $package manually."
         return 1
+    fi
+}
+
+# Function to install if confirmed in interactive mode or normally otherwise
+install_if_confirmed() {
+    local package=$1
+    local alt_name=${2:-$package}
+    
+    if [ "$INTERACTIVE" = true ]; then
+        if is_tool_selected "$package"; then
+            if [ "$DRY_RUN" = true ]; then
+                echo "[DRY-RUN] $(get_localized_string "system" "installing") $package"
+                INSTALLATION_SUMMARY_INSTALLED="$INSTALLATION_SUMMARY_INSTALLED $package"
+            else
+                echo "$(get_localized_string "system" "installing") $package..."
+                install_package "$alt_name"
+                if [ $? -eq 0 ]; then
+                    echo "$package $(get_localized_string "system" "installed")"
+                    INSTALLATION_SUMMARY_INSTALLED="$INSTALLATION_SUMMARY_INSTALLED $package"
+                fi
+            fi
+        else
+            echo "$(get_localized_string "system" "skipping") $package"
+            INSTALLATION_SUMMARY_SKIPPED="$INSTALLATION_SUMMARY_SKIPPED $package"
+        fi
+    else
+        read -p "$(get_localized_string "system" "install") $package? [y/N] " install_response
+        if [[ "$install_response" =~ ^[Yy]$ ]]; then
+            if [ "$DRY_RUN" = true ]; then
+                echo "[DRY-RUN] $(get_localized_string "system" "installing") $package"
+                INSTALLATION_SUMMARY_INSTALLED="$INSTALLATION_SUMMARY_INSTALLED $package"
+            else
+                echo "$(get_localized_string "system" "installing") $package..."
+                install_package "$alt_name"
+                if [ $? -eq 0 ]; then
+                    echo "$package $(get_localized_string "system" "installed")"
+                    INSTALLATION_SUMMARY_INSTALLED="$INSTALLATION_SUMMARY_INSTALLED $package"
+                fi
+            fi
+        else
+            echo "$(get_localized_string "system" "skipping") $package"
+            INSTALLATION_SUMMARY_SKIPPED="$INSTALLATION_SUMMARY_SKIPPED $package"
+        fi
     fi
 }
 
@@ -524,7 +627,24 @@ install_if_confirmed "zoxide" "zoxide"
 # Install Python 3.11
 install_if_confirmed "python@3.11"
 if command_exists python3; then
-    python3 -m ensurepip --upgrade
+    if [ "$DRY_RUN" = false ]; then
+        echo "Настройка Python pip с использованием виртуального окружения..."
+        # Create virtual environment in user's home directory if it doesn't exist
+        if [ ! -d "$HOME/.dotfiles-venv" ]; then
+            python3 -m venv "$HOME/.dotfiles-venv"
+            echo "Создано виртуальное окружение: $HOME/.dotfiles-venv"
+        fi
+        
+        # Activate virtual environment to install packages
+        source "$HOME/.dotfiles-venv/bin/activate"
+        
+        # Add to shell profile if not already there
+        if ! grep -q "dotfiles-venv" "$HOME/.zshrc" 2>/dev/null; then
+            echo '# Activate dotfiles virtual environment if it exists' >> "$HOME/.zshrc"
+            echo '[ -f "$HOME/.dotfiles-venv/bin/activate" ] && source "$HOME/.dotfiles-venv/bin/activate"' >> "$HOME/.zshrc"
+            echo "Добавлена активация виртуального окружения в .zshrc"
+        fi
+    fi
 fi
 
 # Install Vim and related tools
@@ -598,7 +718,43 @@ if command_exists lms; then
     lms bootstrap
 fi
 
-install_if_confirmed "open-interpreter"
+# Function to install Open Interpreter
+install_open_interpreter() {
+    if [ "$DRY_RUN" = true ]; then
+        echo "[DRY-RUN] Установка Open Interpreter"
+    else
+        echo "Установка Open Interpreter через виртуальное окружение..."
+        # Ensure virtual environment is activated
+        if [ -d "$HOME/.dotfiles-venv" ]; then
+            source "$HOME/.dotfiles-venv/bin/activate"
+            pip install open-interpreter
+            echo "Open Interpreter установлен в виртуальное окружение"
+            
+            # Create convenience shell script in ~/bin
+            mkdir -p "$HOME/bin"
+            cat > "$HOME/bin/interpreter" << 'EOF'
+#!/bin/bash
+if [ -f "$HOME/.dotfiles-venv/bin/activate" ]; then
+    source "$HOME/.dotfiles-venv/bin/activate"
+    python -m interpreter "$@"
+else
+    echo "Error: Virtual environment not found. Please run the dotfiles installer first."
+    exit 1
+fi
+EOF
+            chmod +x "$HOME/bin/interpreter"
+            
+            # Add ~/bin to PATH if not already there
+            if ! grep -q "export PATH=\"\$HOME/bin:\$PATH\"" "$HOME/.zshrc" 2>/dev/null; then
+                echo 'export PATH="$HOME/bin:$PATH"' >> "$HOME/.zshrc"
+            fi
+            
+            echo "Создан скрипт запуска: $HOME/bin/interpreter"
+        else
+            echo "Ошибка: Виртуальное окружение не найдено. Установка пропущена."
+        fi
+    fi
+}
 
 # Install Oh My Zsh
 install_if_confirmed "oh-my-zsh"
@@ -845,7 +1001,7 @@ run_post_install() {
     
     # Install open-interpreter if selected
     if [[ "$INSTALLATION_SUMMARY_INSTALLED" == *"open-interpreter"* ]]; then
-        python3.11 -m pip install open-interpreter
+        install_open_interpreter
     fi
     
     echo "$str_post_complete"
@@ -905,61 +1061,3 @@ print_summary() {
 
 print_summary
 echo "$(get_localized_string "system" "complete")"
-
-# Function to check if package is already installed
-check_package_installed() {
-    local package=$1
-    
-    if command_exists brew; then
-        # For Homebrew packages
-        if brew list --formula | grep -q "^$package$"; then
-            return 0
-        elif brew list --cask | grep -q "^$package$"; then
-            return 0
-        fi
-    elif command_exists apt-get; then
-        # For apt-based systems
-        dpkg -l | grep -q "^ii.*$package "
-        return $?
-    elif command_exists pacman; then
-        # For pacman-based systems
-        pacman -Qi "$package" &> /dev/null
-        return $?
-    elif command_exists yum || command_exists dnf; then
-        # For rpm-based systems
-        rpm -q "$package" &> /dev/null
-        return $?
-    else
-        # Default fallback - check if command exists
-        command_exists "$package"
-        return $?
-    fi
-    
-    return 1
-}
-
-# Function to get package version
-get_package_version() {
-    local package=$1
-    local version="unknown"
-    
-    if command_exists brew; then
-        # For Homebrew packages
-        if brew list --formula | grep -q "^$package$"; then
-            version=$(brew info $package | grep -E "^$package:" | head -1 | awk '{print $3}')
-        elif brew list --cask | grep -q "^$package$"; then
-            version=$(brew info --cask $package | grep -E "^$package:" | head -1 | awk '{print $3}')
-        fi
-    elif command_exists apt-get; then
-        # For apt-based systems
-        version=$(dpkg -l | grep "^ii.*$package " | awk '{print $3}')
-    elif command_exists pacman; then
-        # For pacman-based systems
-        version=$(pacman -Qi "$package" 2>/dev/null | grep "^Version" | awk '{print $3}')
-    elif command_exists yum || command_exists dnf; then
-        # For rpm-based systems
-        version=$(rpm -q --qf "%{VERSION}" "$package" 2>/dev/null)
-    fi
-    
-    echo "$version"
-}

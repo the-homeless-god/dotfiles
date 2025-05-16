@@ -1,0 +1,125 @@
+{
+    "categories": [
+        {
+            "name": "essential",
+            "title_ru": "Основные инструменты",
+            "title_en": "Essential Tools",
+            "description_ru": "Базовые утилиты для работы в терминале",
+            "description_en": "Basic utilities for terminal work",
+            "tools": [
+                "git",
+                "curl",
+                "zsh",
+                "ripgrep",
+                "bat",
+                "fd",
+                "zoxide"
+            ]
+        },
+        {
+            "name": "development",
+            "title_ru": "Инструменты разработки",
+            "title_en": "Development Tools",
+            "description_ru": "Инструменты для программирования и разработки",
+            "description_en": "Programming and development tools",
+            "tools": [
+                "python@3.11",
+                "vim",
+                "tmux",
+                "nvm",
+                "vim-plug",
+                "dotnet-sdk",
+                "csharp-ls"
+            ]
+        },
+        {
+            "name": "file_management",
+            "title_ru": "Файловые менеджеры",
+            "title_en": "File Management",
+            "description_ru": "Утилиты для работы с файлами",
+            "description_en": "File management utilities",
+            "tools": [
+                "vifm",
+                "vifmimg",
+                "dust",
+                "duf",
+                "tree"
+            ]
+        },
+        {
+            "name": "media",
+            "title_ru": "Медиа инструменты",
+            "title_en": "Media Tools",
+            "description_ru": "Инструменты для работы с медиа-файлами",
+            "description_en": "Tools for working with media files",
+            "tools": [
+                "ffmpeg",
+                "imagemagick",
+                "mpv",
+                "GraphicsMagick",
+                "ueberzugpp",
+                "chafa"
+            ]
+        },
+        {
+            "name": "containers",
+            "title_ru": "Контейнеры",
+            "title_en": "Containers",
+            "description_ru": "Инструменты для работы с контейнерами",
+            "description_en": "Container management tools",
+            "tools": [
+                "podman",
+                "podman-compose"
+            ]
+        },
+        {
+            "name": "utilities",
+            "title_ru": "Дополнительные утилиты",
+            "title_en": "Additional Utilities",
+            "description_ru": "Различные полезные программы",
+            "description_en": "Various useful programs",
+            "tools": [
+                "unzip",
+                "wget",
+                "archive-tools",
+                "document-tools",
+                "media-tools",
+                "wkhtmltopdf",
+                "markdown-tools",
+                "transmission",
+                "macports",
+                "gs"
+            ]
+        },
+        {
+            "name": "shell",
+            "title_ru": "Оболочки и темы",
+            "title_en": "Shells and Themes",
+            "description_ru": "Инструменты для улучшения оболочки",
+            "description_en": "Shell enhancements",
+            "tools": [
+                "oh-my-zsh",
+                "powerlevel10k",
+                "tpm",
+                "dwm-vim",
+                "nerd-fonts"
+            ]
+        },
+        {
+            "name": "apps",
+            "title_ru": "Приложения",
+            "title_en": "Applications",
+            "description_ru": "Полноценные приложения",
+            "description_en": "Full applications",
+            "tools": [
+                "alacritty",
+                "w3m",
+                "qutebrowser",
+                "insomnia",
+                "neofetch",
+                "lm-studio",
+                "open-interpreter"
+            ]
+        }
+    ]
+} 

@@ -25,9 +25,17 @@
             "help_verbose": "Подробный вывод",
             "help_lang": "Указать язык (ru или en)",
             "help_help": "Показать эту справку",
+            "help_interactive": "Запустить в интерактивном режиме с чекбоксами",
             "error_unknown_arg": "Неизвестный аргумент",
             "error_use_help": "Используйте --help для получения справки",
-            "error_lang_value": "Ошибка: для аргумента --lang требуется значение."
+            "error_lang_value": "Ошибка: для аргумента --lang требуется значение.",
+            "category_select_title": "Выберите категории",
+            "category_select_text": "Выберите категории инструментов для установки (используйте пробел для выбора/отмены, Enter для подтверждения):",
+            "tools_select_title": "Выберите инструменты",
+            "tools_select_text": "Выберите инструменты для установки (используйте пробел для выбора/отмены, Enter для подтверждения):",
+            "confirm_title": "Подтверждение",
+            "confirm_text": "Вы уверены, что хотите установить выбранные инструменты?",
+            "installation_cancelled": "Установка отменена."
         },
         "packages": {
             "git": "Git - система контроля версий",
@@ -116,9 +124,17 @@
             "help_verbose": "Verbose output",
             "help_lang": "Specify language (ru or en)",
             "help_help": "Show this help",
+            "help_interactive": "Run in interactive mode with checkboxes",
             "error_unknown_arg": "Unknown argument",
             "error_use_help": "Use --help to get help",
-            "error_lang_value": "Error: --lang argument requires a value."
+            "error_lang_value": "Error: --lang argument requires a value.",
+            "category_select_title": "Select Categories",
+            "category_select_text": "Select tool categories to install (use space to select/deselect, Enter to confirm):",
+            "tools_select_title": "Select Tools",
+            "tools_select_text": "Select tools to install (use space to select/deselect, Enter to confirm):",
+            "confirm_title": "Confirmation",
+            "confirm_text": "Are you sure you want to install the selected tools?",
+            "installation_cancelled": "Installation cancelled."
         },
         "packages": {
             "git": "Git - version control system",

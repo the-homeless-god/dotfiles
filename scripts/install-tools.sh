@@ -5,10 +5,13 @@ DRY_RUN=false
 VERBOSE=false
 AUTO_LANG=""
 LANG="en"  # Значение по умолчанию
+INTERACTIVE=false
+SELECTED_TOOLS=()
 
 # Загружаем локализации
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 LOCALES_FILE="$SCRIPT_DIR/locales.json"
+TOOLS_FILE="$(dirname "$SCRIPT_DIR")/configs/tools.json"
 
 # Function to get localized string
 get_localized_string() {
@@ -21,6 +24,126 @@ get_localized_string() {
 get_description() {
     local package=$1
     jq -r ".[\"$LANG\"][\"packages\"][\"$package\"] // \"$package\"" "$LOCALES_FILE"
+}
+
+# Function to check if dialog/whiptail is installed
+check_dialog_installed() {
+    if command_exists whiptail; then
+        DIALOG="whiptail"
+        return 0
+    elif command_exists dialog; then
+        DIALOG="dialog"
+        return 0
+    else
+        return 1
+    fi
+}
+
+# Function to show interactive tool selection
+show_interactive_menu() {
+    local title_key="title_$LANG"
+    local description_key="description_$LANG"
+    
+    # Determine terminal size
+    local term_height=$(tput lines)
+    local term_width=$(tput cols)
+    local menu_height=$((term_height - 10))
+    local menu_width=$((term_width - 20))
+    
+    if ! check_dialog_installed; then
+        echo "Error: whiptail or dialog is required for interactive mode."
+        echo "Please install one of them and try again."
+        exit 1
+    fi
+    
+    # First, let user select categories
+    local categories_temp=$(mktemp)
+    local i=1
+    local categories_list=""
+    
+    # Get all categories
+    local all_categories=$(jq -r ".categories[].name" "$TOOLS_FILE")
+    
+    # Build categories list for checklist
+    for category in $all_categories; do
+        local title=$(jq -r ".categories[] | select(.name == \"$category\") | .$title_key" "$TOOLS_FILE")
+        local desc=$(jq -r ".categories[] | select(.name == \"$category\") | .$description_key" "$TOOLS_FILE")
+        categories_list="$categories_list $category \"$title - $desc\" ON "
+    done
+    
+    # Display categories checklist
+    local category_title="$(get_localized_string "system" "category_select_title")"
+    local category_text="$(get_localized_string "system" "category_select_text")"
+    
+    $DIALOG --title "$category_title" \
+        --checklist "$category_text" \
+        $menu_height $menu_width $((menu_height - 8)) \
+        $categories_list 2> "$categories_temp"
+    
+    # If user cancels, exit
+    if [ $? -ne 0 ]; then
+        rm "$categories_temp"
+        echo "$(get_localized_string "system" "installation_cancelled")"
+        exit 0
+    fi
+    
+    local selected_categories=$(cat "$categories_temp")
+    rm "$categories_temp"
+    
+    # Next, let user select tools from selected categories
+    local tools_temp=$(mktemp)
+    local tools_list=""
+    
+    # Build tools list for checklist
+    for category in $selected_categories; do
+        # Get tools for this category
+        local tools=$(jq -r ".categories[] | select(.name == \"$category\") | .tools[]" "$TOOLS_FILE")
+        
+        # Add to tools list
+        for tool in $tools; do
+            local desc=$(get_description "$tool")
+            tools_list="$tools_list $tool \"$desc\" ON "
+        done
+    done
+    
+    # Display tools checklist
+    local tools_title="$(get_localized_string "system" "tools_select_title")"
+    local tools_text="$(get_localized_string "system" "tools_select_text")"
+    
+    $DIALOG --title "$tools_title" \
+        --checklist "$tools_text" \
+        $menu_height $menu_width $((menu_height - 8)) \
+        $tools_list 2> "$tools_temp"
+    
+    # If user cancels, exit
+    if [ $? -ne 0 ]; then
+        rm "$tools_temp"
+        echo "$(get_localized_string "system" "installation_cancelled")"
+        exit 0
+    fi
+    
+    # Read selected tools
+    SELECTED_TOOLS=$(cat "$tools_temp")
+    rm "$tools_temp"
+    
+    # Show confirmation
+    local confirm_title="$(get_localized_string "system" "confirm_title")"
+    local confirm_text="$(get_localized_string "system" "confirm_text")"
+    
+    $DIALOG --title "$confirm_title" \
+        --yesno "$confirm_text" \
+        10 60
+    
+    if [ $? -ne 0 ]; then
+        echo "$(get_localized_string "system" "installation_cancelled")"
+        exit 0
+    fi
+}
+
+# Function to check if a tool is selected in interactive mode
+is_tool_selected() {
+    local tool=$1
+    [[ " ${SELECTED_TOOLS[@]} " =~ " $tool " ]]
 }
 
 # Function to select language
@@ -72,6 +195,10 @@ parse_args() {
                 VERBOSE=true
                 shift
                 ;;
+            --interactive)
+                INTERACTIVE=true
+                shift
+                ;;
             --lang)
                 if [ -n "$2" ] && [[ "$2" != --* ]]; then
                     AUTO_LANG="$2"
@@ -87,6 +214,7 @@ parse_args() {
                 echo "$(get_localized_string "system" "help_options"):"
                 echo "  --dry-run      $(get_localized_string "system" "help_dry_run")"
                 echo "  --verbose      $(get_localized_string "system" "help_verbose")"
+                echo "  --interactive  $(get_localized_string "system" "help_interactive")"
                 echo "  --lang ru|en   $(get_localized_string "system" "help_lang")"
                 echo "  --help         $(get_localized_string "system" "help_help")"
                 exit 0
@@ -106,137 +234,10 @@ parse_args "$@"
 # Выбор языка
 select_language
 
-# Function to check if command exists
-command_exists() {
-    command -v "$1" >/dev/null 2>&1
-}
-
-# Function to handle user input
-handle_input() {
-    case "$1" in
-        q|Q)
-            echo "Прерывание установки / Installation aborted"
-            exit 0
-            ;;
-        default|DEFAULT)
-            export INSTALL_ALL=true
-            ;;
-        *)
-            return
-            ;;
-    esac
-}
-
-# Check for curl or wget
-if ! command_exists curl && ! command_exists wget; then
-    echo "Error: Neither curl nor wget is installed."
-    echo "Please install either curl or wget to continue."
-    echo "For Alpine: apk add curl"
-    echo "For Ubuntu: apt-get install curl"
-    echo "For macOS: brew install curl"
-    exit 1
+# Если выбран интерактивный режим, показать меню
+if [ "$INTERACTIVE" = true ]; then
+    show_interactive_menu
 fi
-
-# Function to download file
-download_file() {
-    if command_exists curl; then
-        curl -fsSL "$1"
-    elif command_exists wget; then
-        wget -qO- "$1"
-    fi
-}
-
-# Detect package manager
-detect_package_manager() {
-    if command_exists brew; then
-        echo "brew"
-    elif command_exists apt-get; then
-        echo "apt"
-    elif command_exists apk; then
-        echo "apk"
-    else
-        echo "unknown"
-    fi
-}
-
-# Install package using detected package manager
-install_package() {
-    local package=$1
-    local pkg_manager=$(detect_package_manager)
-    
-    if [ "$DRY_RUN" = true ]; then
-        echo "[DRY-RUN] Установка пакета $package через $pkg_manager"
-        return 0
-    fi
-    
-    case $pkg_manager in
-        brew)
-            brew install $package
-            ;;
-        apt)
-            sudo apt-get update && sudo apt-get install -y $package
-            ;;
-        apk)
-            sudo apk add --no-cache $package
-            ;;
-        *)
-            echo "Unsupported package manager"
-            return 1
-            ;;
-    esac
-}
-
-# Add after the initial variable declarations
-INSTALLATION_SUMMARY_INSTALLED=""
-INSTALLATION_SUMMARY_SKIPPED=""
-
-# Modify install_if_confirmed function to track installations
-install_if_confirmed() {
-    local package=$1
-    local description=$(get_description "$package")
-    local str_install=$(get_localized_string "system" "install")
-    local str_installing=$(get_localized_string "system" "installing")
-    local str_installed=$(get_localized_string "system" "installed")
-    local str_skipping=$(get_localized_string "system" "skipping")
-
-    if [ "$DRY_RUN" = true ]; then
-        if [ "$VERBOSE" = true ]; then
-            echo "[DRY-RUN] Запрос на установку $package ($description)"
-        fi
-    fi
-
-    if [ "$INSTALL_ALL" = true ]; then
-        echo "${str_installing} $package..."
-        install_package "$package"
-        INSTALLATION_SUMMARY_INSTALLED="$INSTALLATION_SUMMARY_INSTALLED $package"
-        echo "$package ${str_installed}"
-        return
-    fi
-
-    if [ "$DRY_RUN" = true ]; then
-        # В режиме dry-run симулируем ответ "да" для тестирования
-        response="y"
-    else
-        read -p "${str_install} ${description} ($package)? [y/N/q/default] " response
-    fi
-    
-    handle_input "$response"
-    
-    if [ "$INSTALL_ALL" = true ]; then
-        echo "${str_installing} $package..."
-        install_package "$package"
-        INSTALLATION_SUMMARY_INSTALLED="$INSTALLATION_SUMMARY_INSTALLED $package"
-        echo "$package ${str_installed}"
-    elif [[ "$response" =~ ^[Yy]$ ]]; then
-        echo "${str_installing} $package..."
-        install_package "$package"
-        INSTALLATION_SUMMARY_INSTALLED="$INSTALLATION_SUMMARY_INSTALLED $package"
-        echo "$package ${str_installed}"
-    else
-        echo "${str_skipping} $package"
-        INSTALLATION_SUMMARY_SKIPPED="$INSTALLATION_SUMMARY_SKIPPED $package"
-    fi
-}
 
 # Check system and install Homebrew if supported
 install_homebrew() {

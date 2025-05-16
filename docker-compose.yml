@@ -1,0 +1,10 @@
+version: '3'
+
+services:
+  dotfiles-test:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - .:/home/developer/dotfiles
+    command: bash -c "cd /home/developer/dotfiles && ci/test-install.sh" 

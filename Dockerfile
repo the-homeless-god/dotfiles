@@ -1,28 +1,36 @@
-FROM alpine:latest
+FROM ubuntu:22.04
 
-# Install minimal build requirements
-RUN apk add --no-cache \
+# Avoid interactive prompts during package installation
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install basic tools
+RUN apt-get update && apt-get install -y \
+    git \
+    curl \
+    wget \
+    zsh \
     sudo \
-    bash \
-    build-base \
-    && rm -rf /var/cache/apk/*
+    jq \
+    vim \
+    make \
+    tree \
+    python3 \
+    python3-pip \
+    python3-venv
 
-# Set up locale
-ENV LANG=en_US.UTF-8 \
-    LANGUAGE=en_US:en \
-    LC_ALL=en_US.UTF-8
+# Create a non-root user
+RUN useradd -m -s /bin/zsh -G sudo developer && \
+    echo "developer ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/developer
 
-# Create test user
-RUN adduser -D -s /bin/bash developer && \
-    echo "developer ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
-
-# Switch to developer user
+# Switch to the developer user and set working directory
 USER developer
 WORKDIR /home/developer
 
-# Copy repository and set permissions
-COPY --chown=developer:developer . /home/developer/dotfiles
-RUN chmod +x /home/developer/dotfiles/scripts/*.sh
+# Clone the dotfiles repository
+RUN git clone https://github.com/username/dotfiles.git /home/developer/dotfiles
 
-# Run installation (interactive mode)
-CMD ["/bin/bash", "-c", "cd /home/developer/dotfiles/scripts && ./install-tools.sh"] 
+# Set up the working directory
+WORKDIR /home/developer/dotfiles
+
+# Run tests
+CMD ["make", "test-dry-run"] 

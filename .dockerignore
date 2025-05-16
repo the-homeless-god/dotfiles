@@ -1,0 +1,6 @@
+.git
+.github
+.vscode
+*.md
+.dotfiles-backup
+.dotfiles-venv 

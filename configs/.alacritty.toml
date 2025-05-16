@@ -110,7 +110,7 @@ y = 50
 size = 18.0
 
 [font.bold]
-family = "FiraCode Nerd Font"
+family = "Menlo"
 style = "Bold"
 
 [font.glyph_offset]
@@ -118,11 +118,11 @@ x = 0
 y = 0
 
 [font.italic]
-family = "FiraCode Nerd Font"
+family = "Menlo"
 style = "Bold Italic"
 
 [font.normal]
-family = "MesloLGS Nerd Font"
+family = "Menlo"
 
 [font.offset]
 x = 0

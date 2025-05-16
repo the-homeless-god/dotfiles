@@ -1,0 +1,51 @@
+name: Scripts Test and Deploy
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Set up environment
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y bash jq curl
+      
+    - name: Lint scripts
+      run: make lint
+      
+    - name: Run tests
+      run: make test
+      
+    - name: Run dry-run test
+      run: make test-dry-run
+      
+    - name: Run dry-run test with verbose output
+      run: make test-dry-run-verbose
+  
+  deploy:
+    needs: test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Deploy
+      run: |
+        echo "Deployment would happen here"
+        # Здесь можно добавить команды для деплоя
+        # Например, можно копировать файлы на сервер или публиковать релизы
+        
+    - name: Notification
+      run: |
+        echo "Deployment completed successfully" 

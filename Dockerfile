@@ -27,7 +27,7 @@ USER developer
 WORKDIR /home/developer
 
 # Clone the dotfiles repository
-RUN git clone https://github.com/username/dotfiles.git /home/developer/dotfiles
+RUN git clone https://github.com/the-homeless-god/dotfiles.git /home/developer/dotfiles
 
 # Set up the working directory
 WORKDIR /home/developer/dotfiles

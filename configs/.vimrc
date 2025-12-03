@@ -107,7 +107,9 @@ Plug 'tpope/vim-fugitive'
 Plug 'liuchengxu/vista.vim'
 Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
 Plug 'junegunn/fzf.vim'
-Plug 'iamcco/markdown-preview.nvim', { 'do': { -> mkdp#util#install() }, 'for': ['markdown', 'vim-plug']}
+Plug 'iamcco/markdown-preview.nvim', { 'do': 'cd app && npx --yes yarn install' }
+Plug 'gergap/vim-ollama'
+
 Plug 'turbio/bracey.vim', {'do': 'npm install --prefix server'}
 Plug 'elixir-editors/vim-elixir'
 Plug 'elixir-lsp/coc-elixir', {'do': 'yarn install && yarn prepack'}
@@ -219,6 +221,16 @@ function! s:initVimVariables()
 	set termwinsize = "10*0"
 	let g:terminal_default_height = 10
 
+let g:ollama_use_venv = 1 
+let g:ollama_logfile = '~/vim-ollama.log'
+let g:ollama_openai_baseurl = 'http://localhost:1234/v1' " Use local OpenAI endpoint
+let g:ollama_model_provider = 'openai_legacy'
+let g:ollama_model = 'bartowski/codegemma-2b-GGUF'
+let g:ollama_chat_provider = 'openai_legacy'
+let g:ollama_chat_model = 'unsloth/Devstral-Small-2507-GGUF'
+let g:ollama_edit_provider = 'openai_legacy'
+
+let g:ollama_edit_model = 'unsloth/Devstral-Small-2507-GGUF'
 
 	" Always show an empty buffer when a file is closed
 	set hidden

@@ -8,6 +8,12 @@ Environment configuration and development tools setup automation.
 
 [🇷🇺 Русская версия](docs/ru.md) | [🇬🇧 English version](docs/en.md)
 
+## Demo
+
+### Vim
+
+![picture of vim](./demo/vim.png)
+
 ## Quick Start
 
 ### macOS

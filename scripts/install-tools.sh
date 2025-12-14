@@ -564,6 +564,7 @@ if [ "$INTERACTIVE" = true ]; then
 fi
 
 install_if_confirmed "gum" "gum"
+install_if_confirmed "eza" "eza"
 
 # Check for jq
 if ! command_exists jq; then

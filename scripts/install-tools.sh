@@ -585,6 +585,7 @@ install_if_confirmed "git" "git"
 install_if_confirmed "curl" "curl"
 install_if_confirmed "zsh" "zsh"
 install_if_confirmed "ripgrep" "ripgrep"
+install_if_confirmed "mcfly" "mcfly"
 install_if_confirmed "bat" "bat"
 install_if_confirmed "fd" "fd"
 install_if_confirmed "zoxide" "zoxide"
@@ -657,6 +658,11 @@ install_if_confirmed "macports"
 
 # Install Node Version Manager (NVM)
 install_if_confirmed "nvm"
+if command_exists nvm; then
+    nvm i stable
+fi
+
+install_if_confirmed "qemu"
 
 # Install text editors and terminal tools
 install_if_confirmed "alacritty"

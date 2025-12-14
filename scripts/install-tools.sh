@@ -543,11 +543,6 @@ parse_args "$@"
 # Выбор языка
 select_language
 
-# Если выбран интерактивный режим, показать меню
-if [ "$INTERACTIVE" = true ]; then
-    show_interactive_menu
-fi
-
 # Check system and install Homebrew if supported
 install_homebrew() {
     if [[ "$(uname)" == "Darwin" ]] || [[ "$(uname -s)" == "Linux" && -f "/etc/debian_version" ]]; then
@@ -562,6 +557,13 @@ install_homebrew() {
 
 # Try to install Homebrew only on supported systems
 install_homebrew
+
+# Если выбран интерактивный режим, показать меню
+if [ "$INTERACTIVE" = true ]; then
+    show_interactive_menu
+fi
+
+install_if_confirmed "gum" "gum"
 
 # Check for jq
 if ! command_exists jq; then

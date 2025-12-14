@@ -113,6 +113,8 @@ ghcr.io/the-homeless-god/dotfiles
 - [Cursor](https://cursor.com)
 - [Krita](https://download.kde.org/stable/krita/)
 - [Google Chrome: Digitable: Tools: PWA](https://tools.digitable.life/)
+- [1Password](https://my.1password.com/)
+- [Macs Fan Control](https://github.com/crystalidea/macs-fan-control?tab=readme-ov-file)
 
 #### MacOS
 

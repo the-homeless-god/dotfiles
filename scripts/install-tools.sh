@@ -617,6 +617,9 @@ fi
 install_if_confirmed "vim" "vim"
 install_if_confirmed "tmux" "tmux"
 
+# Install Clipboard manager
+install_if_confirmed "maccy" "maccy"
+
 # Install file management utilities
 install_if_confirmed "vifm" "vifm"
 

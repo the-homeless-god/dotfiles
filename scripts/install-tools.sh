@@ -759,6 +759,15 @@ install_if_confirmed "dotnet-sdk"
 # Install C# language server
 install_if_confirmed "csharp-ls"
 
+# Install Golang
+install_if_confirmed "go"
+
+# Install Yandex TUI music
+if command_exists go; then
+    go install github.com/dece2183/yamusic-tui@latest
+    echo "https://yandex.cloud/ru/docs/iam/concepts/authorization/oauth-token > https://oauth.yandex.ru/authorize?response_type=token&client_id=1a6990aa636648e9b2ef855fa7bec2fb"
+fi
+
 # Function to install configurations
 install_configs() {
     local str_backup_start=$(get_localized_string "system" "backup_start")

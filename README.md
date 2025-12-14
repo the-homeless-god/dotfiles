@@ -99,6 +99,15 @@ Images are published to GitHub Container Registry (ghcr.io):
 ghcr.io/the-homeless-god/dotfiles
 ```
 
+### Mac OS applications
+
+- [Ollama](https://ollama.com/download)
+- [Passepartout](https://passepartoutvpn.app)
+- [Magnet](https://magnet.crowdcafe.com)
+- [Usage](https://usage.pro)
+- [MeetingBar](https://meetingbar.app)
+- [Alfred](https://www.alfredapp.com)
+
 ### Build Status
 
 You can check the current build status on the [Actions tab](https://github.com/the-homeless-god/dotfiles/actions) or by the badge at the top of this README.

@@ -553,7 +553,7 @@ install_homebrew() {
     if [[ "$(uname)" == "Darwin" ]] || [[ "$(uname -s)" == "Linux" && -f "/etc/debian_version" ]]; then
         if ! command_exists brew; then
             echo "Installing Homebrew..."
-            /bin/bash -c "$(download_file https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
+            /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
         fi
     else
         echo "Homebrew is not supported on this system, using native package manager"

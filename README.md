@@ -99,7 +99,22 @@ Images are published to GitHub Container Registry (ghcr.io):
 ghcr.io/the-homeless-god/dotfiles
 ```
 
-### Mac OS applications
+### Applications
+
+#### General
+
+- [Google Chrome](https://www.google.com/intl/ru_ru/chrome/)
+- [Google Chrome: Stylus](https://chromewebstore.google.com/detail/stylus/clngdbkpkpeebahjckkjfobafhncgmne?pli=1)
+- [Google Chrome: Logseq Web Clipper](https://chromewebstore.google.com/detail/logseq-web-clipper/fhjehofpeafndgabgbehflkncpmdldgg)
+- [Google Chrome: JSON Viewer](https://chromewebstore.google.com/detail/json-viewer/gbmdgpbipfallnflgajpaliibnhdgobh)
+- [Google Chrome: Allow CORS](https://chromewebstore.google.com/detail/allow-cors-access-control/lhobafahddgcelffkeicbaginigeejlf)
+- [Google Chrome: Digitable: Bionic Reader](https://chromewebstore.google.com/detail/bofckkbophijgakfoeihfmnjfphcabhi)
+- Microsoft 365 and Office 16.76.23081101 HomeStudent - lifetime
+- [Cursor](https://cursor.com)
+- [Krita](https://download.kde.org/stable/krita/)
+- [Google Chrome: Digitable: Tools: PWA](https://tools.digitable.life/)
+
+#### MacOS
 
 - [Ollama](https://ollama.com/download)
 - [Passepartout](https://passepartoutvpn.app)
@@ -107,6 +122,11 @@ ghcr.io/the-homeless-god/dotfiles
 - [Usage](https://usage.pro)
 - [MeetingBar](https://meetingbar.app)
 - [Alfred](https://www.alfredapp.com)
+- [Telegram](https://macos.telegram.org)
+- [UTM](https://mac.getutm.app)
+- [Logseq](https://logseq.com)
+- [VMware Fusion 13.5.2-23775688]( https://softwareupdate.vmware.com/cds/vmw-desktop/fusion/13.5.2/23775688/universal/core/)
+- [Zen Browser](https://zen-browser.app/)
 
 ### Build Status
 

@@ -591,6 +591,7 @@ install_if_confirmed "bat" "bat"
 install_if_confirmed "fd" "fd"
 install_if_confirmed "zoxide" "zoxide"
 install_if_confirmed "markdown-preview" "markdown-preview"
+install_if_confirmed "mole" "mole"
 
 # Install Python 3.11
 install_if_confirmed "python@3.11"

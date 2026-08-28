@@ -1,0 +1,4 @@
+interface:
+  display_name: "Master Prompt Builder"
+  short_description: "Builds evidence-backed implementation prompts"
+  default_prompt: "Use $master-prompt-builder to turn this initiative into an evidence-backed implementation master prompt."

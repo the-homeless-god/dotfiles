@@ -34,6 +34,29 @@ For more control over what gets installed, use the interactive mode:
 
 This provides a checkbox interface to select specific tool categories and individual tools.
 
+### Portable Codex skills
+
+This repository includes two company-neutral skills for complex engineering
+experiments:
+
+- `master-prompt-builder` turns a rough brief into an evidence-backed,
+  spec-driven implementation prompt;
+- `umbrella-repository-setup` bootstraps or audits a reproducible workspace for
+  multiple independently versioned repositories.
+
+Preview and install them into `${CODEX_HOME:-$HOME/.codex}/skills`:
+
+```bash
+./scripts/install-codex-skills.sh --dry-run
+./scripts/install-codex-skills.sh
+```
+
+Existing skills are not overwritten. Use `--replace` to move an existing skill
+to a timestamped backup before installing the portable version. A custom target
+can be supplied with `--destination DIR`.
+
+Invoke them as `$master-prompt-builder` and `$umbrella-repository-setup`.
+
 ### Docker
 
 #### Using pre-built image

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Umbrella Repository Setup"
+  short_description: "Builds reproducible multi-repo workspaces"
+  default_prompt: "Use $umbrella-repository-setup to design or audit this cross-repository workspace."

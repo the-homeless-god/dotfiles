@@ -7,8 +7,20 @@ usage() {
     'Usage: install-codex-skills.sh [--dry-run] [--replace] [--destination DIR] [SKILL ...]' \
     '' \
     'Installs the portable skills from codex/skills into the Codex skills directory.' \
-    'Without SKILL arguments, installs all bundled skills.' \
+    'Without SKILL arguments, installs every skill bundled in codex/skills.' \
     '--replace moves an existing skill to a timestamped backup before installing.'
+}
+
+discover_bundled_skills() {
+  local skill_path skill_name
+  for skill_path in "${source_root}"/*/; do
+    [[ -d "${skill_path}" ]] || continue
+    skill_name="${skill_path%/}"
+    skill_name="${skill_name##*/}"
+    [[ "${skill_name}" =~ ^[a-z0-9-]+$ ]] || continue
+    [[ -f "${skill_path}SKILL.md" ]] || continue
+    printf '%s\n' "${skill_name}"
+  done
 }
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -64,7 +76,14 @@ if [[ -z "${destination_root}" || "${destination_root}" == "/" ]]; then
 fi
 
 if [[ ${#requested_skills[@]} -eq 0 ]]; then
-  requested_skills=(master-prompt-builder umbrella-repository-setup cluster-agent-setup state)
+  while IFS= read -r discovered_skill; do
+    requested_skills+=("${discovered_skill}")
+  done < <(discover_bundled_skills | LC_ALL=C sort)
+
+  if [[ ${#requested_skills[@]} -eq 0 ]]; then
+    printf 'No bundled skills found in %s\n' "${source_root}" >&2
+    exit 1
+  fi
 fi
 
 timestamp="$(date -u +%Y%m%dT%H%M%SZ)"

@@ -36,13 +36,15 @@ This provides a checkbox interface to select specific tool categories and indivi
 
 ### Portable Codex skills
 
-This repository includes two company-neutral skills for complex engineering
+This repository includes three company-neutral skills for complex engineering
 experiments:
 
 - `master-prompt-builder` turns a rough brief into an evidence-backed,
   spec-driven implementation prompt;
 - `umbrella-repository-setup` bootstraps or audits a reproducible workspace for
-  multiple independently versioned repositories.
+  multiple independently versioned repositories;
+- `cluster-agent-setup` structures a multi-agent unit - write boundaries, task
+  briefs, reporting contract, and continuity across session limits.
 
 Preview and install them into `${CODEX_HOME:-$HOME/.codex}/skills`:
 

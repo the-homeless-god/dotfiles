@@ -1,0 +1,4 @@
+interface:
+  display_name: "Cluster Agent Setup"
+  short_description: "Structures and operates multi-agent engineering units"
+  default_prompt: "Use $cluster-agent-setup to structure this initiative into an overagent, lead agents, and worker pools with write boundaries, briefs, and a continuity plan."

@@ -28,6 +28,8 @@ lint:
 	@bash -n scripts/install-codex-skills.sh
 	@echo "Проверка синтаксиса test.sh..."
 	@bash -n scripts/test.sh
+	@echo "Проверка синтаксиса workbench-configs.sh..."
+	@bash -n scripts/customs/workbench-configs.sh
 	@echo "Все проверки синтаксиса прошли успешно!"
 
 clean:

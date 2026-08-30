@@ -24,6 +24,7 @@ This repository contains configuration files (dotfiles) and scripts for automati
 - Custom scripts in `scripts/customs/`
 - Scripts for lf in `scripts/lf/`
 - `tmux.sh` - Script for managing tmux sessions
+- `workbench-configs.sh` - Lays out the open Digitable Workbench configs, fetched over the public URL (the themes themselves are never stored in this repository)
 
 ## Key Features
 
@@ -33,6 +34,7 @@ This repository contains configuration files (dotfiles) and scripts for automati
 - File managers (lf, vifm)
 - Terminal utilities (tmux, Alacritty)
 - Support for various programming languages
+- digitwm - X11 window manager (cwm fork), built from source on Linux/BSD; on macOS only its session configs apply
 
 ### Configuration
 - Configured Zsh with Oh My Zsh and Powerlevel10k

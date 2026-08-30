@@ -695,7 +695,11 @@ install_if_confirmed "macports"
 # Install Node Version Manager (NVM)
 install_if_confirmed "nvm"
 if command_exists nvm; then
-    nvm i stable
+    if [ "$DRY_RUN" = true ]; then
+        echo "[DRY-RUN] nvm i stable"
+    else
+        nvm i stable
+    fi
 fi
 
 install_if_confirmed "qemu"
@@ -721,8 +725,12 @@ install_if_confirmed "tree"
 # Install LM Studio
 install_if_confirmed "lm-studio"
 if command_exists lms; then
-    mkdir -p ~/.cache/lm-studio/bin
-    lms bootstrap
+    if [ "$DRY_RUN" = true ]; then
+        echo "[DRY-RUN] lms bootstrap"
+    else
+        mkdir -p ~/.cache/lm-studio/bin
+        lms bootstrap
+    fi
 fi
 
 # Function to install Open Interpreter
@@ -810,8 +818,12 @@ install_if_confirmed "go"
 
 # Install Yandex TUI music
 if command_exists go; then
-    go install github.com/dece2183/yamusic-tui@latest
-    echo "https://yandex.cloud/ru/docs/iam/concepts/authorization/oauth-token > https://oauth.yandex.ru/authorize?response_type=token&client_id=1a6990aa636648e9b2ef855fa7bec2fb"
+    if [ "$DRY_RUN" = true ]; then
+        echo "[DRY-RUN] go install yamusic-tui"
+    else
+        go install github.com/dece2183/yamusic-tui@latest
+        echo "https://yandex.cloud/ru/docs/iam/concepts/authorization/oauth-token > https://oauth.yandex.ru/authorize?response_type=token&client_id=1a6990aa636648e9b2ef855fa7bec2fb"
+    fi
 fi
 
 # Function to install configurations
@@ -1129,13 +1141,21 @@ run_post_install() {
     
     # Install and configure coc.nvim
     if [ -d ~/.vim/plug/coc.nvim ]; then
-        cd ~/.vim/plug/coc.nvim
-        npm ci
+        if [ "$DRY_RUN" = true ]; then
+            echo "[DRY-RUN] npm ci в ~/.vim/plug/coc.nvim"
+        else
+            cd ~/.vim/plug/coc.nvim
+            npm ci
+        fi
     fi
     
     # Install zsh-autosuggestions
     if [ -d "${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins" ]; then
-        git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions
+        if [ "$DRY_RUN" = true ]; then
+            echo "[DRY-RUN] Установка zsh-autosuggestions"
+        else
+            git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions
+        fi
     fi
     
     # Install open-interpreter if selected

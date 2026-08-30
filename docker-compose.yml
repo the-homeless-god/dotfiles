@@ -5,6 +5,12 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    # Образ уже содержит это дерево — оно попадает внутрь через COPY в Dockerfile.
+    # Монтирование поверх оставлено сознательно: оно позволяет править файлы на
+    # хосте и сразу перезапускать проверку, не пересобирая образ. Источник в обоих
+    # случаях один и тот же каталог, поэтому расхождения между образом и монтом нет.
+    # Отличие от образа одно: под монтом видны и файлы, исключённые .dockerignore
+    # (.git, .github и прочее), — на запуск ci/test-install.sh это не влияет.
     volumes:
       - .:/home/developer/dotfiles
-    command: bash -c "cd /home/developer/dotfiles && ci/test-install.sh" 
+    command: bash -c "cd /home/developer/dotfiles && ci/test-install.sh"

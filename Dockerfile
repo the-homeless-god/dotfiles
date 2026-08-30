@@ -39,14 +39,14 @@ RUN apt-get update && apt-get install -y \
 RUN useradd -m -s /bin/zsh -G sudo developer && \
     echo "developer ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/developer
 
+# Код берётся из контекста сборки, а не `git clone` с GitHub. Раньше здесь был
+# `git clone https://github.com/the-homeless-god/dotfiles.git`, из-за чего образ,
+# собранный из ветки, содержал master с GitHub — то есть CI проверял не тот код,
+# который принесла ветка. Что не попадает в контекст, см. .dockerignore.
+COPY --chown=developer:developer . /home/developer/dotfiles
+
 # Switch to the developer user and set working directory
 USER developer
-WORKDIR /home/developer
-
-# Clone the dotfiles repository
-RUN git clone https://github.com/the-homeless-god/dotfiles.git /home/developer/dotfiles
-
-# Set up the working directory
 WORKDIR /home/developer/dotfiles
 
 # ГРАНИЦА ПРОВЕРКИ. Этот образ может СОБРАТЬ digitwm: компиляция и линковка

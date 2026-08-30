@@ -98,7 +98,8 @@
             "vim-plug": "Vim Plugin Manager",
             "dwm-vim": "Tiling Window Manager для Vim",
             "dotnet-sdk": ".NET SDK",
-            "csharp-ls": "C# Language Server"
+            "csharp-ls": "C# Language Server",
+            "digitwm": "Оконный менеджер X11 (форк cwm), только Linux/BSD"
         }
     },
     "en": {
@@ -200,7 +201,8 @@
             "vim-plug": "Vim Plugin Manager",
             "dwm-vim": "Tiling Window Manager for Vim",
             "dotnet-sdk": ".NET SDK",
-            "csharp-ls": "C# Language Server"
+            "csharp-ls": "C# Language Server",
+            "digitwm": "X11 window manager (cwm fork), Linux/BSD only"
         }
     }
 } 

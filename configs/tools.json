@@ -120,6 +120,16 @@
                 "lm-studio",
                 "open-interpreter"
             ]
+        },
+        {
+            "name": "desktop",
+            "title_ru": "Рабочий стол",
+            "title_en": "Desktop",
+            "description_ru": "Оконные менеджеры и окружение рабочего стола (только Linux/BSD)",
+            "description_en": "Window managers and desktop environment (Linux/BSD only)",
+            "tools": [
+                "digitwm"
+            ]
         }
     ]
 } 

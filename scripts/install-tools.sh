@@ -114,6 +114,32 @@ install_if_confirmed() {
     fi
 }
 
+# Как install_if_confirmed, но БЕЗ пакетного менеджера: для инструментов, которых нет ни в
+# одном репозитории и которые ставит своя функция в run_post_install. Через
+# install_if_confirmed такой инструмент не провести: install_package выполнил бы
+# `brew install <имя>`, получил бы ошибку, и имя не попало бы в
+# INSTALLATION_SUMMARY_INSTALLED — post-install молча не сработал бы.
+confirm_source_tool() {
+    local package=$1
+
+    if [ "$INTERACTIVE" = true ]; then
+        if is_tool_selected "$package"; then
+            INSTALLATION_SUMMARY_INSTALLED="$INSTALLATION_SUMMARY_INSTALLED $package"
+        else
+            echo "$(get_localized_string "system" "skipping") $package"
+            INSTALLATION_SUMMARY_SKIPPED="$INSTALLATION_SUMMARY_SKIPPED $package"
+        fi
+    else
+        read -p "$(get_localized_string "system" "install") $package? [y/N] " install_response
+        if [[ "$install_response" =~ ^[Yy]$ ]]; then
+            INSTALLATION_SUMMARY_INSTALLED="$INSTALLATION_SUMMARY_INSTALLED $package"
+        else
+            echo "$(get_localized_string "system" "skipping") $package"
+            INSTALLATION_SUMMARY_SKIPPED="$INSTALLATION_SUMMARY_SKIPPED $package"
+        fi
+    fi
+}
+
 # Function to check if dialog/whiptail/gum is installed
 check_dialog_installed() {
     if command_exists whiptail; then
@@ -326,7 +352,7 @@ show_interactive_menu() {
                 local display_tools=()
                 for item in "${gum_tools[@]}"; do
                     local tool_name=$(echo "$item" | cut -d':' -f1)
-                    if [[ "$SELECTED_TOOLS" =~ "$tool_name" ]]; then
+                    if [[ " $SELECTED_TOOLS " == *" $tool_name "* ]]; then
                         display_tools+=("✅ $item")
                     else
                         display_tools+=("  $item")
@@ -341,9 +367,9 @@ show_interactive_menu() {
                 local tool_name=$(echo "$choice" | cut -d':' -f1)
                 
                 # Toggle selection
-                if [[ "$SELECTED_TOOLS" =~ "$tool_name" ]]; then
+                if [[ " $SELECTED_TOOLS " == *" $tool_name "* ]]; then
                     # Remove from selection
-                    SELECTED_TOOLS=$(echo "$SELECTED_TOOLS" | sed "s/$tool_name//g" | tr -s ' ' | sed 's/^ //' | sed 's/ $//')
+                    SELECTED_TOOLS=$(echo " $SELECTED_TOOLS " | sed "s/ $tool_name / /g" | tr -s ' ' | sed 's/^ //' | sed 's/ $//')
                     echo "Отменено: $tool_name"
                 else
                     # Add to selection
@@ -765,6 +791,10 @@ install_if_confirmed "vim-plug"
 # Install tiling window manager for Vim
 install_if_confirmed "dwm-vim"
 
+# Install digitwm (X11 window manager). Пакета с таким именем нет ни в одном репозитории,
+# поэтому здесь только спрашиваем; собирает и ставит install_digitwm в run_post_install.
+confirm_source_tool "digitwm"
+
 # Install C#
 install_if_confirmed "dotnet-sdk"
 
@@ -915,6 +945,69 @@ install_dwm_vim() {
     fi
 }
 
+# Зависимости сборки digitwm. install_package здесь не годится: он пробует brew первым и
+# знает ровно одно имя пакета на все ОС, а имена X11-заголовков у менеджеров разные.
+# Списки взяты из digitwm/bootstrap.sh.
+install_digitwm_build_deps() {
+    if command_exists apt-get; then
+        sudo apt-get update && sudo apt-get install -y build-essential libx11-dev libxft-dev libxrandr-dev bison pkg-config
+    elif command_exists dnf; then
+        sudo dnf install -y gcc make libX11-devel libXft-devel libXrandr-devel bison pkgconf-pkg-config
+    elif command_exists pacman; then
+        sudo pacman -S --noconfirm base-devel libx11 libxft libxrandr bison pkgconf
+    else
+        echo "digitwm: пакетный менеджер не опознан — поставьте вручную:"
+        echo "         компилятор C, make, заголовки X11/Xft/Xrandr, bison, pkg-config"
+    fi
+}
+
+# Function to install digitwm (X11 window manager, built from source)
+install_digitwm() {
+    local repo_url="https://github.com/digitable-lol/digitwm.git"
+    local src_dir="$HOME/dotfiles/src/digitwm"
+    local prefix="$HOME/.local"
+
+    # На macOS оконному менеджеру X11 нечем управлять. Это решение проекта digitwm
+    # (bootstrap.sh), а не сбой: честно говорим об этом и предлагаем путь сессии.
+    if [[ "$(uname)" == "Darwin" ]]; then
+        echo "digitwm: это оконный менеджер X11 — на macOS ему нечем управлять, сборка пропущена."
+        echo "digitwm: конфигурацию редактора и терминала можно разложить и здесь:"
+        echo "         session/install.sh --skip-install"
+        return 0
+    fi
+
+    if [ "$DRY_RUN" = true ]; then
+        echo "[DRY-RUN] Установка digitwm"
+        echo "[DRY-RUN]   зависимости сборки — штатным пакетным менеджером"
+        echo "[DRY-RUN]   git clone $repo_url -> $src_dir"
+        echo "[DRY-RUN]   make && make install PREFIX=$prefix"
+        echo "[DRY-RUN]   затем: $src_dir/session/install.sh"
+        return 0
+    fi
+
+    install_digitwm_build_deps
+
+    if [ -d "$src_dir/.git" ]; then
+        echo "digitwm: исходники уже есть в $src_dir, обновляю"
+        git -C "$src_dir" pull --ff-only || echo "digitwm: обновить не удалось, собираю то, что есть"
+    else
+        mkdir -p "$(dirname "$src_dir")"
+        if ! git clone --depth=1 "$repo_url" "$src_dir"; then
+            echo "digitwm: не удалось склонировать $repo_url"
+            return 1
+        fi
+    fi
+
+    # make инкрементен: если с прошлого раза ничего не изменилось, пересборки не будет.
+    if make -C "$src_dir" && make -C "$src_dir" install PREFIX="$prefix"; then
+        echo "digitwm: установлен в $prefix/bin (добавьте его в PATH, если ещё не там)"
+        echo "digitwm: конфигурацию сессии можно разложить: $src_dir/session/install.sh"
+    else
+        echo "digitwm: сборка не удалась — смотрите вывод выше"
+        return 1
+    fi
+}
+
 # Function to install macports
 install_macports() {
     if ! command_exists port; then
@@ -984,6 +1077,10 @@ run_post_install() {
     
     if [[ "$INSTALLATION_SUMMARY_INSTALLED" == *"dwm-vim"* ]]; then
         install_dwm_vim
+    fi
+    
+    if [[ "$INSTALLATION_SUMMARY_INSTALLED" == *"digitwm"* ]]; then
+        install_digitwm
     fi
     
     if [[ "$INSTALLATION_SUMMARY_INSTALLED" == *"macports"* ]]; then

@@ -573,8 +573,12 @@ select_language
 install_homebrew() {
     if [[ "$(uname)" == "Darwin" ]] || [[ "$(uname -s)" == "Linux" && -f "/etc/debian_version" ]]; then
         if ! command_exists brew; then
-            echo "Installing Homebrew..."
-            /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+            if [ "$DRY_RUN" = true ]; then
+                echo "[DRY-RUN] Установка Homebrew"
+            else
+                echo "Installing Homebrew..."
+                /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+            fi
         fi
     else
         echo "Homebrew is not supported on this system, using native package manager"

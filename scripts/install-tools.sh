@@ -829,7 +829,16 @@ install_configs() {
     fi
     
     DOTFILES_BACKUP_PATH=~/.dotfiles-backup
-    
+    CONFIGS_DIR="$(dirname "$SCRIPT_DIR")/configs"
+
+    # Пользовательские шрифты лежат в разных каталогах на macOS и на Linux.
+    # Ветвление то же, что в install_homebrew и install_digitwm.
+    if [[ "$(uname)" == "Darwin" ]]; then
+        FONTS_DIR=~/Library/Fonts
+    else
+        FONTS_DIR=~/.local/share/fonts
+    fi
+
     # Create directories for backup
     mkdir -p "$DOTFILES_BACKUP_PATH"
     mkdir -p "$DOTFILES_BACKUP_PATH/.config/lf"
@@ -837,6 +846,7 @@ install_configs() {
     mkdir -p "$DOTFILES_BACKUP_PATH/.config/bpytop"
     mkdir -p "$DOTFILES_BACKUP_PATH/.config/tmux"
     mkdir -p "$DOTFILES_BACKUP_PATH/.digit"
+    mkdir -p "$DOTFILES_BACKUP_PATH/fonts"
     mkdir -p "$DOTFILES_BACKUP_PATH/dotfiles/scripts/customs"
     mkdir -p "$DOTFILES_BACKUP_PATH/dotfiles/scripts/lf"
     
@@ -855,8 +865,18 @@ install_configs() {
     [ -d ~/.config/vifm ] && mv ~/.config/vifm "$DOTFILES_BACKUP_PATH/.config/"
     [ -d ~/.config/bpytop ] && mv ~/.config/bpytop "$DOTFILES_BACKUP_PATH/.config/"
     [ -d ~/.config/tmux ] && mv ~/.config/tmux "$DOTFILES_BACKUP_PATH/.config/"
+    [ -d ~/.logseq ] && mv ~/.logseq "$DOTFILES_BACKUP_PATH/"
     [ -f ~/.digit/config.yaml ] && mv ~/.digit/config.yaml "$DOTFILES_BACKUP_PATH/.digit/"
     [ -d ~/dotfiles/scripts ] && mv ~/dotfiles/scripts "$DOTFILES_BACKUP_PATH/dotfiles/"
+
+    # Шрифты: в бэкап уносим только одноимённые файлы. Здесь бэкап делается через mv,
+    # а каталог шрифтов пользователя общий — унести его целиком значило бы отобрать
+    # все чужие шрифты заодно.
+    if [ -d "$CONFIGS_DIR/fonts" ]; then
+        find "$CONFIGS_DIR/fonts" -type f -name "*.ttf" -print0 | while IFS= read -r -d "" font; do
+            [ -f "$FONTS_DIR/$(basename "$font")" ] && mv "$FONTS_DIR/$(basename "$font")" "$DOTFILES_BACKUP_PATH/fonts/"
+        done
+    fi
     
     echo "$str_backup_complete $DOTFILES_BACKUP_PATH"
     
@@ -868,11 +888,12 @@ install_configs() {
     mkdir -p ~/.config/bpytop
     mkdir -p ~/.config/tmux
     mkdir -p ~/.digit
+    mkdir -p ~/.logseq
+    mkdir -p "$FONTS_DIR"
     mkdir -p ~/dotfiles/scripts/customs
     mkdir -p ~/dotfiles/scripts/lf
     
     # Copy new configurations
-    CONFIGS_DIR="$(dirname "$SCRIPT_DIR")/configs"
     [ -f "$CONFIGS_DIR/.zshrc" ] && cp "$CONFIGS_DIR/.zshrc" ~/
     [ -f "$CONFIGS_DIR/.vimrc" ] && cp "$CONFIGS_DIR/.vimrc" ~/
     [ -f "$CONFIGS_DIR/.gitignore" ] && cp "$CONFIGS_DIR/.gitignore" ~/
@@ -888,6 +909,13 @@ install_configs() {
     [ -d "$CONFIGS_DIR/.config/bpytop" ] && cp -r "$CONFIGS_DIR/.config/bpytop" ~/.config/
     [ -d "$CONFIGS_DIR/.config/tmux" ] && cp -r "$CONFIGS_DIR/.config/tmux" ~/.config/
     [ -f "$CONFIGS_DIR/.digit/config.yaml" ] && cp "$CONFIGS_DIR/.digit/config.yaml" ~/.digit/
+    [ -d "$CONFIGS_DIR/.logseq" ] && cp -r "$CONFIGS_DIR/.logseq" ~/
+
+    # Шрифты: find, а не glob — в именах MesloLGS NF есть пробелы.
+    if [ -d "$CONFIGS_DIR/fonts" ]; then
+        find "$CONFIGS_DIR/fonts" -type f -name "*.ttf" -exec cp {} "$FONTS_DIR/" \;
+        command_exists fc-cache && fc-cache -f "$FONTS_DIR" > /dev/null 2>&1
+    fi
     
     # Copy custom scripts
     [ -d "$SCRIPT_DIR/customs" ] && cp -r "$SCRIPT_DIR/customs/"* ~/dotfiles/scripts/customs/

@@ -27,7 +27,9 @@ jobs:
       - uses: actions/checkout@v3
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
-      
+
+      # Образ собирается из контекста (COPY в Dockerfile), поэтому проверяется код
+      # этой ветки, а не master с GitHub.
       - name: Build Docker image
         uses: docker/build-push-action@v4
         with:
@@ -35,8 +37,69 @@ jobs:
           push: false
           load: true
           tags: dotfiles-test:latest
-      
+
+      # digitwm собирается из исходников, поэтому образ обязан содержать тулчейн,
+      # который требует install_digitwm_build_deps (scripts/install-tools.sh).
+      # Проверка повторяет собственный тест готовности digitwm/bootstrap.sh и не
+      # ходит в сеть. XKBlib.h взят не случайно: именно на нём падала сборка в
+      # образе без заголовков X11.
+      - name: Check the image can build what the installer installs
+        run: |
+          docker run --rm dotfiles-test bash -euo pipefail -c '
+            cd "$HOME"
+            command -v cc >/dev/null || { echo "FAIL: нет компилятора C"; exit 1; }
+            command -v make >/dev/null || { echo "FAIL: нет make"; exit 1; }
+            command -v pkg-config >/dev/null || { echo "FAIL: нет pkg-config"; exit 1; }
+            { command -v yacc >/dev/null || command -v bison >/dev/null; } \
+              || { echo "FAIL: нет yacc/bison для parse.y"; exit 1; }
+            pkg-config --exists x11 xft xrandr \
+              || { echo "FAIL: нет .pc для x11/xft/xrandr"; exit 1; }
+            printf "%s\n" "%%" "start: ;" > grammar.y
+            yacc grammar.y || { echo "FAIL: yacc не смог разобрать грамматику"; exit 1; }
+            printf "%s\n" "#include <X11/Xlib.h>" "#include <X11/XKBlib.h>" \
+                          "#include <X11/Xft/Xft.h>" "#include <X11/extensions/Xrandr.h>" \
+                          "int main(void){ return 0; }" > probe.c
+            cc probe.c $(pkg-config --cflags --libs x11 xft xrandr) -o probe \
+              || { echo "FAIL: заголовки/библиотеки X11 не собираются"; exit 1; }
+            echo "OK: тулчейн для сборки digitwm на месте"
+          '
+
+      # Без --lang единственный ответ в stdin съедался выбором языка, все следующие
+      # read получали EOF, и шаг был зелёным, установив ровно ноль инструментов
+      # (`Installed Packages: - None` при exit 0). Язык задаётся флагом, остальные
+      # вопросы получают детерминированный ответ, а проверки ниже роняют шаг, если
+      # прогон не дошёл до конца или снова ничего не сделал.
       - name: Run automated installation test
         run: |
-          docker run --rm dotfiles-test bash -c "cd /home/developer/dotfiles && \
-          echo 'y' | scripts/install-tools.sh --dry-run --verbose" 
+          set -o pipefail
+          docker run --rm dotfiles-test bash -c \
+            'cd /home/developer/dotfiles && yes y | scripts/install-tools.sh --dry-run --verbose --lang en' \
+            | tee install.log
+
+          grep -q 'Installation complete' install.log \
+            || { echo "FAIL: установка не дошла до конца"; exit 1; }
+
+          if sed -n '/Installed Packages:/,/Skipped Packages:/p' install.log | grep -qx '  - None'; then
+            echo "FAIL: прогон завершился, но не установил ничего — вопросы снова получили EOF"
+            exit 1
+          fi
+
+          grep -q 'digitwm' install.log \
+            || { echo "FAIL: digitwm не появился в прогоне"; exit 1; }
+
+          dry_steps=$(grep -c '\[DRY-RUN\]' install.log)
+          echo "шагов dry-run пройдено: $dry_steps"
+          if [ "$dry_steps" -lt 50 ]; then
+            echo "FAIL: всего $dry_steps шагов dry-run, ожидалось >= 50 (до починки было 1)"
+            exit 1
+          fi
+
+      # ГРАНИЦА ЭТОЙ ПРОВЕРКИ — что она сознательно НЕ проверяет:
+      #  * digitwm здесь только в режиме --dry-run: install_digitwm возвращается
+      #    раньше, чем вызовет install_digitwm_build_deps, поэтому компиляции в
+      #    этом шаге не происходит. Что образ вообще способен её выполнить,
+      #    доказывает отдельный шаг с тулчейном выше.
+      #  * ЗАПУСТИТЬ digitwm в CI нельзя: это оконный менеджер X11, а в контейнере
+      #    нет ни X-сервера, ни DISPLAY. Сборка и линковка дисплея не требуют,
+      #    старт — требует. Поведение digitwm в работе проверяется только на живой
+      #    X-сессии, вне этого пайплайна.

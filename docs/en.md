@@ -16,6 +16,7 @@ This repository contains configuration files (dotfiles) and scripts for automati
   - `lf` - File manager
   - `tmux` - Session configurations
   - `vifm` - Vim-style file manager
+- `.digit/config.yaml` - Digit CLI settings: a local OpenAI-compatible model provider. Installed to `~/.digit/config.yaml`; secrets stay in `.env` and are never kept here
 - `configs/tools.json` - Tool configuration for interactive installation mode
 
 ### Scripts

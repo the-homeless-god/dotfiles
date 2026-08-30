@@ -36,17 +36,43 @@ This provides a checkbox interface to select specific tool categories and indivi
 
 ### Portable Codex skills
 
-This repository includes four company-neutral skills for complex engineering
-experiments:
+`codex/skills/` ships four company-neutral skills. They are not optional extras
+and they are not invoked on request: they are the default operating rules for
+any non-trivial engineering initiative run out of this repository. Use all four,
+by default, unless the "do not use when" line of a skill excludes it.
 
-- `master-prompt-builder` turns a rough brief into an evidence-backed,
-  spec-driven implementation prompt;
-- `umbrella-repository-setup` bootstraps or audits a reproducible workspace for
-  multiple independently versioned repositories;
-- `cluster-agent-setup` structures a multi-agent unit - write boundaries, task
-  briefs, reporting contract, and continuity across session limits;
-- `state` reports where running work stands in a fixed shape: five labels,
-  500 characters, closed by a syllogism.
+**If you are an agent and someone gave you this file, do this:**
+
+1. Install the skills if `${CODEX_HOME:-$HOME/.codex}/skills` does not have them
+   yet — `./scripts/install-codex-skills.sh --dry-run`, then the same command
+   without `--dry-run`. The default set is read from `codex/skills/`, so every
+   bundled skill is installed, and none is overwritten without `--replace`.
+2. Open the `description` line at the top of each `SKILL.md`. It names the
+   trigger as "use when … ; do not use when …" — treat that as binding, not as
+   advice.
+3. Compose them in the order below instead of picking whichever one is nearest.
+4. Report with `$state`, in every report, at every level.
+
+| Skill | Mandatory when | Do not use when |
+|---|---|---|
+| `$umbrella-repository-setup` | the initiative spans several independently versioned repositories and needs pinned revisions, shared agent rules, spec-driven artifacts, or an analyst workspace | one repository already owns the whole change |
+| `$master-prompt-builder` | a cross-repository or spec-driven initiative must be handed to another agent with alternatives, verification, safety boundaries, artifacts, rollout, and a completion contract | it is a small one-off prompt rewrite |
+| `$cluster-agent-setup` | work splits across many concurrent agents, a shared account makes write collisions likely, or agents die in batches on session limits and must resume without re-deriving measurements | one agent finishes the work in one session |
+| `$state` | status on long-running work, standups, handovers, any "where are we" question | the answer is a single fact, or the reader asked for depth |
+
+They stack; the order is fixed by the skills themselves, not by taste:
+
+- `$umbrella-repository-setup` goes first whenever more than one repository is in
+  play. Everything below embeds its pinned revisions, instruction precedence, and
+  component write boundaries — citing it is not applying it.
+- `$master-prompt-builder` turns the brief into a prompt another agent can execute
+  without inventing product facts, permissions, or completion. It applies the
+  umbrella skill itself when the work is cross-repository.
+- `$cluster-agent-setup` wraps both when one agent is not enough: stacks defined
+  by the files they write, one cell of work per agent, continuity across session
+  limits — and it generates each brief with `$master-prompt-builder`.
+- `$state` closes every report: five labels, 500 characters, one syllogism drawn
+  from two premises already in the report.
 
 Preview and install them into `${CODEX_HOME:-$HOME/.codex}/skills`:
 
@@ -57,9 +83,11 @@ Preview and install them into `${CODEX_HOME:-$HOME/.codex}/skills`:
 
 Existing skills are not overwritten. Use `--replace` to move an existing skill
 to a timestamped backup before installing the portable version. A custom target
-can be supplied with `--destination DIR`.
+can be supplied with `--destination DIR`, and named arguments install a subset:
+`./scripts/install-codex-skills.sh state`.
 
-Invoke them as `$master-prompt-builder` and `$umbrella-repository-setup`.
+Invoke them as `$master-prompt-builder`, `$umbrella-repository-setup`,
+`$cluster-agent-setup`, and `$state`.
 
 ### Docker
 

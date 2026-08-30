@@ -13,7 +13,9 @@
                 "ripgrep",
                 "bat",
                 "fd",
-                "zoxide"
+                "zoxide",
+                "eza",
+                "mcfly"
             ]
         },
         {
@@ -29,7 +31,9 @@
                 "nvm",
                 "vim-plug",
                 "dotnet-sdk",
-                "csharp-ls"
+                "csharp-ls",
+                "go",
+                "qemu"
             ]
         },
         {
@@ -88,7 +92,9 @@
                 "markdown-tools",
                 "transmission",
                 "macports",
-                "gs"
+                "gs",
+                "gum",
+                "mole"
             ]
         },
         {
@@ -118,7 +124,9 @@
                 "insomnia",
                 "neofetch",
                 "lm-studio",
-                "open-interpreter"
+                "open-interpreter",
+                "maccy",
+                "markdown-preview"
             ]
         },
         {

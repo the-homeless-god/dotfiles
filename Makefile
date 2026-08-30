@@ -1,4 +1,4 @@
-.PHONY: test test-dry-run lint clean install-codex-skills
+.PHONY: test test-dry-run check-configs lint clean install-codex-skills
 
 all: test
 
@@ -12,6 +12,10 @@ install-codex-skills:
 test:
 	@echo "Запуск тестов..."
 	@bash scripts/test.sh
+
+check-configs:
+	@echo "Проверка согласованности каталога инструментов..."
+	@bash scripts/check-config-consistency.sh
 
 test-dry-run:
 	@echo "Запуск в режиме dry-run..."
@@ -30,6 +34,8 @@ lint:
 	@bash -n scripts/test.sh
 	@echo "Проверка синтаксиса workbench-configs.sh..."
 	@bash -n scripts/customs/workbench-configs.sh
+	@echo "Проверка синтаксиса check-config-consistency.sh..."
+	@bash -n scripts/check-config-consistency.sh
 	@echo "Все проверки синтаксиса прошли успешно!"
 
 clean:
@@ -43,6 +49,7 @@ help:
 	@echo "  make        - запустить тесты"
 	@echo "  make test   - запустить тесты"
 	@echo "  make test-dry-run - запустить install-tools.sh в режиме dry-run"
+	@echo "  make check-configs - проверить согласованность tools.json, locales.json и install-tools.sh"
 	@echo "  make test-dry-run-verbose - запустить install-tools.sh в режиме dry-run с подробным выводом"
 	@echo "  make install-codex-skills - установить portable Codex skills"
 	@echo "  make lint   - проверить синтаксис скриптов"

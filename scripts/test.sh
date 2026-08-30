@@ -98,6 +98,14 @@ run_test "Проверка параметра --lang для английског
 # Проверяем что скрипт корректно обрабатывает неизвестные флаги
 run_test "Проверка обработки неизвестных флагов" "./scripts/install-tools.sh --unknown-flag" 1
 
+# Проверяем согласованность tools.json <-> locales.json <-> install_if_confirmed
+run_test "Проверка согласованности каталога инструментов" "bash ./scripts/check-config-consistency.sh" 0 20
+
+# И проверяем, что сама проверка умеет падать: проверка, которая не падает никогда,
+# ничего не проверяет. README.md заведомо не JSON, поэтому подсовываем его вместо
+# tools.json — временных файлов для этого заводить не нужно.
+run_test "Проверка согласованности падает на битом tools.json" "TOOLS_FILE=./README.md bash ./scripts/check-config-consistency.sh" 1 20
+
 # Выводим итоги тестирования
 echo -e "${YELLOW}=== Итоги тестирования ===${NC}"
 echo -e "Всего тестов: $TESTS_TOTAL"

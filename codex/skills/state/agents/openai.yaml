@@ -1,0 +1,4 @@
+interface:
+  display_name: "State"
+  short_description: "Fixed-shape status brief with a syllogism"
+  default_prompt: "Use $state to report where this work stands: Situation, Task, Action, Result, Not done, under 500 characters, closed by a syllogism."

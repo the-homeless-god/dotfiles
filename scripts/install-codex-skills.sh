@@ -64,7 +64,7 @@ if [[ -z "${destination_root}" || "${destination_root}" == "/" ]]; then
 fi
 
 if [[ ${#requested_skills[@]} -eq 0 ]]; then
-  requested_skills=(master-prompt-builder umbrella-repository-setup cluster-agent-setup)
+  requested_skills=(master-prompt-builder umbrella-repository-setup cluster-agent-setup state)
 fi
 
 timestamp="$(date -u +%Y%m%dT%H%M%SZ)"

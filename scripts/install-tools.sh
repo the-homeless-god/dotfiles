@@ -802,6 +802,7 @@ install_configs() {
     mkdir -p "$DOTFILES_BACKUP_PATH/.config/vifm"
     mkdir -p "$DOTFILES_BACKUP_PATH/.config/bpytop"
     mkdir -p "$DOTFILES_BACKUP_PATH/.config/tmux"
+    mkdir -p "$DOTFILES_BACKUP_PATH/.digit"
     mkdir -p "$DOTFILES_BACKUP_PATH/dotfiles/scripts/customs"
     mkdir -p "$DOTFILES_BACKUP_PATH/dotfiles/scripts/lf"
     
@@ -820,6 +821,7 @@ install_configs() {
     [ -d ~/.config/vifm ] && mv ~/.config/vifm "$DOTFILES_BACKUP_PATH/.config/"
     [ -d ~/.config/bpytop ] && mv ~/.config/bpytop "$DOTFILES_BACKUP_PATH/.config/"
     [ -d ~/.config/tmux ] && mv ~/.config/tmux "$DOTFILES_BACKUP_PATH/.config/"
+    [ -f ~/.digit/config.yaml ] && mv ~/.digit/config.yaml "$DOTFILES_BACKUP_PATH/.digit/"
     [ -d ~/dotfiles/scripts ] && mv ~/dotfiles/scripts "$DOTFILES_BACKUP_PATH/dotfiles/"
     
     echo "$str_backup_complete $DOTFILES_BACKUP_PATH"
@@ -831,6 +833,7 @@ install_configs() {
     mkdir -p ~/.config/vifm
     mkdir -p ~/.config/bpytop
     mkdir -p ~/.config/tmux
+    mkdir -p ~/.digit
     mkdir -p ~/dotfiles/scripts/customs
     mkdir -p ~/dotfiles/scripts/lf
     
@@ -850,6 +853,7 @@ install_configs() {
     [ -d "$CONFIGS_DIR/.config/vifm" ] && cp -r "$CONFIGS_DIR/.config/vifm" ~/.config/
     [ -d "$CONFIGS_DIR/.config/bpytop" ] && cp -r "$CONFIGS_DIR/.config/bpytop" ~/.config/
     [ -d "$CONFIGS_DIR/.config/tmux" ] && cp -r "$CONFIGS_DIR/.config/tmux" ~/.config/
+    [ -f "$CONFIGS_DIR/.digit/config.yaml" ] && cp "$CONFIGS_DIR/.digit/config.yaml" ~/.digit/
     
     # Copy custom scripts
     [ -d "$SCRIPT_DIR/customs" ] && cp -r "$SCRIPT_DIR/customs/"* ~/dotfiles/scripts/customs/

@@ -25,6 +25,7 @@ This repository contains configuration files (dotfiles) and scripts for automati
 - Scripts for lf in `scripts/lf/`
 - `tmux.sh` - Script for managing tmux sessions
 - `workbench-configs.sh` - Lays out the open Digitable Workbench configs, fetched over the public URL (the themes themselves are never stored in this repository)
+- `install-codex-skills.sh` - Installs every Codex skill bundled in `codex/skills/` into `${CODEX_HOME:-$HOME/.codex}/skills`; the README section on those skills is written as the operating instruction an agent can be handed directly
 
 ## Key Features
 

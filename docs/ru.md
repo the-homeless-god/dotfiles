@@ -25,6 +25,7 @@
 - Скрипты для lf в `scripts/lf/`
 - `tmux.sh` - скрипт для управления сессиями tmux
 - `workbench-configs.sh` - раскладывает открытые конфиги Digitable Workbench, забирая их по публичному URL (сами темы в этом репозитории не хранятся)
+- `install-codex-skills.sh` - устанавливает все Codex-скиллы из `codex/skills/` в `${CODEX_HOME:-$HOME/.codex}/skills`; раздел о них в README написан как инструкция агенту, которую можно дать ему как есть
 
 ## Основные возможности
 

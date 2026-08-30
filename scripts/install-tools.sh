@@ -879,7 +879,7 @@ install_configs() {
     [ -f "$CONFIGS_DIR/.gitconfig" ] && cp "$CONFIGS_DIR/.gitconfig" ~/
     [ -f "$CONFIGS_DIR/.editorconfig" ] && cp "$CONFIGS_DIR/.editorconfig" ~/
     [ -f "$CONFIGS_DIR/.alacritty.toml" ] && cp "$CONFIGS_DIR/.alacritty.toml" ~/
-    [ -f "$CONFIGS_DIR/.tmux.conf" ] && cp "$CONFIGS_DIR/.tmux.conf" ~/
+    [ -f "$CONFIGS_DIR/.config/tmux/.tmux.conf" ] && cp "$CONFIGS_DIR/.config/tmux/.tmux.conf" ~/.tmux.conf
     [ -f "$CONFIGS_DIR/.lfrc" ] && cp "$CONFIGS_DIR/.lfrc" ~/
     [ -f "$CONFIGS_DIR/tmux.sh" ] && cp "$CONFIGS_DIR/tmux.sh" ~/
     [ -f "$CONFIGS_DIR/wallpaper.jpeg" ] && cp "$CONFIGS_DIR/wallpaper.jpeg" ~/

@@ -63,11 +63,23 @@ reproduced or refuted.
 
 ## Language
 
-Standard technical vocabulary. When a thing already has an accepted name —
-`tail call`, `seed`, `runtime assert`, `exit code`, `peak RSS` — use it.
-Inventing a native-language translation for a term that already has a name is
-the failure this rule exists to stop: it reads as expertise and lands as
-nonsense.
+Standard technical vocabulary, in the form the reader already knows it. When a
+thing has an accepted name — `tail call`, `seed`, `exit code`, `peak RSS`,
+`call graph`, `TCB` — use that name.
+
+**Do not invent a native-language translation for a term that already has one.**
+A calque reads as expertise to the writer and as noise to the reader, and the
+failure is silent: readers stop asking rather than say they cannot parse it.
+The same applies to vocabulary private to one project or one team — a state
+report is read by people who were not in the room.
+
+Test before sending: **if a term appears nowhere outside your own notes — not in
+the code, not in a man page, not in anything the reader could look up — it is
+invented. Replace it.**
+
+Naming a concrete artifact is not jargon and is usually better than prose:
+`parser.c:2317`, `exit 3`, `--no-verify`, `+48 LOC` let the reader go and check.
+Prefer them.
 
 Ordinary words for ordinary things. Jargon only where it carries meaning the
 plain word does not.

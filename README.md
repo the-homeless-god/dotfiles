@@ -34,9 +34,9 @@ For more control over what gets installed, use the interactive mode:
 
 This provides a checkbox interface to select specific tool categories and individual tools.
 
-### Portable Codex skills
+### Portable agent skills
 
-`codex/skills/` ships five company-neutral skills. They are not optional extras
+`skills/` ships five company-neutral skills. They are not optional extras
 and they are not invoked on request: they are the default operating rules for
 any non-trivial engineering initiative run out of this repository. Use all five,
 by default, unless the "do not use when" line of a skill excludes it.
@@ -45,7 +45,7 @@ by default, unless the "do not use when" line of a skill excludes it.
 
 1. Install the skills if `${CODEX_HOME:-$HOME/.codex}/skills` does not have them
    yet — `./scripts/install-codex-skills.sh --dry-run`, then the same command
-   without `--dry-run`. The default set is read from `codex/skills/`, so every
+   without `--dry-run`. The default set is read from `skills/`, so every
    bundled skill is installed, and none is overwritten without `--replace`.
 2. Open the `description` line at the top of each `SKILL.md`. It names the
    trigger as "use when … ; do not use when …" — treat that as binding, not as
@@ -80,17 +80,72 @@ They stack; the order is fixed by the skills themselves, not by taste:
 - `$state` closes every report: five labels, 500 characters, one syllogism drawn
   from two premises already in the report.
 
-Preview and install them into `${CODEX_HOME:-$HOME/.codex}/skills`:
+A `SKILL.md` and its `references/` are read by every agent client, so the files
+live once, in a shared directory, and the clients are pointed at it:
+
+```
+~/.ai/skills/              <- the only real copy
+    master-prompt-builder/
+    umbrella-repository-setup/
+    cluster-agent-setup/
+    state/
+
+~/.codex/skills   -> ~/.ai/skills
+~/.claude/skills  -> ~/.ai/skills
+~/.digit          reads it through skills.external_dirs
+```
+
+Preview and install:
 
 ```bash
-./scripts/install-codex-skills.sh --dry-run
-./scripts/install-codex-skills.sh
+./scripts/install-skills.sh --dry-run
+./scripts/install-skills.sh
 ```
+
+By default the script links every client whose home directory already exists.
+Pick one with `--target codex` or `--target claude` (repeatable), or install the
+files without touching any client with `--target none`. `--destination DIR`
+moves the shared directory somewhere else; `AI_HOME` does the same.
+`CODEX_HOME` and `CLAUDE_CONFIG_DIR` are honoured when set.
+
+Nothing is overwritten. An existing skill, and an existing vendor `skills`
+directory that holds files of its own, both make the script refuse and change
+nothing. `--replace` moves them to a timestamped backup alongside first - your
+hand-placed skills are moved, never deleted, and the script prints what it
+moved so you can copy anything worth keeping into `~/.ai/skills`.
+
+**The price of links.** Every client now depends on one directory. Delete or
+rename `~/.ai/skills` and Codex and Claude Code lose their skills at the same
+moment, where three separate copies would have lost one. That is deliberate:
+three copies drift, and a skill fixed in one place stays broken in the other
+two. Back up `~/.ai`, not the vendor directories.
+
+**Why links and not a setting.** Neither client has a setting for the skills
+directory alone - `CODEX_HOME` and `CLAUDE_CONFIG_DIR` relocate the whole
+client home, and Claude Code's `--add-dir` has to be passed on every run. A
+symlink at the `skills` directory itself is the supported way; Claude Code
+documents that it follows such a link.
+
+**digit needs no link.** digit already supports extra skill directories, so it
+is pointed at the same folder by configuration instead:
+
+```yaml
+# ~/.digit/config.yaml, shipped in configs/.digit/config.yaml
+skills:
+  external_dirs:
+    - ~/.ai/skills
+```
+
+External directories are mounted read-only, so digit will not edit, archive or
+sync away the shared copy, and it keeps its own `~/.digit/skills` untouched.
+One caveat worth knowing: digit truncates a skill's description to 57
+characters in its system-prompt index, so for digit the routing signal is
+whatever the description says first.
 
 Existing skills are not overwritten. Use `--replace` to move an existing skill
 to a timestamped backup before installing the portable version. A custom target
 can be supplied with `--destination DIR`, and named arguments install a subset:
-`./scripts/install-codex-skills.sh state`.
+`./scripts/install-skills.sh state`.
 
 Invoke them as `$master-prompt-builder`, `$umbrella-repository-setup`,
 `$cluster-agent-setup`, `$bilingual-documentation`, and `$state`.

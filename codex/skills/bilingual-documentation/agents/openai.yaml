@@ -1,0 +1,4 @@
+interface:
+  display_name: "Bilingual Documentation"
+  short_description: "Keeps two documentation surfaces stating one set of facts"
+  default_prompt: "Use $bilingual-documentation to check this tree's document pairs and README routing, and to report what diverged between the two languages."

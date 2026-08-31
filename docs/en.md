@@ -26,6 +26,7 @@ This repository contains configuration files (dotfiles) and scripts for automati
 - `tmux.sh` - Script for managing tmux sessions
 - `workbench-configs.sh` - Lays out the open Digitable Workbench configs, fetched over the public URL (the themes themselves are never stored in this repository)
 - `install-codex-skills.sh` - Installs every Codex skill bundled in `codex/skills/` into `${CODEX_HOME:-$HOME/.codex}/skills`; the README section on those skills is written as the operating instruction an agent can be handed directly
+- `codex/skills/` - The five portable skills themselves, one directory each: `umbrella-repository-setup`, `master-prompt-builder`, `cluster-agent-setup`, `bilingual-documentation`, `state`. The installer reads this directory, so a new skill needs no change to the script. When each applies, and in what order, is the table in the main README
 
 ## Key Features
 

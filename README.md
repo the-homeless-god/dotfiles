@@ -36,9 +36,9 @@ This provides a checkbox interface to select specific tool categories and indivi
 
 ### Portable Codex skills
 
-`codex/skills/` ships four company-neutral skills. They are not optional extras
+`codex/skills/` ships five company-neutral skills. They are not optional extras
 and they are not invoked on request: they are the default operating rules for
-any non-trivial engineering initiative run out of this repository. Use all four,
+any non-trivial engineering initiative run out of this repository. Use all five,
 by default, unless the "do not use when" line of a skill excludes it.
 
 **If you are an agent and someone gave you this file, do this:**
@@ -58,6 +58,7 @@ by default, unless the "do not use when" line of a skill excludes it.
 | `$umbrella-repository-setup` | the initiative spans several independently versioned repositories and needs pinned revisions, shared agent rules, spec-driven artifacts, or an analyst workspace | one repository already owns the whole change |
 | `$master-prompt-builder` | a cross-repository or spec-driven initiative must be handed to another agent with alternatives, verification, safety boundaries, artifacts, rollout, and a completion contract | it is a small one-off prompt rewrite |
 | `$cluster-agent-setup` | work splits across many concurrent agents, a shared account makes write collisions likely, or agents die in batches on session limits and must resume without re-deriving measurements | one agent finishes the work in one session |
+| `$bilingual-documentation` | the repository documents itself in more than one language, a document exists on one surface only, or a number in a document can no longer be reproduced by the command it names | it is product UI localisation, marketing copy, or reference generated from source |
 | `$state` | status on long-running work, standups, handovers, any "where are we" question | the answer is a single fact, or the reader asked for depth |
 
 They stack; the order is fixed by the skills themselves, not by taste:
@@ -71,6 +72,11 @@ They stack; the order is fixed by the skills themselves, not by taste:
 - `$cluster-agent-setup` wraps both when one agent is not enough: stacks defined
   by the files they write, one cell of work per agent, continuity across session
   limits — and it generates each brief with `$master-prompt-builder`.
+- `$bilingual-documentation` governs what the work writes down: paired language
+  surfaces that state the same facts, a README that routes to documents instead
+  of restating them, and every number naming the command that prints it. This
+  repository is arranged that way itself — `README.md` routes, `docs/en.md` and
+  `docs/ru.md` are the pair.
 - `$state` closes every report: five labels, 500 characters, one syllogism drawn
   from two premises already in the report.
 
@@ -87,7 +93,7 @@ can be supplied with `--destination DIR`, and named arguments install a subset:
 `./scripts/install-codex-skills.sh state`.
 
 Invoke them as `$master-prompt-builder`, `$umbrella-repository-setup`,
-`$cluster-agent-setup`, and `$state`.
+`$cluster-agent-setup`, `$bilingual-documentation`, and `$state`.
 
 ### Docker
 

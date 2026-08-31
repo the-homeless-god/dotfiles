@@ -1,4 +1,4 @@
-.PHONY: test test-dry-run check-configs lint clean install-codex-skills
+.PHONY: test test-dry-run check-configs lint clean install-skills
 
 all: test
 
@@ -6,8 +6,8 @@ interactive:
 	@echo "Запуск интерактивного режима..."
 	@bash scripts/install-tools.sh --interactive --lang ru
 
-install-codex-skills:
-	@bash scripts/install-codex-skills.sh
+install-skills:
+	@bash scripts/install-skills.sh
 
 test:
 	@echo "Запуск тестов..."
@@ -28,8 +28,8 @@ test-dry-run-verbose:
 lint:
 	@echo "Проверка синтаксиса install-tools.sh..."
 	@bash -n scripts/install-tools.sh
-	@echo "Проверка синтаксиса install-codex-skills.sh..."
-	@bash -n scripts/install-codex-skills.sh
+	@echo "Проверка синтаксиса install-skills.sh..."
+	@bash -n scripts/install-skills.sh
 	@echo "Проверка синтаксиса test.sh..."
 	@bash -n scripts/test.sh
 	@echo "Проверка синтаксиса workbench-configs.sh..."
@@ -51,7 +51,7 @@ help:
 	@echo "  make test-dry-run - запустить install-tools.sh в режиме dry-run"
 	@echo "  make check-configs - проверить согласованность tools.json, locales.json и install-tools.sh"
 	@echo "  make test-dry-run-verbose - запустить install-tools.sh в режиме dry-run с подробным выводом"
-	@echo "  make install-codex-skills - установить portable Codex skills"
+	@echo "  make install-skills - установить общие навыки в ~/.ai/skills и связать клиентов"
 	@echo "  make lint   - проверить синтаксис скриптов"
 	@echo "  make clean  - удалить временные файлы"
 	@echo "  make help   - показать эту справку"

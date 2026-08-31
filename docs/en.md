@@ -16,11 +16,15 @@ This repository contains configuration files (dotfiles) and scripts for automati
   - `lf` - File manager
   - `tmux` - Session configurations
   - `vifm` - Vim-style file manager
-- `.digit/config.yaml` - Digit CLI settings: a local OpenAI-compatible model provider. Installed to `~/.digit/config.yaml`; secrets stay in `.env` and are never kept here
+- `.digit/config.yaml` - Digit CLI settings: a local OpenAI-compatible model provider, plus `skills.external_dirs` pointing digit at the shared skills directory. Installed to `~/.digit/config.yaml`; secrets stay in `.env` and are never kept here
 - `configs/tools.json` - Tool configuration for interactive installation mode
+
+### Skills
+- `skills/` - four vendor-neutral agent skills (`master-prompt-builder`, `umbrella-repository-setup`, `cluster-agent-setup`, `state`). The directory name carries no vendor: the same `SKILL.md` and `references/` are read by Codex, Claude Code and digit alike
 
 ### Scripts
 - `install-tools.sh` - Main installation script
+- `install-skills.sh` - Installs `skills/` into one shared directory and points the agent clients at it
 - Custom scripts in `scripts/customs/`
 - Scripts for lf in `scripts/lf/`
 - `tmux.sh` - Script for managing tmux sessions
@@ -78,6 +82,42 @@ This mode provides a convenient checkbox interface for selecting:
 - Individual programs within each category
 
 You can easily choose only the tools you need without having to answer multiple separate questions.
+
+### Shared agent skills
+
+The skills in `skills/` are installed once, into `~/.ai/skills`, and every agent
+client is pointed at that one directory:
+
+```bash
+./scripts/install-skills.sh --dry-run
+./scripts/install-skills.sh
+```
+
+| Client | How it reaches the shared directory |
+| --- | --- |
+| Codex | `${CODEX_HOME:-$HOME/.codex}/skills` becomes a symlink to `~/.ai/skills` |
+| Claude Code | `${CLAUDE_CONFIG_DIR:-$HOME/.claude}/skills` becomes a symlink to `~/.ai/skills` |
+| digit | `skills.external_dirs` in `~/.digit/config.yaml` lists `~/.ai/skills`, read-only |
+
+Symlinks are used for Codex and Claude Code because neither has a setting for
+the skills directory on its own: `CODEX_HOME` and `CLAUDE_CONFIG_DIR` relocate
+the whole client home, and `--add-dir` has to be repeated on every run. digit
+needs no link because it already supports external skill directories.
+
+By default the script links every client whose home directory exists. Use
+`--target codex`, `--target claude` (repeatable) or `--target none`, and
+`--destination DIR` (or `AI_HOME`) to move the shared directory.
+
+Nothing is overwritten. If a client's `skills` directory already holds files of
+its own, the script refuses and changes nothing; `--replace` moves that
+directory to a timestamped backup next to it first, prints what it moved, and
+only then creates the link. Backups are moved, never deleted.
+
+**The cost of sharing.** All clients now depend on one directory. Delete or
+rename `~/.ai/skills` and they all lose their skills at the same moment, where
+three separate copies would have lost one. This is the deliberate trade for
+never having a skill fixed in one place and left broken in the other two - back
+up `~/.ai`, not the vendor directories.
 
 ### Testing with Docker
 

@@ -2,3 +2,11 @@ model:
   provider: custom
   base_url: http://127.0.0.1:8127/v1
   default: Qwen3-4B-Instruct-2507-Q4_K_M.gguf
+
+# Read the shared skills directory that scripts/install-skills.sh fills, so the
+# same SKILL.md files serve digit, Codex and Claude Code without a second copy.
+# digit still keeps its own ~/.digit/skills; external dirs are mounted read-only,
+# so nothing here is edited, archived or synced away from digit's side.
+skills:
+  external_dirs:
+    - ~/.ai/skills

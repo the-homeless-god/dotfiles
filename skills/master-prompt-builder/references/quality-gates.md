@@ -26,6 +26,21 @@ Run these gates after drafting. Revise the prompt when a material item fails.
 - Retry and blocker behavior has a stopping condition.
 - The final response contract is compact and auditable.
 
+## Unattended runs
+
+Apply when the prompt must run for hours with nobody available to answer it.
+
+- Completion is a command and its expected output, not a judgement.
+- Unknown facts have a written destination and the run continues past them; the
+  prompt never implies that asking or waiting is available.
+- Writable paths and the branch are named; everything else is read-only.
+- Failure is defined, and “could not verify” is a third outcome folded into
+  neither success nor failure.
+- Results reach disk as they are measured, so an interrupted run leaves a
+  successor a starting point.
+- Every needed fact is inline — measurements with provenance, not links to
+  reports the agent may fail to open.
+
 ## Reasoning quality
 
 - RCTF is concrete rather than ceremonial.
@@ -34,6 +49,12 @@ Run these gates after drafting. Revise the prompt when a material item fails.
 - Selection criteria prevent “choose the fanciest design” bias.
 - Verification questions are derived independently from requirements.
 - The prompt asks for public rationale and evidence, never hidden chain-of-thought.
+- Each required technique names the failure it closes and what it costs in extra
+  passes; nothing is required where a deterministic command answers the same
+  question.
+- Examples are present where the artifact's shape is idiosyncratic and absent
+  where it is conventional, and none of them anchors the executor to the
+  example's own content.
 
 ## Safety and authorization
 

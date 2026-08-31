@@ -63,11 +63,44 @@ reproduced or refuted.
 
 ## Language
 
-Standard technical vocabulary. When a thing already has an accepted name —
-`tail call`, `seed`, `runtime assert`, `exit code`, `peak RSS` — use it.
-Inventing a native-language translation for a term that already has a name is
-the failure this rule exists to stop: it reads as expertise and lands as
-nonsense.
+**Write for a programmer. Standard technical vocabulary, in the form the reader
+already knows it.** When a thing has an accepted name — `tail call`, `seed`,
+`exit code`, `peak RSS`, `call graph`, `TCB`, `proof object` — use that name.
+
+**Banned: inventing a native-language calque for a term that already has one.**
+It reads as expertise to the writer and as nonsense to the reader. This is the
+single most common way this format fails, and it fails silently: the reader
+stops asking rather than admit they cannot parse it.
+
+Measured examples of the failure, all from one session, all from the same
+author, none of them caught by the author:
+
+| invented | what it actually was |
+|---|---|
+| ячейка Ч127 | a subagent, one task |
+| гейт | acceptance criterion |
+| сторож | CI check / guard script |
+| заявка | a claim in a report, still unverified |
+| подделка | adversarial test case |
+| изъятие | revert-and-recheck |
+| запись / объект доказательства | proof object emitted by the compiler |
+| чекер | independent checker (~1800 LOC C) |
+| семя / перепечатка | bootstrap binary / rebuilding it from source |
+| след ядра | derivation trace field |
+| третий исход | exit 3, "could not verify" |
+
+The reader in that session was a programmer and said, verbatim, "я тебя нихуя
+не понимаю" — after nine reports. Nine reports of zero value, and each one
+looked fine to the writer.
+
+**Rule of thumb: if the term does not appear in the codebase, in a man page, or
+in a paper the reader could look up, it is invented — replace it.** A private
+vocabulary is not a shorthand; it is a second, undocumented language that only
+the writer speaks.
+
+Naming a specific artifact is not jargon: `sverschik.c:2317`, `exit 3`,
+`.github/workflows/reprint.yml`, `+48 LOC` are all *more* readable than prose,
+because the reader can go look. Prefer them.
 
 Ordinary words for ordinary things. Jargon only where it carries meaning the
 plain word does not.

@@ -36,9 +36,9 @@ This provides a checkbox interface to select specific tool categories and indivi
 
 ### Portable agent skills
 
-`skills/` ships five company-neutral skills. They are not optional extras
+`skills/` ships six company-neutral skills. They are not optional extras
 and they are not invoked on request: they are the default operating rules for
-any non-trivial engineering initiative run out of this repository. Use all five,
+any non-trivial engineering initiative run out of this repository. Use all six,
 by default, unless the "do not use when" line of a skill excludes it.
 
 **If you are an agent and someone gave you this file, do this:**
@@ -59,6 +59,7 @@ by default, unless the "do not use when" line of a skill excludes it.
 | `$master-prompt-builder` | a cross-repository or spec-driven initiative must be handed to another agent with alternatives, verification, safety boundaries, artifacts, rollout, and a completion contract | it is a small one-off prompt rewrite |
 | `$cluster-agent-setup` | work splits across many concurrent agents, a shared account makes write collisions likely, or agents die in batches on session limits and must resume without re-deriving measurements | one agent finishes the work in one session |
 | `$bilingual-documentation` | the repository documents itself in more than one language, a document exists on one surface only, or a number in a document can no longer be reproduced by the command it names | it is product UI localisation, marketing copy, or reference generated from source |
+| `$tool-section-page` | a tool needs its own section on a documentation site, or an existing one reads as an article, opens with prose, or carries claims, frames and panel links that no longer match the tool | the page is a course chapter, a blog post, or reference generated from source |
 | `$state` | status on long-running work, standups, handovers, any "where are we" question | the answer is a single fact, or the reader asked for depth |
 
 They stack; the order is fixed by the skills themselves, not by taste:
@@ -77,6 +78,11 @@ They stack; the order is fixed by the skills themselves, not by taste:
   of restating them, and every number naming the command that prints it. This
   repository is arranged that way itself — `README.md` routes, `docs/en.md` and
   `docs/ru.md` are the pair.
+- `$tool-section-page` governs one surface the others do not reach: the page a
+  reader opens to find out what a tool does. Demonstration first, one viewport
+  measured by a run, panel addresses opened in a browser, frames shot by a
+  script in the tree, and no claim the tool does not keep. It reports with
+  `$state` like everything else.
 - `$state` closes every report: an objective line, key results scored `✓ ✗ ?`
   against thresholds the brief declared, the blocker and the ask — a head of at
   most 14 lines and 900 characters, then a rule, then the evidence, uncapped.
@@ -91,6 +97,7 @@ live once, in a shared directory, and the clients are pointed at it:
     master-prompt-builder/
     umbrella-repository-setup/
     cluster-agent-setup/
+    tool-section-page/
     state/
 
 ~/.codex/skills   -> ~/.ai/skills

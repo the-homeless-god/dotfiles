@@ -20,7 +20,7 @@
 - `configs/tools.json` - конфигурация инструментов для интерактивного режима установки
 
 ### Навыки
-- `skills/` - четыре навыка без привязки к поставщику (`master-prompt-builder`, `umbrella-repository-setup`, `cluster-agent-setup`, `state`). В имени каталога нет вендора намеренно: одни и те же `SKILL.md` и `references/` читают Codex, Claude Code и digit
+- `skills/` - шесть навыков без привязки к поставщику (`master-prompt-builder`, `umbrella-repository-setup`, `cluster-agent-setup`, `bilingual-documentation`, `tool-section-page`, `state`). В имени каталога нет вендора намеренно: одни и те же `SKILL.md` и `references/` читают Codex, Claude Code и digit
 
 ### Скрипты
 - `install-tools.sh` - основной скрипт установки
@@ -31,7 +31,7 @@
 - `tmux.sh` - скрипт для управления сессиями tmux
 - `workbench-configs.sh` - раскладывает открытые конфиги Digitable Workbench, забирая их по публичному URL (сами темы в этом репозитории не хранятся)
 - `install-codex-skills.sh` - устанавливает все Codex-скиллы из `codex/skills/` в `${CODEX_HOME:-$HOME/.codex}/skills`; раздел о них в README написан как инструкция агенту, которую можно дать ему как есть
-- `codex/skills/` - сами пять переносимых скиллов, по каталогу на каждый: `umbrella-repository-setup`, `master-prompt-builder`, `cluster-agent-setup`, `bilingual-documentation`, `state`. Установщик читает этот каталог, поэтому новый скилл не требует правки скрипта. Когда какой применять и в каком порядке - таблица в основном README
+- `codex/skills/` - сами шесть переносимых скиллов, по каталогу на каждый: `umbrella-repository-setup`, `master-prompt-builder`, `cluster-agent-setup`, `bilingual-documentation`, `tool-section-page`, `state`. Установщик читает этот каталог, поэтому новый скилл не требует правки скрипта. Когда какой применять и в каком порядке - таблица в основном README
 
 ## Основные возможности
 

@@ -92,15 +92,19 @@ the same bottleneck; not five, because stacks that never collide are rare.
 
 ## Reporting contract
 
-Bottom-up reports use Situation → Task → Action → Result, capped: worker 40
-lines, lead 25, overagent to user 15. Length is a tax on the reader, not
-evidence of effort.
+Every report at every level is written to `$state`, and that skill is the only
+place the shape is defined — a second shape stated here would drift from it.
+What this skill adds is where the key results come from: **the brief declares
+them, the report scores them.** A cell whose brief named no threshold cannot be
+reported on, only narrated about.
 
-Two sections are mandatory and their absence makes a report incomplete:
+Two parts of the evidence tail are mandatory and their absence makes a report
+incomplete:
 
 - **Provenance** — tree, binary, commit for every number.
 - **What I did not do and why** — including scope deliberately left, blocked
   actions, and anything believed on someone else's word rather than measured.
+  Believed-on-word is `?`, never `✓`.
 
 Numbers come from runs. A number that cannot be confirmed is named unconfirmed
 rather than printed. "Faster" is as defective as "seems fine"; report `241 s →

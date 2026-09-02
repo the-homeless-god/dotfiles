@@ -35,13 +35,26 @@ One cell of the matrix, phrased so its completion is observable:
 State the falsifier. "Find out whether X causes Y" must be accompanied by "if X
 does not cause Y, the run shows Z instead."
 
+## Key results
+
+Three to six, written here, in the brief, before the work starts — each a
+threshold with a number the worker will be scored against:
+
+```
+КР1: имён X11 в ribbon.o — 0 (на базе 3), по nm -u ribbon.o
+КР2: поведение не изменилось — layout-probe 592 б, cmp пуст
+КР3: сторож краснеет на подлоге — 3 красных прогона из 3
+```
+
+A key result invented after the run is not a key result, it is a description of
+what happened to come out.
+
 ## Format
 
-- Situation → Task → Action → Result, capped at 40 lines.
-- Provenance for every number.
-- Final paragraph: what was not done and why.
-- Negative and "could not verify" outcomes reported as results, never as
-  failure or silence.
+The report is written to `$state`: objective line, these key results scored
+`✓ ✗ ?`, the blocker, the ask — then a rule and the evidence. Negative and
+"could not verify" outcomes are results, reported with the same weight; `?` is
+never written as `✗`.
 
 ## Required contents
 

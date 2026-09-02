@@ -1,4 +1,4 @@
-.PHONY: test test-dry-run check-configs lint clean install-skills
+.PHONY: test test-dry-run check-configs check-state lint clean install-skills
 
 all: test
 
@@ -16,6 +16,10 @@ test:
 check-configs:
 	@echo "Проверка согласованности каталога инструментов..."
 	@bash scripts/check-config-consistency.sh
+
+check-state:
+	@echo "Самопроверка проверяльщика отчётов о состоянии..."
+	@bash scripts/check-state-report.sh --selftest
 
 test-dry-run:
 	@echo "Запуск в режиме dry-run..."
@@ -36,6 +40,8 @@ lint:
 	@bash -n scripts/customs/workbench-configs.sh
 	@echo "Проверка синтаксиса check-config-consistency.sh..."
 	@bash -n scripts/check-config-consistency.sh
+	@echo "Проверка синтаксиса check-state-report.sh..."
+	@bash -n scripts/check-state-report.sh
 	@echo "Все проверки синтаксиса прошли успешно!"
 
 clean:
@@ -50,6 +56,7 @@ help:
 	@echo "  make test   - запустить тесты"
 	@echo "  make test-dry-run - запустить install-tools.sh в режиме dry-run"
 	@echo "  make check-configs - проверить согласованность tools.json, locales.json и install-tools.sh"
+	@echo "  make check-state - самопроверка проверяльщика отчётов о состоянии"
 	@echo "  make test-dry-run-verbose - запустить install-tools.sh в режиме dry-run с подробным выводом"
 	@echo "  make install-skills - установить общие навыки в ~/.ai/skills и связать клиентов"
 	@echo "  make lint   - проверить синтаксис скриптов"

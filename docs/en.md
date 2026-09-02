@@ -25,6 +25,7 @@ This repository contains configuration files (dotfiles) and scripts for automati
 ### Scripts
 - `install-tools.sh` - Main installation script
 - `install-skills.sh` - Installs `skills/` into one shared directory and points the agent clients at it
+- `check-state-report.sh` - Checks a state report against `skills/state/SKILL.md`: head within 14 lines and 900 characters, three to six key results each carrying a threshold, a fact and one of `✓ ✗ ?`, the blocker and the ask present, nothing taken on trust scored as achieved. `--selftest` proves the checker itself fails on eight prepared cases
 - Custom scripts in `scripts/customs/`
 - Scripts for lf in `scripts/lf/`
 - `tmux.sh` - Script for managing tmux sessions

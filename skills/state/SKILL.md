@@ -110,10 +110,10 @@ invented — replace it.** Naming an artifact beats prose: `parser.c:2317`,
 
 ## Checking it
 
-`check-state-report.sh <file>` (in the dotfiles repository, `scripts/`) —
-head within cap, every key result
-carrying a threshold number and a status glyph, `Затык` and `Нужно от тебя`
-present, no `✓` on a fact taken `на веру`. It checks shape, never truth; `--selftest` shows it failing on eight prepared
+`scripts/check-state-report.sh <file>`, in the dotfiles repository — head
+within cap, every key result carrying a threshold number and a status glyph,
+`Затык` and `Нужно от тебя` present, no `✓` on a fact taken `на веру`. It
+checks shape, never truth; `--selftest` shows it failing on eight prepared
 cases, because a checker nobody has seen fail is one nobody should trust.
 
 ## What this is not for

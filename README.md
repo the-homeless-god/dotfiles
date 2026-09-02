@@ -77,8 +77,11 @@ They stack; the order is fixed by the skills themselves, not by taste:
   of restating them, and every number naming the command that prints it. This
   repository is arranged that way itself — `README.md` routes, `docs/en.md` and
   `docs/ru.md` are the pair.
-- `$state` closes every report: five labels, 500 characters, one syllogism drawn
-  from two premises already in the report.
+- `$state` closes every report: an objective line, key results scored `✓ ✗ ?`
+  against thresholds the brief declared, the blocker and the ask — a head of at
+  most 14 lines and 900 characters, then a rule, then the evidence, uncapped.
+  `scripts/check-state-report.sh` checks that shape, and `--selftest` shows it
+  catching each way of breaking it.
 
 A `SKILL.md` and its `references/` are read by every agent client, so the files
 live once, in a shared directory, and the clients are pointed at it:
@@ -141,6 +144,10 @@ sync away the shared copy, and it keeps its own `~/.digit/skills` untouched.
 One caveat worth knowing: digit truncates a skill's description to 57
 characters in its system-prompt index, so for digit the routing signal is
 whatever the description says first.
+
+Reports written to that shape are checked with
+`./scripts/check-state-report.sh <file>`; `--selftest` builds a good report and
+seven broken ones and shows the checker naming the fault in each.
 
 Existing skills are not overwritten. Use `--replace` to move an existing skill
 to a timestamped backup before installing the portable version. A custom target

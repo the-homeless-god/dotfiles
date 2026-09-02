@@ -90,9 +90,16 @@ fails, the page just stops being true.
 
 ## 6. The English edition shows English output
 
-Translate the site's own words; do **not** translate the tool's printout — a
-retelling is not output. Say so in the caption, so the identical frame reads as
-a decision rather than an oversight.
+Translate the site's own words, never the tool's printout — a retelling is not
+output. Which frame the English page gets follows the tool, not the page:
+
+- the tool prints one language only → the same frame in both editions, and the
+  caption says why it is the same;
+- the tool takes a locale → shoot every frame twice and pick by reader language.
+
+*Price.* An English page showed Russian output under a caption that admitted it
+— "digitdisk prints Russian only". The caption was honest and the page was still
+wrong: the tool had grown a `--lang` flag, and nobody re-shot.
 
 ## Checklist
 

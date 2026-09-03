@@ -105,7 +105,9 @@ sides: method in the main layer once, method missing entirely the next time.
 `scripts/check-post.sh <file>`, in the dotfiles repository — one H1, a first
 screen inside its cap and carrying numbers, a border section, a negative result
 named, something copyable, our own history not on the first screen, and every
-Latin term declared and explained at first use. It checks shape, never truth;
+Latin term declared and explained at first use. The gloss test is proximity —
+it sees that an explanation *could* stand where the term first appears, not that
+it does — so read the first appearance yourself. It checks shape, never truth;
 `--selftest` shows it failing on eight prepared cases, and the seven rejected
 versions of `prompting-study` in git history all fail it while the accepted one
 passes — a checker nobody has seen fail on real work is one nobody should trust.

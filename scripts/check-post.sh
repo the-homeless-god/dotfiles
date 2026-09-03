@@ -86,6 +86,9 @@ fi
 
 # strip_markup turns markdown into the text a reader reads: no front matter, no
 # fenced blocks, no inline code, no shortcode tags, no HTML, no link targets.
+# The optional second argument drops inline code as well: a word the author set
+# in code font is an identifier, not a term the reader has to be taught, so the
+# undeclared-jargon scan must not see `grep` or `host/internal` as jargon.
 strip_markup() {
   awk '
     NR == 1 && $0 == "---" { in_front = 1; next }
@@ -95,7 +98,7 @@ strip_markup() {
     in_fence { next }
     { print }
   ' \
-    | sed -E 's/`[^`]*`//g; s/\{\{[<%][^}]*[>%]\}\}//g; s/<[^>]*>//g; s/\]\([^)]*\)/]/g'
+    | sed -E "s/\`([^\`]*)\`/$([[ "${1:-keep}" == drop ]] && printf '' || printf '\\1')/g; s/\{\{[<%][^}]*[>%]\}\}//g; s/<[^>]*>//g; s/\]\([^)]*\)/]/g"
 }
 
 # main_layer drops everything inside a perspective box; box_layer keeps only it.
@@ -268,6 +271,7 @@ for file in "${files[@]}"; do
   split_layer "${file}" box  > "${work}.box"
   main="$(strip_markup < "${work}.main")"
   box="$(strip_markup < "${work}.box")"
+  main_prose="$(strip_markup drop < "${work}.main")"
   printf '%s\n' "${main}" > "${work}.screen"
   screen="$(first_screen "${work}.screen")"
 
@@ -276,8 +280,9 @@ for file in "${files[@]}"; do
   screen_chars="$(chars "${screen}")"
   screen_numbers="$(count_re "${screen}" '[0-9]+')"
 
-  # 1. one title, and only one.
-  h1="$(grep -c '^# ' "${file}")"
+  # 1. one title, and only one.  Counted on the PROSE: a `# comment` inside a
+  # fenced block is not a title, and an article full of shell listings has many.
+  h1="$(printf '%s\n' "${main}" | grep -c '^# ')"
   (( h1 == 1 )) || problems+=("${h1} level-1 titles, need exactly 1 — the title is what the article list shows")
 
   # 2 and 3. the first screen holds the answer, and the answer has numbers.
@@ -325,12 +330,12 @@ for file in "${files[@]}"; do
   done
 
   # 8b. jargon the author forgot to declare, in a mostly-Cyrillic file only.
-  cyr="$(count_re "${main}" '[А-Яа-яЁё]')"
-  lat="$(count_re "${main}" '[A-Za-z]')"
+  cyr="$(count_re "${main_prose}" '[А-Яа-яЁё]')"
+  lat="$(count_re "${main_prose}" '[A-Za-z]')"
   undeclared=""
   if (( cyr > lat )); then
     declared_re="$(printf '%s\n' "${terms[@]}" | grep -c . )"
-    undeclared="$(printf '%s' "${main}" \
+    undeclared="$(printf '%s' "${main_prose}" \
       | grep -oE '[A-Za-z][A-Za-z0-9]{2,}(-[A-Za-z0-9]+)*' \
       | sort | uniq -c | sort -rn \
       | awk '$1 >= 2 { print $2 }' \

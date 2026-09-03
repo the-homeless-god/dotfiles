@@ -41,7 +41,7 @@ script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 repository_root="$(cd "${script_dir}/.." && pwd)"
 source_root="${repository_root}/skills"
 bundled_skills=(master-prompt-builder umbrella-repository-setup cluster-agent-setup \
-                bilingual-documentation tool-section-page state)
+                bilingual-documentation tool-section-page write-post state)
 known_targets=(codex claude)
 
 destination_root=""

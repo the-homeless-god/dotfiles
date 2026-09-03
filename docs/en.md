@@ -20,7 +20,7 @@ This repository contains configuration files (dotfiles) and scripts for automati
 - `configs/tools.json` - Tool configuration for interactive installation mode
 
 ### Skills
-- `skills/` - six vendor-neutral agent skills (`master-prompt-builder`, `umbrella-repository-setup`, `cluster-agent-setup`, `bilingual-documentation`, `tool-section-page`, `state`). The directory name carries no vendor: the same `SKILL.md` and `references/` are read by Codex, Claude Code and digit alike
+- `skills/` - seven vendor-neutral agent skills (`master-prompt-builder`, `umbrella-repository-setup`, `cluster-agent-setup`, `bilingual-documentation`, `tool-section-page`, `write-post`, `state`). The directory name carries no vendor: the same `SKILL.md` and `references/` are read by Codex, Claude Code and digit alike
 
 ### Scripts
 - `install-tools.sh` - Main installation script
@@ -31,7 +31,7 @@ This repository contains configuration files (dotfiles) and scripts for automati
 - `tmux.sh` - Script for managing tmux sessions
 - `workbench-configs.sh` - Lays out the open Digitable Workbench configs, fetched over the public URL (the themes themselves are never stored in this repository)
 - `install-codex-skills.sh` - Installs every Codex skill bundled in `codex/skills/` into `${CODEX_HOME:-$HOME/.codex}/skills`; the README section on those skills is written as the operating instruction an agent can be handed directly
-- `codex/skills/` - The six portable skills themselves, one directory each: `umbrella-repository-setup`, `master-prompt-builder`, `cluster-agent-setup`, `bilingual-documentation`, `tool-section-page`, `state`. The installer reads this directory, so a new skill needs no change to the script. When each applies, and in what order, is the table in the main README
+- `codex/skills/` - The seven portable skills themselves, one directory each: `umbrella-repository-setup`, `master-prompt-builder`, `cluster-agent-setup`, `bilingual-documentation`, `tool-section-page`, `write-post`, `state`. The installer reads this directory, so a new skill needs no change to the script. When each applies, and in what order, is the table in the main README
 
 ## Key Features
 

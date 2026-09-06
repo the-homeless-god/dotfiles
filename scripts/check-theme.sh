@@ -41,7 +41,24 @@ configs/.alacritty.toml
 configs/.gitconfig
 configs/.config/tmux/.tmux.conf
 configs/.config/bat/themes/digitable.tmTheme
-configs/.config/bpytop/themes/digitable.theme"
+configs/.config/bpytop/themes/digitable.theme
+configs/.config/lf/colors
+configs/.config/lf/lfrc
+configs/.config/vifm/colors/digitable.vifm
+configs/.zshrc
+configs/.logseq/settings/logseq-agenda.json
+configs/.logseq/settings/logseq-journals-calendar.json
+configs/.logseq/settings/logseq-todo-plugin.json"
+
+# Цвета, которые остаются чужими, и почему это не забывчивость. Палитра
+# Digitable тёмная: светлого набора поверхностей в ней нет вовсе. Плагины
+# logseq хранят пару «светлый / тёмный» в одном файле, и светлую половину
+# подменить нечем — подставить туда наугад значило бы выдумать формат за
+# автора. Пары «файл цвет», а не голые цвета: так чужое значение не
+# просочится в другой файл молча.
+FOREIGN="configs/.logseq/settings/logseq-journals-calendar.json #ffffff
+configs/.logseq/settings/logseq-todo-plugin.json #ffffff
+configs/.logseq/settings/logseq-todo-plugin.json #f7f7f7"
 
 # Доли подмеси, которыми пользуется палитра: 12% и 30% — панели «получилось» и
 # «не получилось», 16% — подсветка совпадения поиска.
@@ -49,7 +66,19 @@ RATIOS="0.12 0.16 0.30"
 
 fail=0
 
-hexes_of() { grep -oiE '#[0-9a-f]{6}' "$1" | tr 'A-F' 'a-f' | sort -u; }
+# Цвет в дереве записан двумя способами, и оба надо уметь прочитать.
+# Первый — привычный #rrggbb. Второй — 24-битный ANSI SGR: 38;2;R;G;B для
+# текста и 48;2;R;G;B для фона. Так и только так цвет записывается в цветах
+# lf, в его же опциях (promptfmt, cursoractivefmt и прочие) и в EZA_COLORS —
+# без второй ветки эти файлы лежали бы в списке несторожёнными, а проверка
+# печатала бы про них «ok», ничего не посмотрев.
+hexes_of() {
+    {
+        grep -oiE '#[0-9a-f]{6}' "$1"
+        grep -oE '[34]8;2;[0-9]{1,3};[0-9]{1,3};[0-9]{1,3}' "$1" \
+            | awk -F';' '$3 < 256 && $4 < 256 && $5 < 256 { printf "#%02x%02x%02x\n", $3, $4, $5 }'
+    } | tr 'A-F' 'a-f' | sort -u
+}
 
 # Палитра берётся из спеки — из тела функции «Палитра», а не из всего файла.
 # В спеке цвет записан числами (кр/зел/син), шестнадцатеричная запись из них
@@ -114,6 +143,10 @@ check_palette() {
             if printf '%s\n' "$pal" | grep -qxF "$h"; then continue; fi
             local m; m="$(is_mix "$h" "$bg0" "$pal")"
             if [ -n "$m" ]; then continue; fi
+            if printf '%s\n' "$FOREIGN" | grep -qxF "$f $h"; then
+                echo -e "${YELLOW}  $f: $h — чужой намеренно (светлая тема), оставлен как есть${NC}"
+                continue
+            fi
             echo -e "${RED}  $f: $h — не из палитры и не подмесь${NC}"
             bad=1; fail=1
         done < <(hexes_of "$REPO_DIR/$f")
@@ -185,7 +218,20 @@ selftest() {
         echo -e "${GREEN}  ✓ падает на объявленном, но неиспользуемом цвете${NC}"
     fi
 
-    [ "$rc" -eq 0 ] && echo -e "${GREEN}✓ проверка умеет падать в обе стороны${NC}"
+    # Случай 3: цвет, записанный ANSI-тройкой, а не hex. Без разбора
+    # 38;2;R;G;B проверка прочитала бы цвета lf и EZA_COLORS как пустое место
+    # и напечатала бы «ok», ничего не посмотрев.
+    rm -rf "$tmp/configs"; cp -r "$REPO_DIR/configs" "$tmp/configs"
+    rm -rf "$tmp/theme"; cp -r "$REPO_DIR/theme" "$tmp/theme"
+    echo -e "${YELLOW}Контроль 3: в цветах lf подсунуто 38;2;18;52;86 (#123456)${NC}"
+    sed -i 's/38;2;0;229;229/38;2;18;52;86/' "$tmp/configs/.config/lf/colors"
+    if bash "$tmp/scripts/check-theme.sh" > /dev/null 2>&1; then
+        echo -e "${RED}  ✗ чужой цвет, записанный ANSI-тройкой, не замечен${NC}"; rc=1
+    else
+        echo -e "${GREEN}  ✓ падает на чужой ANSI-тройке${NC}"
+    fi
+
+    [ "$rc" -eq 0 ] && echo -e "${GREEN}✓ проверка умеет падать во все стороны${NC}"
     return "$rc"
 }
 

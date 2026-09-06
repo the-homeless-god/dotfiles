@@ -1,0 +1,112 @@
+" vim: filetype=vifm :
+"
+" digitable.vifm — цветовая схема vifm в палитре портала Digitable Courses.
+"
+" Те же значения, что у схемы Vim configs/.vim/colors/digitable.vim: палитра,
+" раскладка ролей и пороги контраста заданы в theme/digitable.flang, оттуда же
+" их сверяет scripts/check-theme.sh.
+"
+" Формат — vifm: `highlight <группа> cterm=<начертание> ctermfg=<0-255>
+" ctermbg=<0-255> guifg=#rrggbb guibg=#rrggbb` (vifm.1, раздел :highlight).
+" Заданы обе пары: на терминале с прямым цветом vifm берёт gui* и не смотрит
+" на cterm*, без него — наоборот. Индексы 256-цветной палитры те же, что в
+" таблице s:p схемы Vim. `cterm` стоит первым — этого требует сам vifm:
+" иначе светлые имена цветов перепишут начертание.
+"
+" Ставится в ~/.config/vifm/colors/digitable.vifm и включается строкой
+" `colorscheme digitable` в vifmrc.
+
+highlight clear
+
+" ── Поверхности ────────────────────────────────────────────────────────────
+" Win — фон буфера, обычный файл белым (Normal в схеме Vim).
+highlight Win        cterm=none ctermfg=231 ctermbg=232 guifg=#f5f7fa guibg=#05080d
+" Неактивная панель на тон темнее: bg1. Цвета имён она сохраняет, и самый
+" тусклый из них, #718695, даёт на bg1 5.06:1 — выше порога 4.5.
+highlight OtherWin   cterm=none ctermfg=231 ctermbg=233 guifg=#f5f7fa guibg=#071018
+highlight AuxWin     cterm=none ctermfg=67  ctermbg=233 guifg=#718695 guibg=#071018
+highlight OddLine    cterm=none ctermfg=231 ctermbg=232 guifg=#f5f7fa guibg=#05080d
+" Рамка — линия, а не текст: 2.46:1 ниже порога намеренно, как VertSplit.
+highlight Border     cterm=none ctermfg=24  ctermbg=232 guifg=#15566a guibg=#05080d
+
+" ── Заголовки, вкладки, строки состояния ───────────────────────────────────
+" Активный заголовок и строка состояния — StatusLine схемы Vim: 7.61:1.
+highlight TopLineSel cterm=bold ctermfg=231 ctermbg=24  guifg=#f5f7fa guibg=#15566a
+highlight StatusLine cterm=bold ctermfg=231 ctermbg=24  guifg=#f5f7fa guibg=#15566a
+" Неактивный заголовок — StatusLineNC: приглушённый текст на bg2, 7.97:1.
+highlight TopLine    cterm=none ctermfg=248 ctermbg=234 guifg=#9baab8 guibg=#0b111a
+highlight TabLine    cterm=none ctermfg=248 ctermbg=233 guifg=#9baab8 guibg=#071018
+highlight TabLineSel cterm=bold ctermfg=231 ctermbg=232 guifg=#f5f7fa guibg=#05080d
+" Строка задания — StatusLineTerm: цвет фона поверх зелёного, 15.64:1.
+highlight JobLine    cterm=bold ctermfg=232 ctermbg=119 guifg=#05080d guibg=#7cff6b
+
+" ── Командная строка и сообщения ───────────────────────────────────────────
+highlight CmdLine    cterm=none ctermfg=231 ctermbg=232 guifg=#f5f7fa guibg=#05080d
+" ErrorMsg схемы Vim: 6.59:1.
+highlight ErrorMsg   cterm=bold ctermfg=232 ctermbg=203 guifg=#05080d guibg=#ff5b5b
+
+" ── Меню дополнения и подсказок — Pmenu / PmenuSel ─────────────────────────
+highlight WildBox    cterm=none ctermfg=231 ctermbg=234 guifg=#f5f7fa guibg=#0b111a
+highlight WildMenu   cterm=bold ctermfg=232 ctermbg=44  guifg=#05080d guibg=#00e5e5
+highlight SuggestBox cterm=none ctermfg=231 ctermbg=234 guifg=#f5f7fa guibg=#0b111a
+
+" ── Строка под курсором ────────────────────────────────────────────────────
+" Цвет имени файла здесь не сохраняется намеренно: на фоне выделения #0f3745
+" приглушённый #718695 даёт 3.36:1, ниже порога, а белый — 11.84:1. Тот же
+" ответ, что у QuickFixLine в схеме Vim.
+highlight CurrLine   cterm=bold ctermfg=231 ctermbg=236 guifg=#f5f7fa guibg=#0f3745
+" В неактивной панели курсор тише: muted на том же фоне, 5.35:1.
+highlight OtherLine  cterm=none ctermfg=248 ctermbg=236 guifg=#9baab8 guibg=#0f3745
+" Номер строки — LineNr: 5.30:1.
+highlight LineNr     cterm=none ctermfg=67  ctermbg=232 guifg=#718695 guibg=#05080d
+" Отмеченные файлы — то же, что IncSearch: «вот это я выбрал», 12.47:1.
+highlight Selected   cterm=bold ctermfg=232 ctermbg=214 guifg=#05080d guibg=#ffc247
+
+" ── Типы файлов: роли те же, что у схемы Vim и у цветов lf ─────────────────
+highlight Directory  cterm=bold ctermfg=44  ctermbg=default guifg=#00e5e5 guibg=default
+highlight Link       cterm=none ctermfg=45  ctermbg=default guifg=#00d8ff guibg=default
+highlight BrokenLink cterm=bold ctermfg=203 ctermbg=default guifg=#ff5b5b guibg=default
+highlight HardLink   cterm=none ctermfg=75  ctermbg=default guifg=#3ca9ff guibg=default
+highlight Executable cterm=bold ctermfg=119 ctermbg=default guifg=#7cff6b guibg=default
+highlight Socket     cterm=none ctermfg=135 ctermbg=default guifg=#b65cff guibg=default
+highlight Device     cterm=bold ctermfg=135 ctermbg=default guifg=#b65cff guibg=default
+highlight Fifo       cterm=none ctermfg=135 ctermbg=default guifg=#b65cff guibg=default
+
+" ── Сравнение панелей ──────────────────────────────────────────────────────
+" Роли те же, что у Diff* в схеме Vim, но цветом текста, а не подложкой:
+" подложки Diff* — это подмеси «цвет поверх фона», а контраст на них спекой
+" не считается. «Различается» — Changed (12.47:1), «нет пары» — сигнал
+" внимания (8.52:1), заглушка — комментарий (5.30:1).
+highlight CmpMismatch  cterm=none ctermfg=214 ctermbg=default guifg=#ffc247 guibg=default
+highlight CmpUnmatched cterm=none ctermfg=208 ctermbg=default guifg=#ff8a2a guibg=default
+highlight CmpBlank     cterm=none ctermfg=67  ctermbg=default guifg=#718695 guibg=default
+
+" ── Роли портала на именах файлов ──────────────────────────────────────────
+" Текст и разметка своего правила не имеют: это обычный текст, он белый по Win.
+
+" Исходный код — роль «ключевое слово» (Statement), 7.94:1.
+highlight {*.c,*.h,*.cpp,*.hpp,*.rs,*.go,*.py,*.rb,*.js,*.mjs,*.ts,*.tsx,
+          \*.jsx,*.sh,*.bash,*.zsh,*.lua,*.vim,*.vifm,*.ex,*.exs,*.erl,*.hs,
+          \*.java,*.cs,*.sql,*.flang,vifmrc,vimrc,.vimrc,lfrc}
+        \ cterm=none ctermfg=75 ctermbg=default guifg=#3ca9ff guibg=default
+
+" Архивы — роль «литерал»: содержимое одним куском, 8.52:1.
+highlight {*.zip,*.tar,*.gz,*.tgz,*.bz2,*.xz,*.zst,*.7z,*.rar,*.jar,*.deb,
+          \*.rpm}
+        \ cterm=none ctermfg=208 ctermbg=default guifg=#ff8a2a guibg=default
+
+" Медиа — роль «объявление»: файл открывают, а не читают, 5.70:1.
+highlight {*.png,*.jpg,*.jpeg,*.gif,*.bmp,*.svg,*.webp,*.ico,*.tiff,*.mp4,
+          \*.mkv,*.webm,*.avi,*.mov,*.m4v,*.mp3,*.flac,*.wav,*.ogg,*.opus,
+          \*.m4a}
+        \ cterm=none ctermfg=135 ctermbg=default guifg=#b65cff guibg=default
+
+" Документы — роль «особое» (Special), 11.72:1.
+highlight {*.pdf,*.epub,*.djvu,*.doc,*.docx,*.odt,*.ods,*.xls,*.xlsx,*.ppt,
+          \*.pptx,*.cbz,*.cbr}
+        \ cterm=none ctermfg=45 ctermbg=default guifg=#00d8ff guibg=default
+
+" Побочные продукты — роль «комментарий»: приглушено намеренно, но 5.30:1
+" всё равно выше порога 4.5.
+highlight {*.log,*.bak,*.tmp,*.swp,*.orig,*.o,*.a,*.pyc,*.class,*~}
+        \ cterm=none ctermfg=67 ctermbg=default guifg=#718695 guibg=default

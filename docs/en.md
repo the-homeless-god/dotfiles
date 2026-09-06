@@ -7,6 +7,7 @@ This repository contains configuration files (dotfiles) and scripts for automati
 ### Configuration Files
 - `.zshrc` - Zsh shell configuration
 - `.vimrc` - Vim settings
+- `.vim/colors/digitable.vim` - a Vim colour scheme in the palette of the [Digitable Courses](https://courses.digitable.life) portal. Installed into `~/.vim/colors/`; `.vimrc` enables it with `colorscheme digitable`. The colours come from the portal's tokens and the role mapping (keyword, string, comment) from the portal's single syntax-highlighting table, so code in Vim reads like code in a block on a portal page. Every text/background pair is measured against WCAG 2.1, and every group carries a 256-colour terminal value as well
 - `.tmux.conf` - Tmux configuration
 - `.alacritty.toml` - Alacritty terminal settings
 - `.gitconfig` and `.gitignore` - Global Git settings

@@ -1,0 +1,85 @@
+# Тема bpytop в палитре Digitable — те же цвета, что у схемы Vim
+# configs/.vim/colors/digitable.vim. Формат — bashtop: theme[ключ]="#rrggbb".
+#
+# Правило для градиентов: все три точки каждого — цвета палитры, ничего
+# промежуточного не подмешано. Там, где значение говорит о нагрузке
+# (температура, ЦП, занятая память), градиент идёт зелёный -> жёлтый ->
+# красный: у портала зелёный значит «получилось», красный — «не получилось».
+
+# Фон и текст
+theme[main_bg]="#05080d"
+theme[main_fg]="#f5f7fa"
+theme[title]="#f5f7fa"
+
+# Подсветка горячих клавиш
+theme[hi_fg]="#00e5e5"
+
+# Выбранный процесс — заливка акцентом, как PmenuSel в схеме Vim
+theme[selected_bg]="#00e5e5"
+theme[selected_fg]="#05080d"
+
+# Неактивный текст
+theme[inactive_fg]="#718695"
+
+# Текст поверх графиков
+theme[graph_text]="#f5f7fa"
+
+# Фон шкал
+theme[meter_bg]="#0b111a"
+
+# Мелкая графика в списке процессов
+theme[proc_misc]="#b65cff"
+
+# Рамки блоков
+theme[cpu_box]="#b65cff"
+theme[mem_box]="#7cff6b"
+theme[net_box]="#ff5b5b"
+theme[proc_box]="#00e5e5"
+
+# Разделители — тот же цвет, что у VertSplit в схеме Vim
+theme[div_line]="#15566a"
+
+# Температура: холодно -> внимание -> горячо
+theme[temp_start]="#7cff6b"
+theme[temp_mid]="#ffc247"
+theme[temp_end]="#ff5b5b"
+
+# Нагрузка ЦП
+theme[cpu_start]="#7cff6b"
+theme[cpu_mid]="#ffc247"
+theme[cpu_end]="#ff5b5b"
+
+# Свободно
+theme[free_start]="#3ca9ff"
+theme[free_mid]="#00e5e5"
+theme[free_end]="#00d8ff"
+
+# Кэш
+theme[cached_start]="#00e5e5"
+theme[cached_mid]="#00d8ff"
+theme[cached_end]="#f5f7fa"
+
+# Доступно
+theme[available_start]="#b65cff"
+theme[available_mid]="#3ca9ff"
+theme[available_end]="#00e5e5"
+
+# Занято
+theme[used_start]="#7cff6b"
+theme[used_mid]="#ffc247"
+theme[used_end]="#ff5b5b"
+
+# Входящий трафик
+theme[download_start]="#3ca9ff"
+theme[download_mid]="#00e5e5"
+theme[download_end]="#7cff6b"
+
+# Исходящий трафик
+theme[upload_start]="#b65cff"
+theme[upload_mid]="#ff8a2a"
+theme[upload_end]="#ffc247"
+
+# Градиент в списке процессов
+theme[process_start]="#7cff6b"
+theme[process_mid]="#00e5e5"
+theme[process_end]="#718695"

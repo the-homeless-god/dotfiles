@@ -7,17 +7,22 @@ This repository contains configuration files (dotfiles) and scripts for automati
 ### Configuration Files
 - `.zshrc` - Zsh shell configuration
 - `.vimrc` - Vim settings
+- `.vim/colors/digitable.vim` - a Vim colour scheme in the palette of the [Digitable Courses](https://courses.digitable.life) portal. Installed into `~/.vim/colors/`; `.vimrc` enables it with `colorscheme digitable`. The role mapping (keyword, string, comment) comes from the portal's single syntax-highlighting table, so code in Vim reads like code in a block on a portal page
 - `.tmux.conf` - Tmux configuration
-- `.alacritty.toml` - Alacritty terminal settings
+- `.alacritty.toml` - Alacritty terminal settings; the colours are the Digitable palette
 - `.gitconfig` and `.gitignore` - Global Git settings
 - `.editorconfig` - Code formatting settings
 - Configurations for various utilities in `.config/`:
-  - `bpytop` - System monitoring
+  - `bat` - the `digitable.tmTheme` theme for bat and delta. Both read user themes from `~/.config/bat/themes`, but only see them after `bat cache --build`, which the installer runs
+  - `bpytop` - System monitoring; the `digitable.theme` theme plus the `bpytop.conf` that selects it (without which the theme file would sit there unused)
   - `lf` - File manager
   - `tmux` - Session configurations
   - `vifm` - Vim-style file manager
 - `.digit/config.yaml` - Digit CLI settings: a local OpenAI-compatible model provider, plus `skills.external_dirs` pointing digit at the shared skills directory. Installed to `~/.digit/config.yaml`; secrets stay in `.env` and are never kept here
 - `configs/tools.json` - Tool configuration for interactive installation mode
+
+### Palette
+One set of seventeen colours paints Vim, bat, delta, Alacritty, tmux and bpytop. It has a single source: the `theme/digitable.flang` specification, which declares the colours themselves, the mapping of the nine highlighting roles and the contrast thresholds, and carries the checks. `scripts/check-theme.sh` holds the tree to it: every colour in the configs must either be declared in the spec or be derived from it as a "colour at N% over the background" blend, and every declared colour must be used somewhere. The WCAG 2.1 contrast is computed by flang itself (`flang check theme/digitable.flang`); with no compiler on the machine the check honestly prints "not measured" rather than "ok".
 
 ### Skills
 - `skills/` - seven vendor-neutral agent skills (`master-prompt-builder`, `umbrella-repository-setup`, `cluster-agent-setup`, `bilingual-documentation`, `tool-section-page`, `write-post`, `state`). The directory name carries no vendor: the same `SKILL.md` and `references/` are read by Codex, Claude Code and digit alike
@@ -25,6 +30,8 @@ This repository contains configuration files (dotfiles) and scripts for automati
 ### Scripts
 - `install-tools.sh` - Main installation script
 - `install-skills.sh` - Installs `skills/` into one shared directory and points the agent clients at it
+- `check-configs-install.sh` - Takes the `install_configs` function out of `install-tools.sh`, runs it against a throwaway `HOME` and confirms every file under `configs/` arrived in the home directory. The copy list there is written out line by line, so a new config is not installed by default - this check catches the forgotten line. `--selftest` drops one line and shows the check failing because of it
+- `check-theme.sh` - Guards the Digitable palette across every config; `--selftest` feeds it a foreign colour and shows the check failing
 - `check-state-report.sh` - Checks a state report against `skills/state/SKILL.md`: head within 14 lines and 900 characters, three to six key results each carrying a threshold, a fact and one of `✓ ✗ ?`, the blocker and the ask present, nothing taken on trust scored as achieved. `--selftest` proves the checker itself fails on eight prepared cases
 - Custom scripts in `scripts/customs/`
 - Scripts for lf in `scripts/lf/`

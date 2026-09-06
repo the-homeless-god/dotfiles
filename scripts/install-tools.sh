@@ -328,6 +328,20 @@ show_interactive_menu() {
                 config_updates+="- .vimrc\n"
             fi
         fi
+
+        if [ -f "$HOME/.vim/colors/digitable.vim" ] && [ -f "$(dirname "$SCRIPT_DIR")/configs/.vim/colors/digitable.vim" ]; then
+            if ! cmp -s "$HOME/.vim/colors/digitable.vim" "$(dirname "$SCRIPT_DIR")/configs/.vim/colors/digitable.vim"; then
+                has_config_updates=true
+                config_updates+="- .vim/colors/digitable.vim\n"
+            fi
+        fi
+
+        if [ -f "$HOME/.config/bat/themes/digitable.tmTheme" ] && [ -f "$(dirname "$SCRIPT_DIR")/configs/.config/bat/themes/digitable.tmTheme" ]; then
+            if ! cmp -s "$HOME/.config/bat/themes/digitable.tmTheme" "$(dirname "$SCRIPT_DIR")/configs/.config/bat/themes/digitable.tmTheme"; then
+                has_config_updates=true
+                config_updates+="- .config/bat/themes/digitable.tmTheme\n"
+            fi
+        fi
         
         if $has_config_updates; then
             echo "Обнаружены обновленные конфигурационные файлы:"
@@ -854,7 +868,9 @@ install_configs() {
     # Create directories for backup
     mkdir -p "$DOTFILES_BACKUP_PATH"
     mkdir -p "$DOTFILES_BACKUP_PATH/.config/lf"
+    mkdir -p "$DOTFILES_BACKUP_PATH/.vim/colors"
     mkdir -p "$DOTFILES_BACKUP_PATH/.config/vifm"
+    mkdir -p "$DOTFILES_BACKUP_PATH/.config/bat"
     mkdir -p "$DOTFILES_BACKUP_PATH/.config/bpytop"
     mkdir -p "$DOTFILES_BACKUP_PATH/.config/tmux"
     mkdir -p "$DOTFILES_BACKUP_PATH/.digit"
@@ -865,6 +881,10 @@ install_configs() {
     # Backup existing configurations
     [ -f ~/.zshrc ] && mv ~/.zshrc "$DOTFILES_BACKUP_PATH"
     [ -f ~/.vimrc ] && mv ~/.vimrc "$DOTFILES_BACKUP_PATH"
+    # Схема — по файлу, а не по каталогу: в ~/.vim/colors/ лежат чужие схемы,
+    # а бэкап здесь делается через mv. Унести каталог целиком значило бы
+    # отобрать их все (та же причина, что и у шрифтов ниже).
+    [ -f ~/.vim/colors/digitable.vim ] && mv ~/.vim/colors/digitable.vim "$DOTFILES_BACKUP_PATH/.vim/colors/"
     [ -f ~/.gitignore ] && mv ~/.gitignore "$DOTFILES_BACKUP_PATH"
     [ -f ~/.gitconfig ] && mv ~/.gitconfig "$DOTFILES_BACKUP_PATH"
     [ -f ~/.editorconfig ] && mv ~/.editorconfig "$DOTFILES_BACKUP_PATH"
@@ -875,6 +895,7 @@ install_configs() {
     [ -f ~/wallpaper.jpeg ] && mv ~/wallpaper.jpeg "$DOTFILES_BACKUP_PATH"
     [ -d ~/.config/lf ] && mv ~/.config/lf "$DOTFILES_BACKUP_PATH/.config/"
     [ -d ~/.config/vifm ] && mv ~/.config/vifm "$DOTFILES_BACKUP_PATH/.config/"
+    [ -d ~/.config/bat ] && mv ~/.config/bat "$DOTFILES_BACKUP_PATH/.config/"
     [ -d ~/.config/bpytop ] && mv ~/.config/bpytop "$DOTFILES_BACKUP_PATH/.config/"
     [ -d ~/.config/tmux ] && mv ~/.config/tmux "$DOTFILES_BACKUP_PATH/.config/"
     [ -d ~/.logseq ] && mv ~/.logseq "$DOTFILES_BACKUP_PATH/"
@@ -896,7 +917,9 @@ install_configs() {
     
     # Create necessary directories
     mkdir -p ~/.config/lf
+    mkdir -p ~/.vim/colors
     mkdir -p ~/.config/vifm
+    mkdir -p ~/.config/bat
     mkdir -p ~/.config/bpytop
     mkdir -p ~/.config/tmux
     mkdir -p ~/.digit
@@ -908,6 +931,7 @@ install_configs() {
     # Copy new configurations
     [ -f "$CONFIGS_DIR/.zshrc" ] && cp "$CONFIGS_DIR/.zshrc" ~/
     [ -f "$CONFIGS_DIR/.vimrc" ] && cp "$CONFIGS_DIR/.vimrc" ~/
+    [ -f "$CONFIGS_DIR/.vim/colors/digitable.vim" ] && cp "$CONFIGS_DIR/.vim/colors/digitable.vim" ~/.vim/colors/
     [ -f "$CONFIGS_DIR/.gitignore" ] && cp "$CONFIGS_DIR/.gitignore" ~/
     [ -f "$CONFIGS_DIR/.gitconfig" ] && cp "$CONFIGS_DIR/.gitconfig" ~/
     [ -f "$CONFIGS_DIR/.editorconfig" ] && cp "$CONFIGS_DIR/.editorconfig" ~/
@@ -918,10 +942,19 @@ install_configs() {
     [ -f "$CONFIGS_DIR/wallpaper.jpeg" ] && cp "$CONFIGS_DIR/wallpaper.jpeg" ~/
     [ -d "$CONFIGS_DIR/.config/lf" ] && cp -r "$CONFIGS_DIR/.config/lf" ~/.config/
     [ -d "$CONFIGS_DIR/.config/vifm" ] && cp -r "$CONFIGS_DIR/.config/vifm" ~/.config/
+    [ -d "$CONFIGS_DIR/.config/bat" ] && cp -r "$CONFIGS_DIR/.config/bat" ~/.config/
     [ -d "$CONFIGS_DIR/.config/bpytop" ] && cp -r "$CONFIGS_DIR/.config/bpytop" ~/.config/
     [ -d "$CONFIGS_DIR/.config/tmux" ] && cp -r "$CONFIGS_DIR/.config/tmux" ~/.config/
     [ -f "$CONFIGS_DIR/.digit/config.yaml" ] && cp "$CONFIGS_DIR/.digit/config.yaml" ~/.digit/
     [ -d "$CONFIGS_DIR/.logseq" ] && cp -r "$CONFIGS_DIR/.logseq" ~/
+
+    # Тема digitable для bat и delta существует для них только после сборки
+    # кеша: bat читает ~/.config/bat/themes, но отдаёт наружу лишь то, что
+    # попало в ~/.cache/bat/themes.bin. delta берёт темы из того же кеша.
+    # Без этой строки .zshrc звал бы --theme=digitable, которой нет.
+    if [ -d "$CONFIGS_DIR/.config/bat/themes" ] && command_exists bat; then
+        bat cache --build > /dev/null 2>&1 || echo "bat cache --build не прошёл: тема digitable будет недоступна bat и delta"
+    fi
 
     # Шрифты: find, а не glob — в именах MesloLGS NF есть пробелы.
     if [ -d "$CONFIGS_DIR/fonts" ]; then

@@ -288,16 +288,24 @@ let g:ollama_edit_model = 'unsloth/Devstral-Small-2507-GGUF'
 	set tabline=2
 
 	
-if v:version < 802
-    packadd! dracula_pro
-endif
 syntax enable
-let g:dracula_colorterm = 0
-colorscheme dracula_pro
+
+" Цветовая схема Digitable лежит в этом же репозитории
+" (configs/.vim/colors/digitable.vim), а install_configs кладёт её в
+" ~/.vim/colors/ вместе с самим .vimrc — что она туда доезжает, проверяет
+" scripts/check-configs-install.sh.
+"
+" Проверка перед подключением, а не `silent!`: с `silent!` пропавшая схема
+" тихо вернула бы цвета по умолчанию, и человек не понял бы, что чинить.
+if !empty(globpath(&runtimepath, 'colors/digitable.vim'))
+	colorscheme digitable
+else
+	echohl WarningMsg
+	echomsg '.vimrc: схемы digitable нет в runtimepath. Поставьте configs/.vim/colors/digitable.vim в ~/.vim/colors/ (scripts/install-tools.sh это делает).'
+	echohl None
+endif
 
 	set fillchars+=vert:\│
-	hi VertSplit ctermfg=Black ctermbg=DarkGray
-	highlight EndOfBuffer ctermfg=282A36 ctermbg=282A36
 
 	" This disables the creation of backup files.
 	set nobackup

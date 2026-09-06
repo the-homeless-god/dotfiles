@@ -15,20 +15,27 @@
     light = false      # set to true if you're in a terminal w/ a light background color (e.g. the default macOS terminal)
     side-by-side = true
     features = side-by-side line-numbers decorations
-    syntax-theme = Dracula
-    plus-style = syntax "#003800"
-    minus-style = syntax "#3f0001"
+    # Тема лежит в этом же репозитории: configs/.config/bat/themes/digitable.tmTheme.
+    # delta читает темы из ~/.config/bat/themes после `bat cache --build` —
+    # install-tools.sh делает и то и другое.
+    syntax-theme = digitable
+    # Фоны — по формуле палитры «цвет 12% поверх фона», усиление 30%:
+    # те же значения, что у DiffAdd/DiffDelete/DiffText в схеме Vim.
+    plus-style = syntax "#132618"
+    minus-style = syntax "#231216"
+    plus-emph-style = syntax "#295229"
+    minus-emph-style = syntax "#502124"
 
 [delta "decorations"]
-    commit-decoration-style = bold yellow box ul
+    commit-decoration-style = bold "#ffc247" box ul
     file-decoration-style = none
-    hunk-header-decoration-style = cyan box ul
+    hunk-header-decoration-style = "#00e5e5" box ul
 
 [delta "line-numbers"]
-    line-numbers-left-style = cyan
-    line-numbers-right-style = cyan
-    line-numbers-minus-style = 124
-    line-numbers-plus-style = 28
+    line-numbers-left-style = "#00e5e5"
+    line-numbers-right-style = "#00e5e5"
+    line-numbers-minus-style = "#ff5b5b"
+    line-numbers-plus-style = "#7cff6b"
 
 [merge]
     conflictstyle = diff3

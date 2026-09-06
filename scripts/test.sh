@@ -106,6 +106,19 @@ run_test "Проверка согласованности каталога ин�
 # tools.json — временных файлов для этого заводить не нужно.
 run_test "Проверка согласованности падает на битом tools.json" "TOOLS_FILE=./README.md bash ./scripts/check-config-consistency.sh" 1 20
 
+# Проверяем, что install_configs ставит КАЖДЫЙ файл из configs/ — включая схему
+# Vim и тему bat, которые в списке копирования пришлось вписывать руками.
+run_test "Проверка установки конфигов в подставной HOME" "bash ./scripts/check-configs-install.sh" 0 60
+
+# И что эта проверка умеет падать.
+run_test "Проверка установки конфигов падает, если файл не копируется" "bash ./scripts/check-configs-install.sh --selftest" 0 60
+
+# Палитра Digitable: во всех конфигах цвета из одной спеки.
+run_test "Проверка палитры темы" "bash ./scripts/check-theme.sh" 0 30
+
+# И что эта проверка тоже умеет падать.
+run_test "Проверка палитры падает на чужом цвете" "bash ./scripts/check-theme.sh --selftest" 0 30
+
 # Выводим итоги тестирования
 echo -e "${YELLOW}=== Итоги тестирования ===${NC}"
 echo -e "Всего тестов: $TESTS_TOTAL"

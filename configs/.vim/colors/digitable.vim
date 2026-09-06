@@ -3,87 +3,9 @@
 " Maintainer:   the-homeless-god <zimtir@mail.ru>
 " License:      MIT, как и весь репозиторий (см. LICENSE).
 "
-" ОТКУДА ВЗЯТЫ ЦВЕТА. Ни одно значение здесь не подобрано на глаз. Их источника
-" два, и они совпадают между собой байт в байт:
-"
-"   1. Токены портала — themes/github-style/static/css/digitable.tokens.css
-"      в digitable-lol/courses: --digitable-bg-0/1/2, --digitable-white,
-"      --digitable-muted, --digitable-border и семь акцентов (cyan, cyan-soft,
-"      yellow, orange, purple, green, blue, red).
-"   2. Палитра редакторов той же системы — products/workbench/themes/
-"      focus-palettes.json, набор «carbon» (Digitable Focus Carbon). Все
-"      четырнадцать значений там равны токенам портала; сверх них carbon даёт
-"      три величины, которых в CSS портала нет, потому что в вёрстке они не
-"      нужны, а в редакторе — нужны: subtle #718695, lineHighlight #07141E и
-"      selection #15566A99.
-"
-" Проверка, что subtle — не выдумка: этим же #718695 портал красит подписи в
-" макете рабочего места (static/css/workbench.css:3020 и :3538).
-"
-" ОТКУДА ВЗЯТА РАСКЛАДКА ПО РОЛЯМ. Какой цвет достаётся ключевому слову, какой
-" строке, какой комментарию, решено не здесь. Портал держит РОВНО ОДНУ таблицу
-" подсветки — themes/github-style/static/css/courses-v2.css:79-87, где девять
-" ролей названы поимённо (шапка на :66-78 прямо запрещает заводить вторую):
-"
-"     declaration -> purple    keyword -> blue      operator -> cyan
-"     type        -> green     literal -> orange    name     -> cyan
-"     string      -> green     number  -> orange    comment  -> subtle
-"
-" Эти же девять ролей читают обе подсветки портала: Chroma в статьях
-" (static/css/syntax.css:67-96) и собственный язык FTS/flang
-" (static/css/fts.css:827-835, классы .f-*). Оттуда же взяты два начертания:
-" объявление печатается полужирным (font-weight:650), комментарий — курсивом.
-" Схема повторяет раскладку один в один, поэтому код в Vim выглядит так же,
-" как тот же код в блоке на странице портала.
-"
-" Следствия, которые могут удивить, но они намеренные:
-"   * Type и String — один цвет (зелёный). Так на портале: --course-syn-type и
-"     --course-syn-string оба ссылаются на --course-code-green.
-"   * Function и Operator — один цвет (бирюзовый), по той же причине.
-"   * Identifier и Delimiter не окрашены вовсе. Портал не даёт правила ни для
-"     .nv (переменная), ни для .p (пунктуация) — они наследуют цвет текста.
-"     Здесь они получают цвет Normal явно, чтобы схема не оставляла группу на
-"     умолчании Vim.
-"
-" ЧЕГО ПОРТАЛ НЕ ЗНАЕТ. У diff, поиска, всплывающего меню и статусной строки
-" прямого прообраза в CSS нет. Для них взяты формулы самого портала:
-" --fts-panel-ok-bg = «зелёный 12% поверх фона кода», --fts-panel-ok-line =
-" «зелёный 30%» (static/css/fts.css:44-47), а подсветка совпадения поиска —
-" «бирюзовый текст на 16-процентной подмеси бирюзового» (portal-search.css).
-" Жёлтый в девятке ролей не занят ничем, поэтому он и достался поиску: спутать
-" его с цветом синтаксиса нельзя.
-"
-" КОНТРАСТ. Каждая пара «текст / фон» измерена по WCAG 2.1. Весь синтаксис и
-" вся статическая обвязка держат 4.5:1 и выше на фоне буфера (#05080d): худшее
-" значение — 5.30 у комментария, дальше 5.70 у объявления. Ниже нормы намеренно
-" оставлены три вещи, и только они:
-"   * VertSplit, NonText, SpecialKey — 2.46:1. Это разделительная линия и знаки
-"     listchars, то есть служебная графика, а не текст. Для сравнения: сам
-"     портал рисует рамку панели ещё бледнее — 1.49:1 (--course-line #26303b
-"     на --course-bg #07090d).
-"   * ColorColumn — 1.06:1 к фону. Линейка полей обязана быть еле видной.
-"   * EndOfBuffer — 1.00:1, то есть невидим. Это сохранённое намерение автора
-"     .vimrc: там стояла попытка спрятать «~», не работавшая из-за неверной
-"     записи цвета.
-" Отдельно: пока текст выделен (Visual), комментарий даёт 3.36:1, объявление
-" 3.61:1, ошибка 4.17:1 — ниже 4.5, но выше 3:1. Фон выделения не выдуман:
-" это carbon.selection #15566A99, сведённый с фоном буфера (альфы у Vim нет).
-" Тот же текст без выделения даёт 5.30, 5.70 и 6.59.
-"
-" 256 ЦВЕТОВ. У каждой группы есть ctermfg/ctermbg. Значения подобраны не на
-" глаз, а как ближайшие к gui по CIEDE2000 в палитре xterm-256 (индексы 16-255;
-" 0-15 не используются — их назначает сам терминал, и они не переносимы).
-" Четыре отступления от «ближайшего», все вынужденные:
-"   * bg-2 -> 234 вместо 233 (dE 6.57 против 5.71) и lineHighlight -> 235
-"     вместо 233 (9.37 против 7.28): в gui это четыре РАЗНЫХ фона, а
-"     ближайшим для трёх из них оказывается один и тот же 233. Лестница
-"     232 < 233 < 234 < 235 < 236 сохраняет порядок яркостей оригинала.
-"   * Подмешанные фоны (поиск, diff) в xterm-256 не существуют вовсе: самые
-"     тёмные хроматические записи палитры — уровня 0x5f. Поэтому в терминале
-"     подсветка поиска заливается самим бирюзовым, а diff — тёмными 22/52/58.
-"     Каждая такая пара измерена отдельно и держит 4.5:1.
-"   * DiffChange в 256 цветах пишется белым, а не жёлтым: жёлтый 214 на 58
-"     даёт 3.64:1, белый — 6.72:1.
+" Палитра, раскладка ролей и пороги контраста заданы не здесь, а в спеке
+" theme/digitable.flang, и оттуда же проверяются: scripts/check-theme.sh
+" сверяет каждый цвет этого файла со спекой и пересчитывает контрасты.
 
 hi clear
 if exists('syntax_on')
@@ -93,59 +15,52 @@ endif
 set background=dark
 let g:colors_name = 'digitable'
 
-" Палитра: имя -> [gui, cterm]. Всё, что ниже, ссылается только на эти имена,
-" поэтому шестнадцатеричное число встречается в файле ровно один раз.
+" Палитра: имя -> [gui, cterm]. Ниже всё ссылается только на эти имена.
 let s:p = {}
 
 " Поверхности. Порядок яркости: bg0 < bg1 < bg2 < line < sel.
-let s:p.bg0      = ['#05080d', '232']  " --digitable-bg-0 / carbon.background
-let s:p.bg1      = ['#071018', '233']  " --digitable-bg-1 / carbon.surface
-let s:p.bg2      = ['#0b111a', '234']  " --digitable-bg-2 / carbon.surfaceRaised
-let s:p.line     = ['#07141e', '235']  " carbon.lineHighlight — строка под курсором
-let s:p.sel      = ['#0f3745', '236']  " carbon.selection #15566A99 поверх bg0
+let s:p.bg0      = ['#05080d', '232']
+let s:p.bg1      = ['#071018', '233']
+let s:p.bg2      = ['#0b111a', '234']
+let s:p.line     = ['#07141e', '235']
+let s:p.sel      = ['#0f3745', '236']
 
 " Текст.
-let s:p.white    = ['#f5f7fa', '231']  " --digitable-white / carbon.foreground
-let s:p.muted    = ['#9baab8', '248']  " --digitable-muted
-let s:p.subtle   = ['#718695',  '67']  " carbon.subtle — комментарий, номера строк
-let s:p.border   = ['#15566a',  '24']  " --digitable-border — линии и рамки
+let s:p.white    = ['#f5f7fa', '231']
+let s:p.muted    = ['#9baab8', '248']
+let s:p.subtle   = ['#718695',  '67']
+let s:p.border   = ['#15566a',  '24']
 
-" Акценты. Роли — из courses-v2.css:79-87.
-let s:p.cyan     = ['#00e5e5',  '44']  " operator, name
-let s:p.cyansoft = ['#00d8ff',  '45']  " --digitable-cyan-soft
-let s:p.blue     = ['#3ca9ff',  '75']  " keyword, ссылка
-let s:p.green    = ['#7cff6b', '119']  " type, string, «получилось»
-let s:p.yellow   = ['#ffc247', '214']  " в девятке ролей не занят: поиск, TODO
-let s:p.orange   = ['#ff8a2a', '208']  " literal, number, предупреждение
-let s:p.purple   = ['#b65cff', '135']  " declaration
-let s:p.red      = ['#ff5b5b', '203']  " ошибка
+" Акценты.
+let s:p.cyan     = ['#00e5e5',  '44']
+let s:p.cyansoft = ['#00d8ff',  '45']
+let s:p.blue     = ['#3ca9ff',  '75']
+let s:p.green    = ['#7cff6b', '119']
+let s:p.yellow   = ['#ffc247', '214']
+let s:p.orange   = ['#ff8a2a', '208']
+let s:p.purple   = ['#b65cff', '135']
+let s:p.red      = ['#ff5b5b', '203']
 
-" Производные. gui — по формулам портала; cterm — вынужденная замена, потому
-" что тёмных подмесей в xterm-256 нет (пояснение в шапке).
-let s:p.hitbg    = ['#042b30',  '44']  " бирюзовый 16% | в 256: заливка бирюзовым
-let s:p.hitfg    = ['#00e5e5', '232']  " бирюзовый текст | в 256: тёмный по заливке
-let s:p.addbg    = ['#132618',  '22']  " зелёный 12%
+" Производные: цвет N% поверх фона. В xterm-256 таких подмесей нет, поэтому
+" cterm там — заливка самим акцентом.
+let s:p.hitbg    = ['#042b30',  '44']
+let s:p.hitfg    = ['#00e5e5', '232']
+let s:p.addbg    = ['#132618',  '22']
 let s:p.addfg    = ['#7cff6b', '119']
-let s:p.chgbg    = ['#231e14',  '58']  " жёлтый 12%
-let s:p.chgfg    = ['#ffc247', '231']  " в 256 белым: жёлтый на 58 даёт 3.64
-let s:p.delbg    = ['#231216',  '52']  " красный 12%
+let s:p.chgbg    = ['#231e14',  '58']
+let s:p.chgfg    = ['#ffc247', '231']
+let s:p.delbg    = ['#231216',  '52']
 let s:p.delfg    = ['#ff5b5b', '203']
-let s:p.txtbg    = ['#50401e', '214']  " жёлтый 30% | в 256: заливка жёлтым
+let s:p.txtbg    = ['#50401e', '214']
 let s:p.txtfg    = ['#f5f7fa', '232']
-let s:p.txtaddbg = ['#295229', '119']  " зелёный 30% | в 256: заливка зелёной
+let s:p.txtaddbg = ['#295229', '119']
 let s:p.txtaddfg = ['#f5f7fa', '232']
 
-" ctermul появился в 8.2.0863. Без него подчёркивание в терминале останется
-" одноцветным — это лучше, чем ошибка E416 на каждой группе орфографии.
+" ctermul появился в 8.2.0863; без него была бы E416 на каждой группе орфографии.
 let s:ctermul = has('patch-8.2.0863')
 
-" fg, bg, sp — имена из s:p либо пустая строка «не задавать».
-" attr — список начертаний через запятую либо пустая строка (тогда NONE).
-"
-" Особый случай — 'NONE': он не наследует, а СНИМАЕТ цвет. Без него после
-" `hi clear` в группе остаётся умолчание Vim: у Visual это guifg=LightGrey
-" (выделенный текст терял бы цвет синтаксиса), у Spell* — ctermbg=9..13, то
-" есть яркая цветная заливка опечатки в терминале на 256 цветов.
+" fg/bg/sp — имена из s:p, пустая строка — «не задавать», 'NONE' — снять цвет
+" (не то же самое: без 'NONE' в группе остаётся умолчание Vim после hi clear).
 function! s:hi(group, fg, bg, sp, attr) abort
   let l:cmd = 'highlight ' . a:group
   if a:fg ==# 'NONE'
@@ -170,38 +85,30 @@ function! s:hi(group, fg, bg, sp, attr) abort
 endfunction
 
 " =============================================================================
-" Синтаксис. Раскладка ролей — courses-v2.css:79-87.
+" Синтаксис
 " =============================================================================
 
 "                группа            fg          bg     sp    начертание
 call s:hi('Normal',            'white',    'bg0',  '', '')
 
-" comment -> subtle, курсивом (fts.css:835). 5.30:1
 call s:hi('Comment',           'subtle',   '',     '', 'italic')
 call s:hi('SpecialComment',    'muted',    '',     '', 'italic')
 
-" literal -> orange. 8.52:1
 call s:hi('Constant',          'orange',   '',     '', '')
 call s:hi('Boolean',           'orange',   '',     '', '')
 call s:hi('Number',            'orange',   '',     '', '')
 call s:hi('Float',             'orange',   '',     '', '')
 call s:hi('Debug',             'orange',   '',     '', '')
 
-" string -> green. 15.64:1
 call s:hi('String',            'green',    '',     '', '')
 call s:hi('Character',         'green',    '',     '', '')
-" .se (экранированный символ) отнесён порталом к строке — fts.css:927-929
 call s:hi('SpecialChar',       'green',    '',     '', '')
 
-" type -> green, тот же цвет что и у строки: так на портале
 call s:hi('Type',              'green',    '',     '', '')
 
-" name -> cyan. 12.74:1
 call s:hi('Function',          'cyan',     '',     '', '')
-" operator -> cyan
 call s:hi('Operator',          'cyan',     '',     '', '')
 
-" keyword -> blue. 7.94:1
 call s:hi('Statement',         'blue',     '',     '', '')
 call s:hi('Conditional',       'blue',     '',     '', '')
 call s:hi('Repeat',            'blue',     '',     '', '')
@@ -209,7 +116,6 @@ call s:hi('Label',             'blue',     '',     '', '')
 call s:hi('Keyword',           'blue',     '',     '', '')
 call s:hi('Exception',         'blue',     '',     '', '')
 
-" declaration -> purple, полужирным (fts.css:827). 5.70:1
 call s:hi('PreProc',           'purple',   '',     '', 'bold')
 call s:hi('Include',           'purple',   '',     '', 'bold')
 call s:hi('Define',            'purple',   '',     '', 'bold')
@@ -220,25 +126,17 @@ call s:hi('Structure',         'purple',   '',     '', 'bold')
 call s:hi('Typedef',           'purple',   '',     '', 'bold')
 call s:hi('Tag',               'purple',   '',     '', 'bold')
 
-" Портал не красит .nv и .p — они наследуют цвет текста. Здесь то же самое,
-" но записано явно, чтобы группа не осталась на умолчании Vim.
 call s:hi('Identifier',        'white',    '',     '', '')
 call s:hi('Delimiter',         'white',    '',     '', '')
 
-" Прямого прообраза нет: второй акцент палитры. 11.72:1
 call s:hi('Special',           'cyansoft', '',     '', '')
 
-" Ссылка на портале — синяя с подчёркиванием (courses-v2.css:6634-6638)
 call s:hi('Underlined',        'blue',     '',     '', 'underline')
 
-" Chroma-класс .err портал намеренно не красит (fts.css:938), но группа Error
-" в Vim — это не «непонятый лексером токен», а настоящая ошибка. Красная, без
-" заливки: заливка достаётся сообщению об ошибке, а не куску текста. 6.59:1
 call s:hi('Error',             'red',      'bg0',  '', 'bold')
 call s:hi('Todo',              'bg0',      'yellow', '', 'bold')
 call s:hi('Ignore',            'bg0',      'bg0',  '', '')
 
-" Строчные пометки vim-9 для diff/patch-синтаксиса
 call s:hi('Added',             'green',    '',     '', '')
 call s:hi('Changed',           'yellow',   '',     '', '')
 call s:hi('Removed',           'red',      '',     '', '')
@@ -251,10 +149,8 @@ call s:hi('Cursor',            'bg0',      'cyan', '', '')
 call s:hi('lCursor',           'bg0',      'yellow', '', '')
 call s:hi('CursorLine',        '',         'line', '', '')
 call s:hi('CursorColumn',      '',         'line', '', '')
-" Линейка полей: 1.06:1 к фону — намеренно на грани видимости
 call s:hi('ColorColumn',       '',         'bg2',  '', '')
 
-" 5.30:1 — номер строки читается, но не спорит с текстом
 call s:hi('LineNr',            'subtle',   'bg0',  '', '')
 call s:hi('LineNrAbove',       'subtle',   'bg0',  '', '')
 call s:hi('LineNrBelow',       'subtle',   'bg0',  '', '')
@@ -267,33 +163,25 @@ call s:hi('Folded',            'muted',    'bg2',  '', '')
 call s:hi('Conceal',           'subtle',   'bg0',  '', '')
 
 " =============================================================================
-" Служебная графика. Ниже 4.5:1 намеренно — это линии, а не текст.
+" Служебная графика — линии, а не текст: контраст ниже 4.5:1 намеренно
 " =============================================================================
 
-" 2.46:1. Портал рисует свою рамку панели ещё бледнее — 1.49:1.
 call s:hi('VertSplit',         'border',   'bg0',  '', '')
 call s:hi('NonText',           'border',   'bg0',  '', '')
 call s:hi('SpecialKey',        'border',   'bg0',  '', '')
-" 1.00:1 — «~» за концом файла спрятан, как и хотел автор .vimrc
 call s:hi('EndOfBuffer',       'bg0',      'bg0',  '', '')
 
 " =============================================================================
 " Выделение, поиск, скобки
 " =============================================================================
 
-" Фон — carbon.selection, сведённый с фоном буфера. Цвет текста не задан
-" нарочно: синтаксис обязан оставаться виден и под выделением.
 call s:hi('Visual',            'NONE',     'sel',  '', '')
 call s:hi('VisualNOS',         'NONE',     'sel',  '', '')
 
-" Ровно как совпадение поиска на портале: бирюзовый текст на 16-процентной
-" подмеси бирюзового. 9.57:1
 call s:hi('Search',            'hitfg',    'hitbg', '', '')
-" «Вы здесь» — жёлтая заливка. 12.47:1
 call s:hi('IncSearch',         'bg0',      'yellow', '', 'bold')
 call s:hi('CurSearch',         'bg0',      'yellow', '', 'bold')
 call s:hi('QuickFixLine',      'white',    'sel',  '', '')
-" 8.07:1, с подчёркиванием — чтобы не спутать с подсветкой поиска
 call s:hi('MatchParen',        'cyan',     'sel',  '', 'bold,underline')
 
 " =============================================================================
@@ -302,7 +190,6 @@ call s:hi('MatchParen',        'cyan',     'sel',  '', 'bold,underline')
 
 call s:hi('StatusLine',        'white',    'border', '', 'bold')
 call s:hi('StatusLineNC',      'subtle',   'bg2',  '', '')
-" Живой терминал — залит зелёным: у портала зелёный значит «получилось»
 call s:hi('StatusLineTerm',    'bg0',      'green', '', 'bold')
 call s:hi('StatusLineTermNC',  'subtle',   'bg2',  '', '')
 call s:hi('MsgArea',           'white',    'bg0',  '', '')
@@ -317,8 +204,7 @@ call s:hi('ToolbarLine',       '',         'bg1',  '', '')
 call s:hi('ToolbarButton',     'white',    'bg2',  '', 'bold')
 
 " =============================================================================
-" Всплывающее меню. Выбранная строка залита акцентом — так портал красит
-" первичную кнопку (--course-on-accent поверх --course-cyan).
+" Всплывающее меню
 " =============================================================================
 
 call s:hi('Pmenu',             'white',    'bg2',  '', '')
@@ -353,9 +239,7 @@ call s:hi('Title',             'cyan',     '',     '', 'bold')
 call s:hi('Directory',         'cyan',     '',     '', '')
 
 " =============================================================================
-" Diff. Фоны — по формулам портала для панелей «получилось» и «не получилось»:
-" цвет 12% поверх фона, усиление 30% (fts.css:44-47). Цвет текста задан явно,
-" как в .fts-playground__verdict, где зелёный текст лежит на зелёной подмеси.
+" Diff
 " =============================================================================
 
 call s:hi('DiffAdd',           'addfg',    'addbg', '', '')
@@ -365,7 +249,7 @@ call s:hi('DiffText',          'txtfg',    'txtbg', '', 'bold')
 call s:hi('DiffTextAdd',       'txtaddfg', 'txtaddbg', '', 'bold')
 
 " =============================================================================
-" Орфография. Цвет уходит в волну, слово сохраняет свой цвет.
+" Орфография — цвет уходит в волну, слово сохраняет свой
 " =============================================================================
 
 call s:hi('SpellBad',          'NONE', 'NONE', 'red',    'undercurl')
@@ -381,11 +265,9 @@ call s:hi('debugPC',           '',         'sel',  '', '')
 call s:hi('debugBreakpoint',   'bg0',      'red',  '', 'bold')
 
 " =============================================================================
-" Плагины, которые ставит этот же .vimrc. Без них колонка знаков осталась бы
-" в цветах плагина, а не схемы: signcolumn там включён всегда.
+" Плагины, которые ставит этот же .vimrc
 " =============================================================================
 
-" dense-analysis/ale
 call s:hi('ALEErrorSign',      'red',      'bg0',  '', 'bold')
 call s:hi('ALEWarningSign',    'orange',   'bg0',  '', 'bold')
 call s:hi('ALEInfoSign',       'blue',     'bg0',  '', 'bold')
@@ -393,13 +275,11 @@ call s:hi('ALEError',          'NONE', 'NONE', 'red',    'undercurl')
 call s:hi('ALEWarning',        'NONE', 'NONE', 'orange', 'undercurl')
 call s:hi('ALEInfo',           'NONE', 'NONE', 'blue',   'undercurl')
 
-" airblade/vim-gitgutter
 call s:hi('GitGutterAdd',          'green',  'bg0', '', '')
 call s:hi('GitGutterChange',       'yellow', 'bg0', '', '')
 call s:hi('GitGutterDelete',       'red',    'bg0', '', '')
 call s:hi('GitGutterChangeDelete', 'orange', 'bg0', '', '')
 
-" neoclide/coc.nvim
 call s:hi('CocErrorSign',      'red',      'bg0',  '', 'bold')
 call s:hi('CocWarningSign',    'orange',   'bg0',  '', 'bold')
 call s:hi('CocInfoSign',       'blue',     'bg0',  '', 'bold')
@@ -411,7 +291,6 @@ call s:hi('CocHintHighlight',    'NONE', 'NONE', 'cyan',   'undercurl')
 call s:hi('CocFloating',       'white',    'bg2',  '', '')
 call s:hi('CocMenuSel',        'bg0',      'cyan', '', 'bold')
 
-" preservim/nerdtree
 call s:hi('NERDTreeDir',       'cyan',     '',     '', '')
 call s:hi('NERDTreeDirSlash',  'border',   '',     '', '')
 call s:hi('NERDTreeOpenable',  'subtle',   '',     '', '')
@@ -421,11 +300,8 @@ call s:hi('NERDTreeExecFile',  'green',    '',     '', '')
 call s:hi('NERDTreeCWD',       'muted',    '',     '', 'bold')
 
 " =============================================================================
-" Встроенный терминал (:terminal). carbon называет только два из шестнадцати
-" цветов — terminalBlack и terminalBrightBlack; остальные взяты из акцентов той
-" же палитры. Ярких вариантов у палитры нет, поэтому 9-13 и 15 повторяют 1-5 и
-" 7: выдумывать более светлые оттенки было бы отсебятиной. Исключение — 14,
-" где у палитры действительно два бирюзовых: cyan и cyan-soft.
+" Встроенный терминал (:terminal). Ярких вариантов у палитры нет, поэтому
+" 9-13 и 15 повторяют 1-5 и 7; исключение — 14, второй бирюзовый.
 " =============================================================================
 
 let g:terminal_ansi_colors = [

@@ -1,4 +1,4 @@
-.PHONY: test test-dry-run check-configs check-state lint clean install-skills
+.PHONY: test test-dry-run check-configs check-configs-install check-theme check-state lint clean install-skills
 
 all: test
 
@@ -16,6 +16,14 @@ test:
 check-configs:
 	@echo "Проверка согласованности каталога инструментов..."
 	@bash scripts/check-config-consistency.sh
+
+check-configs-install:
+	@echo "Проверка того, что install_configs ставит каждый файл из configs/..."
+	@bash scripts/check-configs-install.sh
+
+check-theme:
+	@echo "Проверка палитры Digitable во всех конфигах..."
+	@bash scripts/check-theme.sh
 
 check-state:
 	@echo "Самопроверка проверяльщика отчётов о состоянии..."
@@ -40,6 +48,10 @@ lint:
 	@bash -n scripts/customs/workbench-configs.sh
 	@echo "Проверка синтаксиса check-config-consistency.sh..."
 	@bash -n scripts/check-config-consistency.sh
+	@echo "Проверка синтаксиса check-configs-install.sh..."
+	@bash -n scripts/check-configs-install.sh
+	@echo "Проверка синтаксиса check-theme.sh..."
+	@bash -n scripts/check-theme.sh
 	@echo "Проверка синтаксиса check-state-report.sh..."
 	@bash -n scripts/check-state-report.sh
 	@echo "Все проверки синтаксиса прошли успешно!"
@@ -56,6 +68,8 @@ help:
 	@echo "  make test   - запустить тесты"
 	@echo "  make test-dry-run - запустить install-tools.sh в режиме dry-run"
 	@echo "  make check-configs - проверить согласованность tools.json, locales.json и install-tools.sh"
+	@echo "  make check-configs-install - проверить, что install_configs ставит каждый файл из configs/"
+	@echo "  make check-theme - проверить палитру Digitable во всех конфигах"
 	@echo "  make check-state - самопроверка проверяльщика отчётов о состоянии"
 	@echo "  make test-dry-run-verbose - запустить install-tools.sh в режиме dry-run с подробным выводом"
 	@echo "  make install-skills - установить общие навыки в ~/.ai/skills и связать клиентов"

@@ -290,15 +290,13 @@ let g:ollama_edit_model = 'unsloth/Devstral-Small-2507-GGUF'
 	
 syntax enable
 
-" Цветовая схема Digitable — палитра портала courses.digitable.life. Схема
-" своя и лежит в этом же репозитории (configs/.vim/colors/digitable.vim);
-" install-tools.sh кладёт её в ~/.vim/colors/ вместе с самим .vimrc, поэтому
-" ставить руками ничего не нужно и подключать пакетом извне — нечего.
+" Цветовая схема Digitable лежит в этом же репозитории
+" (configs/.vim/colors/digitable.vim), а install_configs кладёт её в
+" ~/.vim/colors/ вместе с самим .vimrc — что она туда доезжает, проверяет
+" scripts/check-configs-install.sh.
 "
-" Проверка перед подключением, а не `silent!`: без неё пропавшая схема даёт
-" ошибку при каждом старте, с `silent!` — тихо возвращает цвета по умолчанию,
-" и человек неделю не понимает, почему Vim выглядит иначе. Здесь он узнаёт
-" сразу и узнаёт, что именно чинить.
+" Проверка перед подключением, а не `silent!`: с `silent!` пропавшая схема
+" тихо вернула бы цвета по умолчанию, и человек не понял бы, что чинить.
 if !empty(globpath(&runtimepath, 'colors/digitable.vim'))
 	colorscheme digitable
 else

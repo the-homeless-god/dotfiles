@@ -249,7 +249,11 @@ let g:ollama_edit_model = 'unsloth/Devstral-Small-2507-GGUF'
 	let g:gitgutter_sign_removed = '-'
 
 	" Fonts: usage of specific font with height 
-	set guifont=FiraCodeNF:h10
+	" Шрифт называется так же, как обычное начертание в .alacritty.toml, и он
+	" же лежит в configs/fonts — install_configs кладёт его в пользовательский
+	" каталог шрифтов. Прежнее имя FiraCodeNF не соответствовало ни одному
+	" файлу в репозитории, поэтому gvim молча брал шрифт по умолчанию.
+	set guifont=MesloLGS\ NF:h10
 
 	" Prettier: formatting on save
 	let g:prettier#autoformat = 1

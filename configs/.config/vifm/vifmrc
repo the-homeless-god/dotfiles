@@ -1,3 +1,13 @@
+" Цветовая схема Digitable лежит в этом же репозитории:
+" configs/.config/vifm/colors/digitable.vifm, а install_configs кладёт её в
+" ~/.config/vifm/colors/ вместе с самим vifmrc — что она туда доезжает,
+" проверяет scripts/check-configs-install.sh.
+"
+" Если схемы не окажется, vifm скажет об этом в строке состояния сам
+" («Cannot find color scheme») и оставит цвета по умолчанию: проверки
+" наличия, как в .vimrc, здесь не нужно — vifm не молчит.
+colorscheme digitable
+
     fileviewer *.pdf
         \ vifmimg pdf %px %py %pw %ph %c
         \ %pc

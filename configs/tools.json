@@ -33,7 +33,8 @@
                 "dotnet-sdk",
                 "csharp-ls",
                 "go",
-                "qemu"
+                "qemu",
+                "flang"
             ]
         },
         {
@@ -47,6 +48,7 @@
                 "vifmimg",
                 "dust",
                 "duf",
+                "digitdisk",
                 "tree"
             ]
         },

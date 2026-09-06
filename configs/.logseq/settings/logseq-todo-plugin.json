@@ -7,10 +7,10 @@
   "showNextNDaysTask": false,
   "numberOfNextNDays": 14,
   "openInRightSidebar": false,
-  "sectionTitleColor": "#106ba3",
+  "sectionTitleColor": "#00e5e5",
   "lightPrimaryBackgroundColor": "#ffffff",
   "lightSecondaryBackgroundColor": "#f7f7f7",
-  "darkPrimaryBackgroundColor": "#023643",
-  "darkSecondaryBackgroundColor": "#002B37",
+  "darkPrimaryBackgroundColor": "#0b111a",
+  "darkSecondaryBackgroundColor": "#071018",
   "disabled": false
 }

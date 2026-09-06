@@ -16,7 +16,12 @@ batorcat() {
   file="$1"
   shift
   if command -v bat >/dev/null 2>&1; then
-    bat --color=always --style=plain --pager=never "$file" "$@"
+    # Тема названа явно. Без неё панель предпросмотра красилась умолчанием
+    # bat, а не палитрой Digitable: тема лежит в ~/.config/bat/themes и
+    # доступна bat только после `bat cache --build`, но выбирать её всё равно
+    # надо. BAT_THEME оставлен наружу — так тему можно подменить на один
+    # запуск, не правя файл.
+    bat --color=always --style=plain --pager=never --theme="${BAT_THEME:-digitable}" "$file" "$@"
   else
     cat "$file"
   fi

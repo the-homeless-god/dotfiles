@@ -14,16 +14,16 @@
   },
   "logKey": {
     "id": "Daily Log",
-    "bgColor": "#047857",
-    "textColor": "#fff",
-    "borderColor": "#047857",
+    "bgColor": "#00e5e5",
+    "textColor": "#05080d",
+    "borderColor": "#00e5e5",
     "enabled": true
   },
   "journal": {
     "id": "Journal",
-    "bgColor": "#047857",
-    "textColor": "#fff",
-    "borderColor": "#047857",
+    "bgColor": "#3ca9ff",
+    "textColor": "#05080d",
+    "borderColor": "#3ca9ff",
     "enabled": true,
     "query": [
       {

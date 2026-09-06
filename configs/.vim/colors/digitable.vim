@@ -1,6 +1,6 @@
 " digitable.vim — тёмная схема Vim в палитре портала Digitable Courses.
 "
-" Maintainer:   the-homeless-god <mail@zimtir.com>
+" Maintainer:   the-homeless-god <zimtir@mail.ru>
 " License:      MIT, как и весь репозиторий (см. LICENSE).
 "
 " ОТКУДА ВЗЯТЫ ЦВЕТА. Ни одно значение здесь не подобрано на глаз. Их источника

@@ -106,6 +106,12 @@ run_test "Проверка согласованности каталога ин�
 # tools.json — временных файлов для этого заводить не нужно.
 run_test "Проверка согласованности падает на битом tools.json" "TOOLS_FILE=./README.md bash ./scripts/check-config-consistency.sh" 1 20
 
+# И что она замечает подмену пути установки: три инструмента обязаны идти
+# через confirm_source_tool, потому что под их именами в штатных репозиториях
+# либо чужая программа (в Debian `flang` — фронтенд Fortran из LLVM), либо
+# ничего. Подменяем вызов на install_if_confirmed и ждём падения.
+run_test "Проверка каталога падает, если flang ведут через пакетный менеджер" "T=\$(mktemp); sed 's/confirm_source_tool \"flang\"/install_if_confirmed \"flang\"/' ./scripts/install-tools.sh > \$T; INSTALL_SCRIPT=\$T bash ./scripts/check-config-consistency.sh > /dev/null 2>&1; RC=\$?; rm -f \$T; exit \$RC" 1 20
+
 # Проверяем, что install_configs ставит КАЖДЫЙ файл из configs/ — включая схему
 # Vim и тему bat, которые в списке копирования пришлось вписывать руками.
 run_test "Проверка установки конфигов в подставной HOME" "bash ./scripts/check-configs-install.sh" 0 60

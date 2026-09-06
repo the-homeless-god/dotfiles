@@ -22,7 +22,7 @@ This repository contains configuration files (dotfiles) and scripts for automati
 - `configs/tools.json` - Tool configuration for interactive installation mode
 
 ### Palette
-One set of seventeen colours paints Vim, bat, delta, Alacritty, tmux, bpytop, lf, vifm, eza, GNU ls, zsh's suggestion line and three Logseq plugins. It has a single source: the `theme/digitable.flang` specification, which declares the colours themselves, the mapping of the nine highlighting roles and the contrast thresholds, and carries the checks. `scripts/check-theme.sh` holds the tree to it: every colour in the configs must either be declared in the spec or be derived from it as a "colour at N% over the background" blend, and every declared colour must be used somewhere. Colour is written two ways in the tree - `#rrggbb` and the 24-bit ANSI form `38;2;R;G;B` that lf and `EZA_COLORS` use - and the check reads both. `LS_COLORS` is not written a second time: `.zshrc` derives it from lf's own colours file, whose format is exactly `LS_COLORS`, so the two lists cannot drift apart. The WCAG 2.1 contrast is computed by flang itself (`flang check theme/digitable.flang`); with no compiler on the machine the check honestly prints "not measured" rather than "ok".
+One set of seventeen colours paints Vim, bat, delta, Alacritty, tmux, bpytop, lf, vifm, eza, GNU ls, zsh's suggestion line and three Logseq plugins. It has a single source: the `theme/digitable.flang` specification, which declares the colours themselves, the mapping of the nine highlighting roles and the contrast thresholds, and carries the checks. `scripts/check-theme.sh` holds the tree to it: every colour in the configs must either be declared in the spec or be derived from it as a "colour at N% over the background" blend, and every declared colour must be used somewhere. Colour is written two ways in the tree - `#rrggbb` and the 24-bit ANSI form `38;2;R;G;B` that lf and `EZA_COLORS` use - and the check reads both. `LS_COLORS` is not written a second time: `.zshrc` derives it from lf's own colours file, whose format is exactly `LS_COLORS`, so the two lists cannot drift apart. The WCAG 2.1 contrast is computed by flang itself (`flang check theme/digitable.flang`); with no compiler on the machine the check honestly prints "not measured" rather than "ok" - and `flang` is one of the tools the installer offers, so a machine can be brought up to the point of measuring.
 
 The light-mode values of two Logseq plugins stay foreign on purpose: the Digitable palette is dark and has no light set of surfaces. `check-theme.sh` lists those three values by file and says so out loud rather than passing them over.
 
@@ -50,7 +50,9 @@ The light-mode values of two Logseq plugins stay foreign on purpose: the Digitab
 - File managers (lf, vifm)
 - Terminal utilities (tmux, Alacritty)
 - Support for various programming languages
-- digitwm - X11 window manager (cwm fork), built from source on Linux/BSD; on macOS only its session configs apply
+- digitwm - window manager: on Linux/BSD the X11 build (cwm fork) is compiled from source, on macOS the ribbon build is installed from `digitable-lol/tap` and needs Accessibility permission granted by hand
+- digitdisk - read-only disk and system reporter: where the space went, how the machine feels
+- flang - the checkable language the theme specification is written in; `make check-theme` measures contrast with it, and without it the check prints "not measured"
 
 ### Configuration
 - Configured Zsh with Oh My Zsh and Powerlevel10k

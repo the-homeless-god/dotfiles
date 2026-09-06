@@ -127,6 +127,29 @@ else
     fi
 fi
 
+# 4. Инструменты, которые НЕЛЬЗЯ вести через install_if_confirmed.
+#    install_if_confirmed зовёт install_package, а тот — `brew install <имя>`
+#    или `apt-get install -y <имя>`. Для этих трёх имя либо занято в штатных
+#    репозиториях ЧУЖОЙ программой, либо не значит там ничего:
+#      flang     — в Debian и Ubuntu это фронтенд Fortran из LLVM. apt поставил
+#                  бы его молча и с кодом 0, и человек получил бы не тот flang.
+#      digitdisk — пакета нет нигде, кроме нашего крана, а `brew install
+#                  digitdisk` без имени крана ничего не найдёт.
+#      digitwm   — на Linux собирается из исходников, на macOS ставится из крана.
+#    Поэтому каждый обязан идти через confirm_source_tool + свою функцию в
+#    run_post_install. Проверка стережёт ровно эту подмену.
+SOURCE_ONLY="digitwm digitdisk flang"
+
+for tool in $SOURCE_ONLY; do
+    if grep -qE "install_if_confirmed \"$tool\"" "$INSTALL_SCRIPT"; then
+        fail "$tool ведут через install_if_confirmed — он попадёт в пакетный менеджер под своим именем"
+    elif grep -qE "confirm_source_tool \"$tool\"" "$INSTALL_SCRIPT"; then
+        ok "$tool идёт через confirm_source_tool, а не через пакетный менеджер"
+    else
+        fail "$tool не вызывается ни через confirm_source_tool, ни через install_if_confirmed — его не поставят никогда"
+    fi
+done
+
 echo
 if [ $ERRORS -eq 0 ]; then
     echo -e "${GREEN}Каталог инструментов согласован${NC}"

@@ -821,6 +821,18 @@ install_if_confirmed "dwm-vim"
 # поэтому здесь только спрашиваем; собирает и ставит install_digitwm в run_post_install.
 confirm_source_tool "digitwm"
 
+# Install digitdisk (отчёт о диске и системе). Ставится из нашего крана
+# Homebrew или прямо из выпуска, поэтому через install_package его не провести:
+# `brew install digitdisk` без имени крана ничего не найдёт, а в apt/dnf/pacman
+# пакета с таким именем нет вовсе. Ставит install_digitdisk в run_post_install.
+confirm_source_tool "digitdisk"
+
+# Install flang. Через install_package НЕЛЬЗЯ, и это не придирка: в Debian и
+# Ubuntu пакет с именем `flang` существует — это фронтенд Fortran из LLVM,
+# совсем другая программа. `sudo apt-get install -y flang` поставил бы её
+# молча и с кодом 0. Ставит install_flang в run_post_install.
+confirm_source_tool "flang"
+
 # Install C#
 install_if_confirmed "dotnet-sdk"
 
@@ -1038,18 +1050,205 @@ install_digitwm_build_deps() {
     fi
 }
 
+# Кран Homebrew, из которого выпускаются инструменты Digitable.
+DIGITABLE_TAP="digitable-lol/tap"
+
+# Метка последнего опубликованного выпуска: v0.7.12 -> 0.7.12.
+# Пусто, если сети нет, curl не установлен или GitHub не ответил — тогда
+# зовущий честно говорит, что сверить версию было нечем.
+latest_release_version() {
+    local repo="$1"
+    command_exists curl || return 0
+    curl -fsSL --max-time 20 "https://api.github.com/repos/digitable-lol/$repo/releases/latest" 2> /dev/null \
+        | sed -n 's/.*"tag_name"[^"]*"v\{0,1\}\([^"]*\)".*/\1/p' | head -n 1
+}
+
+# Сверяет вслух, что поставилось то, что выпущено.
+#
+# Зачем. Формула лежит в ОТДЕЛЬНОМ репозитории-кране (digitable-lol/homebrew-tap),
+# и обновляют её руками. Для flang про это забыли на выпусках 0.7.4-0.7.9 подряд:
+# `brew install` тихо ставил протухшую 0.7.3, и заметили это только глазами.
+# Версию поэтому НЕ закрепляем здесь — иначе отстающих мест станет два, — а
+# проверяем после установки и говорим, если приехало не то.
+warn_if_stale() {
+    local tool="$1" repo="$2" got want
+    command_exists "$tool" || { echo "$tool: команда не появилась в PATH — проверьте вывод выше"; return 0; }
+    got="$("$tool" --version 2> /dev/null | head -n 1 | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -n 1)"
+    want="$(latest_release_version "$repo")"
+    if [ -z "$want" ]; then
+        echo "$tool: поставлено ${got:-версия неизвестна}; сверить с выпусками было нечем (нет сети или curl)"
+        return 0
+    fi
+    if [ "$got" = "$want" ]; then
+        echo "$tool: $got — это и есть последний выпуск"
+    else
+        echo "$tool: ПОСТАВЛЕНО ${got:-неизвестно}, А ВЫПУЩЕНО $want."
+        echo "$tool: кран — отдельный репозиторий и умеет отставать; свежее берите из выпуска:"
+        echo "        https://github.com/digitable-lol/$repo/releases/latest"
+    fi
+}
+
+# Function to install digitdisk (disk and system reporter)
+install_digitdisk() {
+    if [ "$DRY_RUN" = true ]; then
+        echo "[DRY-RUN] Установка digitdisk"
+        echo "[DRY-RUN]   brew install $DIGITABLE_TAP/digitdisk, если есть brew"
+        echo "[DRY-RUN]   иначе готовый двоичный файл из выпуска в \$HOME/.local"
+        echo "[DRY-RUN]   затем сверка digitdisk --version с последним выпуском"
+        return 0
+    fi
+
+    if command_exists brew; then
+        brew install "$DIGITABLE_TAP/digitdisk" || { echo "digitdisk: brew не справился — смотрите вывод выше"; return 1; }
+    else
+        install_digitdisk_from_release || return 1
+    fi
+
+    warn_if_stale digitdisk digitdisk
+}
+
+# Без brew берём тот же архив, что берёт формула: у digitdisk выпуск — готовый
+# двоичный файл под четыре среза, собирать нечего.
+install_digitdisk_from_release() {
+    local prefix="$HOME/.local" os arch ver url work src
+
+    case "$(uname -s)" in
+        Darwin) os="darwin" ;;
+        Linux)  os="linux" ;;
+        *) echo "digitdisk: готового среза для $(uname -s) нет — соберите из исходников"; return 1 ;;
+    esac
+    case "$(uname -m)" in
+        x86_64 | amd64) arch="amd64" ;;
+        arm64 | aarch64) arch="arm64" ;;
+        *) echo "digitdisk: готового среза для $(uname -m) нет — соберите из исходников"; return 1 ;;
+    esac
+
+    ver="$(latest_release_version digitdisk)"
+    if [ -z "$ver" ]; then
+        echo "digitdisk: не узнал номер последнего выпуска (нет сети или curl)."
+        echo "digitdisk: поставьте вручную — https://github.com/digitable-lol/digitdisk/releases/latest"
+        return 1
+    fi
+
+    url="https://github.com/digitable-lol/digitdisk/releases/download/v$ver/digitdisk-$ver-$os-$arch.tar.gz"
+    work="$(mktemp -d)" || return 1
+    if ! curl -fsSL --max-time 300 -o "$work/digitdisk.tar.gz" "$url"; then
+        echo "digitdisk: не скачался $url"; rm -rf "$work"; return 1
+    fi
+    # Отпечаток печатается, а не сверяется с числом, зашитым здесь: зашитое
+    # число — это ещё одно место, которое начнёт отставать. Сверить его есть
+    # с чем: поле sha256 в Formula/digitdisk.rb крана.
+    command_exists sha256sum && echo "digitdisk: sha256 архива $(sha256sum "$work/digitdisk.tar.gz" | cut -d' ' -f1)"
+    tar xzf "$work/digitdisk.tar.gz" -C "$work" || { rm -rf "$work"; return 1; }
+
+    src="$work/digitdisk-$ver-$os-$arch"
+    mkdir -p "$prefix/bin" "$prefix/share/man/man1" "$prefix/share/man/ru/man1"
+    install -m 0755 "$src/digitdisk" "$prefix/bin/digitdisk" || { rm -rf "$work"; return 1; }
+    # Страниц две, и кладутся они в разные места — man ищет перевод по локали
+    # сам: английская базовая в man1, русская в ru/man1. Так же делает формула.
+    [ -f "$src/digitdisk.en.1" ] && install -m 0644 "$src/digitdisk.en.1" "$prefix/share/man/man1/digitdisk.1"
+    [ -f "$src/digitdisk.1" ] && install -m 0644 "$src/digitdisk.1" "$prefix/share/man/ru/man1/digitdisk.1"
+    rm -rf "$work"
+    echo "digitdisk: установлен в $prefix/bin (добавьте его в PATH, если ещё не там)"
+}
+
+# Function to install flang (checkable language)
+install_flang() {
+    if [ "$DRY_RUN" = true ]; then
+        echo "[DRY-RUN] Установка flang"
+        echo "[DRY-RUN]   brew install $DIGITABLE_TAP/flang, если есть brew"
+        echo "[DRY-RUN]   иначе сборка из архива выпуска (нужны только make и компилятор C)"
+        echo "[DRY-RUN]   затем сверка flang --version с последним выпуском"
+        return 0
+    fi
+
+    if command_exists brew; then
+        brew install "$DIGITABLE_TAP/flang" || { echo "flang: brew не справился — смотрите вывод выше"; return 1; }
+    else
+        install_flang_from_release || return 1
+    fi
+
+    warn_if_stale flang flang
+    echo "flang: им проверяется тема этого репозитория — make check-theme"
+}
+
+# Без brew собираем из того же архива, что берёт формула. Node для этого не
+# нужен, и это не оговорка: компилятор языка написан на самом языке и
+# печатается в C, а в выпуске лежит уже напечатанный C99 со своим Makefile.
+# Снаружи нужны только make и компилятор C.
+install_flang_from_release() {
+    local prefix="$HOME/.local" ver url work src
+
+    command_exists make || { echo "flang: нужен make — поставьте его и повторите"; return 1; }
+
+    ver="$(latest_release_version flang)"
+    if [ -z "$ver" ]; then
+        echo "flang: не узнал номер последнего выпуска (нет сети или curl)."
+        echo "flang: поставьте вручную — https://github.com/digitable-lol/flang/releases/latest"
+        return 1
+    fi
+
+    url="https://github.com/digitable-lol/flang/releases/download/v$ver/flang-$ver-c.tar.gz"
+    work="$(mktemp -d)" || return 1
+    if ! curl -fsSL --max-time 300 -o "$work/flang.tar.gz" "$url"; then
+        echo "flang: не скачался $url"; rm -rf "$work"; return 1
+    fi
+    command_exists sha256sum && echo "flang: sha256 архива $(sha256sum "$work/flang.tar.gz" | cut -d' ' -f1)"
+    tar xzf "$work/flang.tar.gz" -C "$work" || { rm -rf "$work"; return 1; }
+
+    src="$work/flang-$ver-c"
+    # Флаги те же, что в формуле. Ослабить их значило бы спрятать от себя же,
+    # что печать испортилась: напечатанный C обязан собираться без единого
+    # предупреждения. -flto из умолчания Makefile при этом снимается — сборка
+    # с ним вдвое дольше, а нам нужна не скорость работы, а факт установки.
+    if ! make -C "$src" "CFLAGS=-std=c99 -Wall -Wextra -Werror -pedantic -O2"; then
+        echo "flang: сборка не удалась — смотрите вывод выше"; rm -rf "$work"; return 1
+    fi
+    make -C "$src" install PREFIX="$prefix" || { rm -rf "$work"; return 1; }
+
+    # Исходники рантайма Makefile выпуска НЕ ставит, а формула ставит — и без
+    # них `flang emit --target <цель>` не работает вовсе: печать читает файлы
+    # рантайма с диска и ищет их в share/flang рядом с двоичным файлом.
+    # Каталог кладётся целиком, а не поцельно: у восьми целей поиск смотрит в
+    # каталог цели, а у cpp — в корень share/flang.
+    if [ -d "$src/runtime" ]; then
+        mkdir -p "$prefix/share/flang"
+        cp -r "$src/runtime/." "$prefix/share/flang/"
+    fi
+
+    rm -rf "$work"
+    echo "flang: установлен в $prefix/bin (добавьте его в PATH, если ещё не там)"
+}
+
 # Function to install digitwm (X11 window manager, built from source)
 install_digitwm() {
     local repo_url="https://github.com/digitable-lol/digitwm.git"
     local src_dir="$HOME/dotfiles/src/digitwm"
     local prefix="$HOME/.local"
 
-    # На macOS оконному менеджеру X11 нечем управлять. Это решение проекта digitwm
-    # (bootstrap.sh), а не сбой: честно говорим об этом и предлагаем путь сессии.
+    # На macOS собирать корневой Makefile нечем: это сборка X11, и управлять ей
+    # там нечем. Но сам digitwm с тех пор оброс второй, маковской сборкой
+    # (macos/Makefile — лентовый менеджер поверх Accessibility API), и её
+    # выпускают готовым двоичным файлом через наш кран. Поэтому на macOS не
+    # отказ, а другой путь установки.
     if [[ "$(uname)" == "Darwin" ]]; then
-        echo "digitwm: это оконный менеджер X11 — на macOS ему нечем управлять, сборка пропущена."
-        echo "digitwm: конфигурацию редактора и терминала можно разложить и здесь:"
-        echo "         session/install.sh --skip-install"
+        if [ "$DRY_RUN" = true ]; then
+            echo "[DRY-RUN] brew install $DIGITABLE_TAP/digitwm (маковская лентовая сборка)"
+            return 0
+        fi
+        if ! command_exists brew; then
+            echo "digitwm: на macOS он ставится из крана — поставьте Homebrew и повторите:"
+            echo "         brew install $DIGITABLE_TAP/digitwm"
+            return 1
+        fi
+        brew install "$DIGITABLE_TAP/digitwm" || { echo "digitwm: brew не справился — смотрите вывод выше"; return 1; }
+        # Разрешение Accessibility даёт человек руками, и без него не двигается
+        # ни одно окно. Запущенный из терминала digitwm это разрешение на себя
+        # не получает — за процесс отвечает терминал; поэтому служба.
+        echo "digitwm: дальше нужны две вещи, которых установщик сделать не может:"
+        echo "         1) выдать разрешение Accessibility в System Settings;"
+        echo "         2) запустить службой: brew services start digitwm"
+        warn_if_stale digitwm digitwm
         return 0
     fi
 
@@ -1158,6 +1357,14 @@ run_post_install() {
     
     if [[ "$INSTALLATION_SUMMARY_INSTALLED" == *"digitwm"* ]]; then
         install_digitwm
+    fi
+    
+    if [[ "$INSTALLATION_SUMMARY_INSTALLED" == *"digitdisk"* ]]; then
+        install_digitdisk
+    fi
+    
+    if [[ "$INSTALLATION_SUMMARY_INSTALLED" == *"flang"* ]]; then
+        install_flang
     fi
     
     if [[ "$INSTALLATION_SUMMARY_INSTALLED" == *"macports"* ]]; then

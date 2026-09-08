@@ -60,6 +60,12 @@ lint:
 	@bash -n scripts/check-vim-quiet.sh
 	@echo "Проверка синтаксиса check-state-report.sh..."
 	@bash -n scripts/check-state-report.sh
+	@echo "Проверка синтаксиса .p10k.zsh и .zshrc..."
+	@if command -v zsh > /dev/null 2>&1; then \
+		zsh -n configs/.p10k.zsh && zsh -n configs/.zshrc && echo "  ok  zsh -n прошёл"; \
+	else \
+		echo "  не мерил — zsh не установлен, а эти два файла читает он, а не bash"; \
+	fi
 	@echo "Все проверки синтаксиса прошли успешно!"
 
 clean:

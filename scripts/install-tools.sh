@@ -892,6 +892,7 @@ install_configs() {
     
     # Backup existing configurations
     [ -f ~/.zshrc ] && mv ~/.zshrc "$DOTFILES_BACKUP_PATH"
+    [ -f ~/.p10k.zsh ] && mv ~/.p10k.zsh "$DOTFILES_BACKUP_PATH"
     [ -f ~/.vimrc ] && mv ~/.vimrc "$DOTFILES_BACKUP_PATH"
     # Схема — по файлу, а не по каталогу: в ~/.vim/colors/ лежат чужие схемы,
     # а бэкап здесь делается через mv. Унести каталог целиком значило бы
@@ -942,6 +943,9 @@ install_configs() {
     
     # Copy new configurations
     [ -f "$CONFIGS_DIR/.zshrc" ] && cp "$CONFIGS_DIR/.zshrc" ~/
+    # Цвета приглашения. Отдельным файлом, а не строками в .zshrc: подключает
+    # его p10k, и подключает последним — всё, что задано раньше, он перекроет.
+    [ -f "$CONFIGS_DIR/.p10k.zsh" ] && cp "$CONFIGS_DIR/.p10k.zsh" ~/
     [ -f "$CONFIGS_DIR/.vimrc" ] && cp "$CONFIGS_DIR/.vimrc" ~/
     [ -f "$CONFIGS_DIR/.vim/colors/digitable.vim" ] && cp "$CONFIGS_DIR/.vim/colors/digitable.vim" ~/.vim/colors/
     [ -f "$CONFIGS_DIR/.gitignore" ] && cp "$CONFIGS_DIR/.gitignore" ~/

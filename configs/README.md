@@ -37,6 +37,7 @@ spec through the `flang` compiler when it is installed).
 | vifm | `.config/vifm/colors/digitable.vifm` | `colorscheme digitable` in `vifmrc` |
 | eza, GNU ls | `LS_COLORS`, `EZA_COLORS` in `.zshrc` | exported at shell start |
 | zsh suggestions | `ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE` in `.zshrc` | zsh-autosuggestions |
+| powerlevel10k prompt | `.p10k.zsh` | `source ~/.p10k.zsh` in `.zshrc` |
 | digit | `.digit/config.yaml` | `display.skin: digitable` (skin ships with digit) |
 | Logseq plugins | `.logseq/settings/*.json` | the plugins' own settings |
 

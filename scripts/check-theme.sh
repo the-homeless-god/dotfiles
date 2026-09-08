@@ -18,7 +18,8 @@
 #      числами. Без flang этот пункт не считается пройденным — он честно
 #      печатается как «не мерил», а не как «ок».
 #   3. ЗДЕСЬ же: пороги заряда батареи записаны в трёх местах — в спеке, в
-#      блоке панели tmux и в приглашении p10k. Ни sh, ни zsh спеку не читают,
+#      блоке панели tmux (configs/.config/tmux/battery.sh) и в конфиге
+#      приглашения (configs/.p10k.zsh). Ни sh, ни zsh спеку не читают,
 #      поэтому числа там продублированы; сверка держит их вместе.
 #
 # Ключи:
@@ -50,6 +51,7 @@ configs/.config/lf/colors
 configs/.config/lf/lfrc
 configs/.config/vifm/colors/digitable.vifm
 configs/.zshrc
+configs/.p10k.zsh
 configs/.logseq/settings/logseq-agenda.json
 configs/.logseq/settings/logseq-journals-calendar.json
 configs/.logseq/settings/logseq-todo-plugin.json"
@@ -232,7 +234,9 @@ bands_tmux() {
     ' "$1"
 }
 
-# Полосы в приглашении: то же самое, только цвет записан числом.
+# Полосы в приглашении: то же самое, только цвет записан числом. Файл —
+# configs/.p10k.zsh: раньше эти пять строк были дописаны в конец .zshrc
+# поверх подключения приглашения, теперь они лежат в самом приглашении.
 bands_zsh() {
     awk '
         /POWERLEVEL9K_BATTERY_LEVEL_FOREGROUND\+=/ {
@@ -252,7 +256,7 @@ check_battery_bands() {
     pal_named="$(read_palette_named)"
     spec_bands="$(bands_spec)"
     tmux_bands="$(bands_tmux "$REPO_DIR/configs/.config/tmux/battery.sh")"
-    zsh_bands="$(bands_zsh "$REPO_DIR/configs/.zshrc")"
+    zsh_bands="$(bands_zsh "$REPO_DIR/configs/.p10k.zsh")"
 
     # шестнадцатеричные значения приглашения переводятся в имена палитры
     zsh_named="$zsh_bands"
@@ -352,7 +356,7 @@ selftest() {
     # заметит — падать должна именно сверка полос.
     rm -rf "$tmp/configs"; cp -r "$REPO_DIR/configs" "$tmp/configs"
     echo -e "${YELLOW}Контроль 4: в приглашении p10k порог 20 подменён на 25${NC}"
-    sed -i 's/(( p < 20 ))/(( p < 25 ))/' "$tmp/configs/.zshrc"
+    sed -i 's/(( p < 20 ))/(( p < 25 ))/' "$tmp/configs/.p10k.zsh"
     if bash "$tmp/scripts/check-theme.sh" > /dev/null 2>&1; then
         echo -e "${RED}  ✗ разъехавшийся порог не замечен${NC}"; rc=1
     else

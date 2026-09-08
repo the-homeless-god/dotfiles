@@ -8,7 +8,7 @@
 # Теперь источник один: theme/digitable.flang, а этот скрипт сверяет с ним
 # дерево.
 #
-# Проверяется две вещи, и они делятся по сложности счёта:
+# Проверяется три вещи, и первые две делятся по сложности счёта:
 #   1. ЗДЕСЬ, всегда и без компилятора: каждый цвет в конфигах либо объявлен
 #      в спеке, либо является подмесью «цвет N% поверх фона» — арифметика
 #      целочисленная, её незачем никуда уносить. И наоборот: объявленный
@@ -17,11 +17,14 @@
 #      и пороги. Компилятор доказывает завершение и гоняет примеры с точными
 #      числами. Без flang этот пункт не считается пройденным — он честно
 #      печатается как «не мерил», а не как «ок».
+#   3. ЗДЕСЬ же: пороги заряда батареи записаны в трёх местах — в спеке, в
+#      блоке панели tmux и в приглашении p10k. Ни sh, ни zsh спеку не читают,
+#      поэтому числа там продублированы; сверка держит их вместе.
 #
 # Ключи:
 #   (без ключей)  прогнать проверку
 #   --selftest    отрицательный контроль: подсунуть конфигу цвет не из палитры
-#                 и убедиться, что проверка ПАДАЕТ
+#                 (и порог не из спеки) и убедиться, что проверка ПАДАЕТ
 
 set -u
 
@@ -40,6 +43,7 @@ PAINTED="configs/.vim/colors/digitable.vim
 configs/.alacritty.toml
 configs/.gitconfig
 configs/.config/tmux/.tmux.conf
+configs/.config/tmux/battery.sh
 configs/.config/bat/themes/digitable.tmTheme
 configs/.config/bpytop/themes/digitable.theme
 configs/.config/lf/colors
@@ -167,6 +171,113 @@ check_palette() {
     [ "$unused" -eq 0 ] && echo "  ok  каждый объявленный цвет где-то используется"
 }
 
+# Палитра, но с именами: для сверки порогов надо уметь перевести #7cff6b
+# обратно в "green". Тело функции «Палитра» читается тем же способом, что и в
+# read_palette.
+read_palette_named() {
+    awk '
+        /функция «Палитра»/ { on = 1; next }
+        on && /запись/ {
+            line = $0
+            name = ""
+            if (match(line, /"[a-z0-9]+"/)) name = substr(line, RSTART + 1, RLENGTH - 2)
+            gsub(/"[^"]*"/, "", line)
+            n = 0
+            while (match(line, /[0-9]+/)) {
+                v[++n] = substr(line, RSTART, RLENGTH)
+                line = substr(line, RSTART + RLENGTH)
+            }
+            if (n >= 3 && name != "") printf "%s #%02x%02x%02x\n", name, v[1], v[2], v[3]
+        }
+        on && /\]/ { on = 0 }
+    ' "$SPEC"
+}
+
+# Одна строка вида «red 20 orange 30 yellow 60 green»: цвета полос по
+# возрастанию заряда и границы между ними. Сравниваются именно строки —
+# так расходится не только число, но и порядок цветов.
+bands_spec() {
+    awk '
+        /функция «Пороги заряда»/ { on = 1; next }
+        on && /запись/ {
+            num = ""; col = ""
+            if (match($0, /[0-9]+/))   num = substr($0, RSTART, RLENGTH)
+            if (match($0, /"[a-z]+"/)) col = substr($0, RSTART + 1, RLENGTH - 2)
+            if (num != "" && col != "") {
+                # первая полоса начинается с нуля: границей она не является
+                if (n++ == 0) printf "%s", col
+                else printf " %s %s", num, col
+            }
+        }
+        on && /\]/ { on = 0 }
+        END { print "" }
+    ' "$SPEC"
+}
+
+# Полосы в блоке панели: по строке на полосу, в строке и граница, и имя цвета.
+# Граница там записана как верхняя («ниже 20 — красный»), а в спеке — как нижняя
+# («с 20 — оранжевый»). Число одно и то же, но стоит на строку раньше, поэтому
+# печатается граница ПРЕДЫДУЩЕЙ полосы: так обе записи сходятся к одной строке.
+bands_tmux() {
+    awk '
+        /level="\$[a-z]+"/ {
+            match($0, /level="\$[a-z]+"/)
+            col = substr($0, RSTART + 8, RLENGTH - 9)
+            if (n++ == 0) printf "%s", col
+            else printf " %s %s", prev, col
+            prev = ""
+            if (match($0, /-lt [0-9]+/)) prev = substr($0, RSTART + 4, RLENGTH - 4)
+        }
+        END { print "" }
+    ' "$1"
+}
+
+# Полосы в приглашении: то же самое, только цвет записан числом.
+bands_zsh() {
+    awk '
+        /POWERLEVEL9K_BATTERY_LEVEL_FOREGROUND\+=/ {
+            if (match($0, /#[0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F]/) == 0) next
+            col = substr($0, RSTART, RLENGTH)
+            if (n++ == 0) printf "%s", col
+            else printf " %s %s", prev, col
+            prev = ""
+            if (match($0, /< [0-9]+/)) prev = substr($0, RSTART + 2, RLENGTH - 2)
+        }
+        END { print "" }
+    ' "$1"
+}
+
+check_battery_bands() {
+    local pal_named spec_bands tmux_bands zsh_bands zsh_named name hex
+    pal_named="$(read_palette_named)"
+    spec_bands="$(bands_spec)"
+    tmux_bands="$(bands_tmux "$REPO_DIR/configs/.config/tmux/battery.sh")"
+    zsh_bands="$(bands_zsh "$REPO_DIR/configs/.zshrc")"
+
+    # шестнадцатеричные значения приглашения переводятся в имена палитры
+    zsh_named="$zsh_bands"
+    while read -r name hex; do
+        [ -n "$name" ] || continue
+        zsh_named="${zsh_named//$hex/$name}"
+    done <<< "$pal_named"
+
+    echo -e "${YELLOW}Пороги заряда: спека, панель tmux, приглашение p10k${NC}"
+    if [ -z "$spec_bands" ] || [ -z "$tmux_bands" ] || [ -z "$zsh_bands" ]; then
+        echo -e "${RED}  не нашлись полосы: спека «$spec_bands», tmux «$tmux_bands», zsh «$zsh_bands»${NC}"
+        fail=1
+        return
+    fi
+    echo "  спека:       $spec_bands"
+    echo "  панель tmux: $tmux_bands"
+    echo "  приглашение: $zsh_named"
+    if [ "$spec_bands" = "$tmux_bands" ] && [ "$spec_bands" = "$zsh_named" ]; then
+        echo -e "${GREEN}  ok  все три места говорят одно и то же${NC}"
+    else
+        echo -e "${RED}  ✗ пороги заряда разъехались${NC}"
+        fail=1
+    fi
+}
+
 check_contrast() {
     if ! type "$FLANG" &> /dev/null; then
         echo -e "${YELLOW}Контраст: не мерил — flang не установлен."
@@ -184,6 +295,7 @@ check_contrast() {
 
 main() {
     check_palette
+    check_battery_bands
     check_contrast
     if [ "$fail" -eq 0 ]; then
         echo -e "${GREEN}✓ палитра сходится${NC}"; return 0
@@ -233,6 +345,18 @@ selftest() {
         echo -e "${RED}  ✗ чужой цвет, записанный ANSI-тройкой, не замечен${NC}"; rc=1
     else
         echo -e "${GREEN}  ✓ падает на чужой ANSI-тройке${NC}"
+    fi
+
+    # Случай 4: порог заряда в приглашении разошёлся с панелью и спекой.
+    # Цвет при этом остаётся из палитры, поэтому первая проверка ничего не
+    # заметит — падать должна именно сверка полос.
+    rm -rf "$tmp/configs"; cp -r "$REPO_DIR/configs" "$tmp/configs"
+    echo -e "${YELLOW}Контроль 4: в приглашении p10k порог 20 подменён на 25${NC}"
+    sed -i 's/(( p < 20 ))/(( p < 25 ))/' "$tmp/configs/.zshrc"
+    if bash "$tmp/scripts/check-theme.sh" > /dev/null 2>&1; then
+        echo -e "${RED}  ✗ разъехавшийся порог не замечен${NC}"; rc=1
+    else
+        echo -e "${GREEN}  ✓ падает, когда пороги в трёх местах разные${NC}"
     fi
 
     [ "$rc" -eq 0 ] && echo -e "${GREEN}✓ проверка умеет падать во все стороны${NC}"

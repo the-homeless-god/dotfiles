@@ -161,3 +161,60 @@ export PATH="$PATH:$USER_HOME_DIR/.cache/lm-studio/bin"
 
 export PATH="/usr/local/opt/openjdk/bin:$PATH"
 export PATH="/usr/local/opt/bison/bin:$PATH"
+
+# ── Заряд батареи в приглашении p10k ───────────────────────────────────────
+# Внизу файла, а не наверху с остальными цветами, — намеренно: приглашение
+# подключается строкой `source ~/.p10k.zsh` выше и перекрывает всё, что задано
+# до неё. p10k перечитывает POWERLEVEL9K_* на каждом приглашении
+# (internal/p10k.zsh, _p9k_must_init), поэтому заданное после подключения
+# действует.
+#
+# Своего цвета у батареи в p10k нет. По умолчанию (internal/p10k.zsh,
+# _p9k_battery_states) она красится ИМЕНАМИ ANSI-цветов: LOW — red, CHARGING —
+# yellow, CHARGED — green, а «на батарее, заряда хватает» — цветом 7, то есть
+# просто белым. Имя достаёт из палитры терминала не тема, а сам терминал: под
+# iTerm или чужим профилем это чужие красный и жёлтый. Здесь цвета названы
+# шестнадцатеричными числами — p10k их понимает (_p9k_translate_color) — и от
+# палитры терминала больше не зависят.
+#
+# Пороги те же, что у блока батареи в нижней панели tmux. Источник — функция
+# «Пороги заряда» в theme/digitable.flang, там же посчитан контраст каждой
+# пары. Что три места не разъедутся, сторожит scripts/check-theme.sh.
+#
+# Массив читается по проценту: p10k берёт из него элемент с номером
+# «процент * длина / 100 + 1». При ста элементах номер равен проценту, поэтому
+# порог оказывается ровно там, где написан. Короткий массив (скажем, из
+# четырёх) резал бы шкалу на четверти — 25/50/75, а это уже другие числа.
+#
+# Цвет состояния бьёт цвет уровня: _p9k_param ищет
+# POWERLEVEL9K_BATTERY_<состояние>_FOREGROUND раньше, чем смотрит на то, что
+# сегмент подставил из массива. Мастер p10k такие цвета как раз и пишет в
+# ~/.p10k.zsh: 160 — красный, 70 — зелёный, 178 — жёлтый, числа 256-цветной
+# палитры, ни одного нашего. Файла этого репозиторий пока не везёт, поэтому
+# цвета состояний снимаются здесь — иначе массив ниже не заработает.
+unset POWERLEVEL9K_BATTERY_FOREGROUND \
+      POWERLEVEL9K_BATTERY_LOW_FOREGROUND \
+      POWERLEVEL9K_BATTERY_CHARGING_FOREGROUND \
+      POWERLEVEL9K_BATTERY_CHARGED_FOREGROUND \
+      POWERLEVEL9K_BATTERY_DISCONNECTED_FOREGROUND
+
+typeset -ga POWERLEVEL9K_BATTERY_LEVEL_FOREGROUND=()
+() {
+  local -i p
+  for (( p = 0; p < 100; p++ )); do
+    if   (( p < 20 )); then POWERLEVEL9K_BATTERY_LEVEL_FOREGROUND+='#ff5b5b'
+    elif (( p < 30 )); then POWERLEVEL9K_BATTERY_LEVEL_FOREGROUND+='#ff8a2a'
+    elif (( p < 60 )); then POWERLEVEL9K_BATTERY_LEVEL_FOREGROUND+='#ffc247'
+    else                    POWERLEVEL9K_BATTERY_LEVEL_FOREGROUND+='#7cff6b'
+    fi
+  done
+}
+
+# Ниже этого числа p10k считает состояние LOW. По умолчанию у него 10 — то
+# есть красный зажигается позже, чем система успевает предупредить.
+typeset -gi POWERLEVEL9K_BATTERY_LOW_THRESHOLD=20
+
+# Питание от сети: цвет говорит не про уровень, а про «не твоя забота».
+# Массив из одного элемента — номер всегда 1, процент на цвет не влияет.
+typeset -ga POWERLEVEL9K_BATTERY_CHARGING_LEVEL_FOREGROUND=('#00e5e5')
+typeset -ga POWERLEVEL9K_BATTERY_CHARGED_LEVEL_FOREGROUND=('#7cff6b')

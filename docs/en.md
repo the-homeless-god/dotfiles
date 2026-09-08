@@ -34,6 +34,7 @@ The light-mode values of two Logseq plugins stay foreign on purpose: the Digitab
 - `install-skills.sh` - Installs `skills/` into one shared directory and points the agent clients at it
 - `check-configs-install.sh` - Takes the `install_configs` function out of `install-tools.sh`, runs it against a throwaway `HOME` and confirms every file under `configs/` arrived in the home directory. The copy list there is written out line by line, so a new config is not installed by default - this check catches the forgotten line. `--selftest` drops one line and shows the check failing because of it
 - `check-theme.sh` - Guards the Digitable palette across every config; `--selftest` feeds it a foreign colour and shows the check failing
+- `check-vim-quiet.sh` - Guards Vim's silence: the AI helper `vim-ollama` is marked `{ 'on': [] }` in `.vimrc` and is not loaded at startup, so it never asks about its setup wizard, never takes `<Tab>` away from coc and never talks to a model on every keystroke. The check runs a real `vim` over the real `configs/.vimrc` in a throwaway `HOME` and measures three runs: a plain start (the plugin must be absent), `VIM_OLLAMA=1` and `:OllamaOn` at runtime (the plugin must load - otherwise the switch is a prop). `--selftest` restores eager loading and shows the check failing
 - `check-state-report.sh` - Checks a state report against `skills/state/SKILL.md`: head within 14 lines and 900 characters, three to six key results each carrying a threshold, a fact and one of `✓ ✗ ?`, the blocker and the ask present, nothing taken on trust scored as achieved. `--selftest` proves the checker itself fails on eight prepared cases
 - Custom scripts in `scripts/customs/`
 - Scripts for lf in `scripts/lf/`
@@ -56,7 +57,7 @@ The light-mode values of two Logseq plugins stay foreign on purpose: the Digitab
 
 ### Configuration
 - Configured Zsh with Oh My Zsh and Powerlevel10k
-- Vim with development plugins
+- Vim with development plugins; the AI helper (`vim-ollama` over LM Studio on `localhost:1234`) is turned on deliberately - `\i`, `:OllamaOn` or `VIM_OLLAMA=1 vim` - and neither loads nor reaches the network on its own
 - Tmux with optimized settings
 - Git integration with enhanced output
 

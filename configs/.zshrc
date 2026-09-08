@@ -154,6 +154,8 @@ export PATH="$USER_HOME_DIR/dotfiles/scripts/lf:$PATH"
 export PATH="$USER_HOME_DIR/dotfiles/scripts/customs:$PATH"
 
 # Added by LM Studio CLI Tool (lms)
+# Только каталог с CLI `lms`: ничего не запускает и сервер модели не поднимает.
+# ИИ в Vim включается отдельно и руками — \i, :OllamaOn или VIM_OLLAMA=1 vim.
 export PATH="$PATH:$USER_HOME_DIR/.cache/lm-studio/bin"
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 

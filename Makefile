@@ -1,4 +1,4 @@
-.PHONY: test test-dry-run check-configs check-configs-install check-theme check-state lint clean install-skills
+.PHONY: test test-dry-run check-configs check-configs-install check-theme check-vim-quiet check-state lint clean install-skills
 
 all: test
 
@@ -24,6 +24,10 @@ check-configs-install:
 check-theme:
 	@echo "Проверка палитры Digitable во всех конфигах..."
 	@bash scripts/check-theme.sh
+
+check-vim-quiet:
+	@echo "Проверка того, что ИИ-помощник в Vim не включается сам..."
+	@bash scripts/check-vim-quiet.sh
 
 check-state:
 	@echo "Самопроверка проверяльщика отчётов о состоянии..."
@@ -52,6 +56,8 @@ lint:
 	@bash -n scripts/check-configs-install.sh
 	@echo "Проверка синтаксиса check-theme.sh..."
 	@bash -n scripts/check-theme.sh
+	@echo "Проверка синтаксиса check-vim-quiet.sh..."
+	@bash -n scripts/check-vim-quiet.sh
 	@echo "Проверка синтаксиса check-state-report.sh..."
 	@bash -n scripts/check-state-report.sh
 	@echo "Все проверки синтаксиса прошли успешно!"
@@ -70,6 +76,7 @@ help:
 	@echo "  make check-configs - проверить согласованность tools.json, locales.json и install-tools.sh"
 	@echo "  make check-configs-install - проверить, что install_configs ставит каждый файл из configs/"
 	@echo "  make check-theme - проверить палитру Digitable во всех конфигах"
+	@echo "  make check-vim-quiet - проверить, что ИИ-помощник в Vim не включается сам"
 	@echo "  make check-state - самопроверка проверяльщика отчётов о состоянии"
 	@echo "  make test-dry-run-verbose - запустить install-tools.sh в режиме dry-run с подробным выводом"
 	@echo "  make install-skills - установить общие навыки в ~/.ai/skills и связать клиентов"

@@ -51,6 +51,11 @@
 " F8           - предыдущий терминал
 " F9           - следующий терминал
 " F12          - показать/скрыть терминал
+"
+" ИИ-помощник (vim-ollama) — при старте НЕ грузится, включается по требованию:
+" \i           - включить ИИ-помощника в текущем сеансе
+" :OllamaOn    - то же самое командой
+" VIM_OLLAMA=1 vim - включить сразу при старте (или export на весь сеанс оболочки)
 
 packloadall
 filetype plugin on
@@ -108,7 +113,9 @@ Plug 'liuchengxu/vista.vim'
 Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
 Plug 'junegunn/fzf.vim'
 Plug 'iamcco/markdown-preview.nvim', { 'do': 'cd app && npx --yes yarn install' }
-Plug 'gergap/vim-ollama'
+" ИИ-помощник. { 'on': [] } значит «зарегистрировать, но не грузить»:
+" плагин включается вручную — \i, :OllamaOn или VIM_OLLAMA=1.
+Plug 'gergap/vim-ollama', { 'on': [] }
 
 Plug 'turbio/bracey.vim', {'do': 'npm install --prefix server'}
 Plug 'elixir-editors/vim-elixir'
@@ -193,6 +200,68 @@ let g:prettier#autoformat_require_pragma = 0
 let g:prettier#exec_cmd_path = "prettier"
 let g:prettier#quick_fix = 1
 
+" =============================================================================
+" ИИ-ПОМОЩНИК (vim-ollama) — ТОЛЬКО ПО ТРЕБОВАНИЮ
+" =============================================================================
+" Включить в текущем сеансе:  \i  или  :OllamaOn
+" Включить сразу при старте:  VIM_OLLAMA=1 vim
+"
+" Почему так. Плагин при загрузке вешает на VimEnter мастер настройки (при
+" каждом старте спрашивает «Should I help you setting up everything? (Y/n)»),
+" забирает <Tab> в режиме вставки и цепляет CursorMovedI — то есть на каждое
+" нажатие клавиши планирует запрос к модели. Пока модель не запущена, это
+" ошибки на ровном месте. Строка Plug выше помечена { 'on': [] }: vim-plug
+" плагин знает и умеет обновлять, но в runtimepath не кладёт и не грузит.
+" Отсюда правило: пока человек не попросил, в сеть не ходим вовсе.
+
+" Адрес модели — LM Studio (порт 1234), а не сам ollama (у того по умолчанию
+" 11434). LM Studio отвечает по OpenAI-совместимому пути, потому провайдеры
+" openai_legacy. Переменные читаются плагином в момент загрузки, поэтому
+" задать их заранее можно и нужно — сами по себе они ничего не запускают.
+let g:ollama_use_venv = 1
+let g:ollama_openai_baseurl = 'http://localhost:1234/v1'
+let g:ollama_model_provider = 'openai_legacy'
+let g:ollama_model = 'bartowski/codegemma-2b-GGUF'
+let g:ollama_chat_provider = 'openai_legacy'
+let g:ollama_chat_model = 'unsloth/Devstral-Small-2507-GGUF'
+let g:ollama_edit_provider = 'openai_legacy'
+let g:ollama_edit_model = 'unsloth/Devstral-Small-2507-GGUF'
+" g:ollama_logfile намеренно не задаём. Прежнее значение '~/vim-ollama.log'
+" плагин не раскрывал (writefile тильду не понимает), так что лог всё равно
+" никуда не писался, а файл заводился при первой же загрузке плагина. Без
+" переменной он уходит во временный каталог и домашний не засоряет; открыть
+" его — :call OllamaOpenLogBuffer(), подробность — g:ollama_debug (0..4).
+
+function! s:OllamaOn() abort
+	if get(g:, 'loaded_ollama', 0)
+		echo 'vim-ollama уже включён'
+		return
+	endif
+	silent! call plug#load('vim-ollama')
+	if !get(g:, 'loaded_ollama', 0)
+		echohl WarningMsg
+		echomsg 'vim-ollama не установлен — поставьте его: :PlugInstall'
+		echohl None
+		return
+	endif
+	" Всю настройку плагин делает на VimEnter, а тот давно прошёл. Зовём ту же
+	" автокоманду руками, иначе не будет ни <Tab>-дополнения, ни мастера.
+	if exists('#ollama#VimEnter')
+		doautocmd <nomodeline> ollama VimEnter
+	endif
+	echo 'vim-ollama включён: :OllamaChat, :OllamaReview, :OllamaEdit, :Ollama disable'
+endfunction
+
+command! OllamaOn call <SID>OllamaOn()
+nnoremap <silent> <leader>i :OllamaOn<CR>
+let g:which_key_map['i'] = [':OllamaOn', 'включить ИИ-помощника']
+
+" Тот же выключатель на уровне оболочки: VIM_OLLAMA=1 vim — или export
+" VIM_OLLAMA=1 один раз, и ИИ включён на весь сеанс оболочки.
+if $VIM_OLLAMA !=# '' && $VIM_OLLAMA !=# '0'
+	autocmd VimEnter * call <SID>OllamaOn()
+endif
+
 function! s:initVimStartup()
 	" VIM STARTUP: exec functions on start of vim
 	" 1. initiate update of plugins on each start
@@ -220,17 +289,6 @@ function! s:initVimVariables()
 	" Terminal: set size of terminal with small hight to avoid taking a half of the screen
 	set termwinsize = "10*0"
 	let g:terminal_default_height = 10
-
-let g:ollama_use_venv = 1 
-let g:ollama_logfile = '~/vim-ollama.log'
-let g:ollama_openai_baseurl = 'http://localhost:1234/v1' " Use local OpenAI endpoint
-let g:ollama_model_provider = 'openai_legacy'
-let g:ollama_model = 'bartowski/codegemma-2b-GGUF'
-let g:ollama_chat_provider = 'openai_legacy'
-let g:ollama_chat_model = 'unsloth/Devstral-Small-2507-GGUF'
-let g:ollama_edit_provider = 'openai_legacy'
-
-let g:ollama_edit_model = 'unsloth/Devstral-Small-2507-GGUF'
 
 	" Always show an empty buffer when a file is closed
 	set hidden
